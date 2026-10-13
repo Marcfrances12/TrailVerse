@@ -1,0 +1,72 @@
+<article
+  class="flex h-full flex-col overflow-hidden rounded-2xl border border-crema-200 bg-white shadow-sm transition-shadow duration-300 hover:shadow-lg"
+  [class.grayscale]="!ruta().isActive"
+  [class.opacity-75]="!ruta().isActive">
+
+  <a [routerLink]="['/rutas', ruta().slug]" class="group flex h-full flex-col">
+
+    <div class="relative h-48 overflow-hidden">
+      @if (ruta().imagen) {
+        <img
+          [src]="ruta().imagen"
+          [alt]="ruta().nombre"
+          loading="lazy"
+          class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+      } @else {
+        <div class="grid h-full w-full place-items-center bg-bosque-700">
+          <svg viewBox="0 0 24 24" class="h-14 w-14 text-bosque-300" aria-hidden="true">
+            <path d="M2 20 L8.5 7 L12 13 L15 9.5 L22 20 Z" fill="currentColor" opacity="0.5" />
+          </svg>
+        </div>
+      }
+
+      <div class="absolute left-3 top-3 flex flex-wrap gap-2">
+        <span class="rounded-full px-2.5 py-1 text-xs font-semibold shadow-sm"
+              [class]="clasesDificultad(ruta().dificultad)">
+          {{ etiquetasDificultad[ruta().dificultad] }}
+        </span>
+        @if (ruta().circular) {
+          <span class="rounded-full bg-bosque-600/90 px-2.5 py-1 text-xs font-semibold text-white shadow-sm">
+            Circular
+          </span>
+        }
+      </div>
+
+      @if (!ruta().isActive) {
+        <span class="absolute bottom-3 right-3 rounded-full bg-tinta/80 px-2.5 py-1 text-xs font-semibold text-white shadow-sm">
+          Desactivada
+        </span>
+      }
+    </div>
+
+    <div class="flex flex-1 flex-col p-4">
+      <h3 class="line-clamp-2 text-base font-bold leading-snug text-tinta group-hover:text-bosque-700">
+        {{ ruta().nombre }}
+      </h3>
+
+      <p class="mt-1 flex items-center gap-1 text-sm text-tinta-suave">
+        <svg viewBox="0 0 24 24" class="h-4 w-4 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+          <path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0Z" />
+          <circle cx="12" cy="10" r="3" />
+        </svg>
+        {{ ruta().ubicacion }} · {{ ruta().provincia }}
+      </p>
+
+      <dl class="mt-4 grid grid-cols-3 gap-2 border-t border-crema-200 pt-3 text-center">
+        <div>
+          <dt class="text-[11px] uppercase tracking-wide text-tinta-suave">Distancia</dt>
+          <dd class="mt-0.5 text-sm font-semibold text-bosque-800">{{ formatKm(ruta().distanciaKm) }}</dd>
+        </div>
+        <div>
+          <dt class="text-[11px] uppercase tracking-wide text-tinta-suave">Desnivel</dt>
+          <dd class="mt-0.5 text-sm font-semibold text-bosque-800">{{ formatMetros(ruta().desnivelM) }}</dd>
+        </div>
+        <div>
+          <dt class="text-[11px] uppercase tracking-wide text-tinta-suave">Duración</dt>
+          <dd class="mt-0.5 text-sm font-semibold text-bosque-800">{{ formatDuracion(ruta().duracionHoras) }}</dd>
+        </div>
+      </dl>
+    </div>
+
+  </a>
+</article>

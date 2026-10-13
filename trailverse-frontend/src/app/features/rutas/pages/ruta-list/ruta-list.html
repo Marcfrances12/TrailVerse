@@ -1,0 +1,28 @@
+<div class="space-y-6">
+  <div class="flex flex-col gap-1">
+    <h1 class="text-2xl font-bold text-bosque-900 sm:text-3xl">Rutas de senderismo</h1>
+    <p class="text-tinta-suave">
+      @if (store.total() > 0) {
+        {{ store.total() }} {{ store.total() === 1 ? 'ruta' : 'rutas' }} disponibles
+        (@if (store.activas() !== store.total()) { {{ store.activas() }} activas })
+      } @else {
+        Descubre y gestiona las mejores rutas
+      }
+    </p>
+  </div>
+
+  @if (store.cargando()) {
+    <app-skeleton-grid />
+  } @else if (store.error()) {
+    <app-error-state [mensaje]="store.error()!" (reintentar)="reintentar()" />
+  } @else if (store.rutas().length === 0) {
+    <app-empty-state
+      [titulo]="'Sin resultados'"
+      [mensaje]="'Aún no hay rutas registradas.'" />
+  } @else {
+    <app-admin-table
+      [rutas]="store.rutas()"
+      (cambiarEstado)="cambiarEstado($event)"
+      (eliminar)="eliminar($event)" />
+  }
+</div>

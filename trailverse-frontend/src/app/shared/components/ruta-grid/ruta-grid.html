@@ -1,0 +1,9 @@
+<section aria-label="Listado de rutas">
+  @if (rutas().length > 0) {
+    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      @for (ruta of rutas(); track ruta._id) {
+        <app-ruta-card [ruta]="ruta" />
+      }
+    </div>
+  }
+</section>

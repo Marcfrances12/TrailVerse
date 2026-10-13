@@ -1,0 +1,65 @@
+<div class="overflow-x-auto rounded-2xl border border-crema-200 bg-white shadow-sm">
+  <table class="w-full min-w-[900px] text-left text-sm">
+    <thead>
+      <tr class="border-b border-crema-200 bg-crema-50 text-xs uppercase tracking-wide text-tinta-suave">
+        <th class="px-4 py-3 font-semibold">Imagen</th>
+        <th class="px-4 py-3 font-semibold">Nombre</th>
+        <th class="px-4 py-3 font-semibold">Ubicación</th>
+        <th class="px-4 py-3 font-semibold">Dificultad</th>
+        <th class="px-4 py-3 font-semibold">Distancia</th>
+        <th class="px-4 py-3 font-semibold">Desnivel</th>
+        <th class="px-4 py-3 font-semibold">Duración</th>
+        <th class="px-4 py-3 font-semibold">Estado</th>
+        <th class="px-4 py-3 text-right font-semibold">Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (ruta of rutas(); track ruta._id) {
+        <tr class="border-b border-crema-100 transition-colors hover:bg-crema-50/50"
+            [class.grayscale]="!ruta.isActive"
+            [class.opacity-60]="!ruta.isActive">
+          <td class="px-4 py-3">
+            @if (ruta.imagen) {
+              <img [src]="ruta.imagen" [alt]="ruta.nombre" class="h-12 w-12 rounded-lg object-cover" />
+            } @else {
+              <div class="grid h-12 w-12 place-items-center rounded-lg bg-bosque-700">
+                <svg viewBox="0 0 24 24" class="h-6 w-6 text-bosque-300" aria-hidden="true">
+                  <path d="M2 20 L8.5 7 L12 13 L15 9.5 L22 20 Z" fill="currentColor" opacity="0.5" />
+                </svg>
+              </div>
+            }
+          </td>
+          <td class="px-4 py-3">
+            <a [routerLink]="['/rutas', ruta.slug]" class="font-semibold text-bosque-700 hover:text-bosque-500">
+              {{ ruta.nombre }}
+            </a>
+          </td>
+          <td class="px-4 py-3 text-tinta-suave">{{ ruta.ubicacion }} · {{ ruta.provincia }}</td>
+          <td class="px-4 py-3">
+            <span class="rounded-full px-2.5 py-1 text-xs font-semibold" [class]="clasesDificultad(ruta.dificultad)">
+              {{ etiquetasDificultad[ruta.dificultad] }}
+            </span>
+          </td>
+          <td class="px-4 py-3">{{ formatKm(ruta.distanciaKm) }}</td>
+          <td class="px-4 py-3">{{ formatMetros(ruta.desnivelM) }}</td>
+          <td class="px-4 py-3">{{ formatDuracion(ruta.duracionHoras) }}</td>
+          <td class="px-4 py-3">
+            <span class="rounded-full px-2.5 py-1 text-xs font-semibold"
+                  [class.bg-bosque-100]="ruta.isActive"
+                  [class.text-bosque-800]="ruta.isActive"
+                  [class.bg-red-100]="!ruta.isActive"
+                  [class.text-red-700]="!ruta.isActive">
+              {{ ruta.isActive ? 'Activa' : 'Inactiva' }}
+            </span>
+          </td>
+          <td class="px-4 py-3">
+            <app-action-botones
+              [ruta]="ruta"
+              (activar)="cambiarEstado.emit($event)"
+              (eliminar)="eliminar.emit($event)" />
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

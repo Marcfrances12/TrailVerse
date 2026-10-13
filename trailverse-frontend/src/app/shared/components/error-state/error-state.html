@@ -1,0 +1,16 @@
+<div class="flex flex-col items-center justify-center rounded-2xl border border-red-200 bg-red-50 px-6 py-16 text-center">
+  <span class="grid h-16 w-16 place-items-center rounded-full bg-red-100 text-red-600">
+    <svg viewBox="0 0 24 24" class="h-8 w-8" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+      <path d="M12 3 L21 20 H3 Z" stroke-linejoin="round" />
+      <path d="M12 9 v5 M12 17.5 v0.01" stroke-linecap="round" />
+    </svg>
+  </span>
+  <h2 class="mt-4 text-lg font-bold text-red-800">¡Ups! Algo salió mal</h2>
+  <p class="mt-1 max-w-sm text-sm text-red-700">{{ mensaje() }}</p>
+  <button
+    type="button"
+    class="mt-5 rounded-lg bg-bosque-700 px-5 py-2.5 text-sm font-semibold text-white shadow transition-colors hover:bg-bosque-600"
+    (click)="intentarDeNuevo()">
+    Reintentar
+  </button>
+</div>

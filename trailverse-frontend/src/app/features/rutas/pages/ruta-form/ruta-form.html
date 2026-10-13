@@ -1,0 +1,239 @@
+<div class="mx-auto max-w-3xl space-y-6">
+  <a routerLink="/rutas" class="inline-flex items-center gap-1.5 text-sm font-semibold text-bosque-700 transition-colors hover:text-bosque-500">
+    <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M15 18 L9 12 L15 6" />
+    </svg>
+    Volver a rutas
+  </a>
+
+  <h1 class="text-2xl font-bold text-bosque-900 sm:text-3xl">
+    {{ esEdicion() ? 'Editar ruta' : 'Crear nueva ruta' }}
+  </h1>
+
+  @if (esEdicion() && !rutaOriginal() && store.cargando()) {
+    <div class="space-y-4" role="status" aria-label="Cargando datos de la ruta">
+      <div class="h-10 w-1/3 animate-pulse rounded-lg bg-crema-200"></div>
+      <div class="h-24 animate-pulse rounded-xl bg-crema-200"></div>
+      <div class="h-24 animate-pulse rounded-xl bg-crema-200"></div>
+      <div class="h-24 animate-pulse rounded-xl bg-crema-200"></div>
+    </div>
+  } @else if (esEdicion() && store.error() && !rutaOriginal()) {
+    <app-error-state [mensaje]="store.error()!" />
+    <a routerLink="/rutas"
+       class="inline-block rounded-lg bg-bosque-700 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-bosque-600">
+      Ver todas las rutas
+    </a>
+  } @else {
+    @if (erroresServidor().length) {
+      <div class="rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900" role="alert">
+        <p class="font-semibold">No se ha podido guardar. Revisa estos errores:</p>
+        <ul class="mt-2 list-inside list-disc space-y-1">
+          @for (mensaje of erroresServidor(); track mensaje) {
+            <li>{{ mensaje }}</li>
+          }
+        </ul>
+      </div>
+    }
+
+    <form [formGroup]="formulario" (ngSubmit)="guardar()" novalidate class="space-y-6 rounded-2xl border border-crema-200 bg-white p-6 shadow-sm">
+      <section class="space-y-4">
+        <h2 class="border-b border-crema-200 pb-2 text-lg font-bold text-bosque-900">Datos generales</h2>
+
+        <div>
+          <label for="nombre" class="mb-1 block text-sm font-semibold text-tinta">Nombre *</label>
+          <input
+            id="nombre"
+            type="text"
+            formControlName="nombre"
+            placeholder="Ruta del Montgó"
+            class="w-full rounded-lg border border-crema-300 bg-crema-50 px-3 py-2 text-sm outline-none transition focus:border-bosque-500 focus:ring-2 focus:ring-bosque-300"
+            [class.border-red-400]="formulario.get('nombre')?.touched && formulario.get('nombre')?.errors"
+            aria-describedby="nombre-error" />
+          @if (mostrarError('nombre'); as mensaje) {
+            <p id="nombre-error" class="mt-1 text-sm text-red-600">{{ mensaje }}</p>
+          }
+        </div>
+
+        <div>
+          <label for="descripcion" class="mb-1 block text-sm font-semibold text-tinta">Descripción *</label>
+          <textarea
+            id="descripcion"
+            rows="4"
+            formControlName="descripcion"
+            placeholder="Describe el recorrido, el entorno natural y las vistas…"
+            class="w-full rounded-lg border border-crema-300 bg-crema-50 px-3 py-2 text-sm outline-none transition focus:border-bosque-500 focus:ring-2 focus:ring-bosque-300"
+            [class.border-red-400]="formulario.get('descripcion')?.touched && formulario.get('descripcion')?.errors"
+            aria-describedby="descripcion-error"></textarea>
+          @if (mostrarError('descripcion'); as mensaje) {
+            <p id="descripcion-error" class="mt-1 text-sm text-red-600">{{ mensaje }}</p>
+          }
+        </div>
+
+        <div class="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label for="dificultad" class="mb-1 block text-sm font-semibold text-tinta">Dificultad *</label>
+            <select
+              id="dificultad"
+              formControlName="dificultad"
+              class="w-full rounded-lg border border-crema-300 bg-crema-50 px-3 py-2 text-sm outline-none transition focus:border-bosque-500 focus:ring-2 focus:ring-bosque-300"
+              [class.border-red-400]="formulario.get('dificultad')?.touched && formulario.get('dificultad')?.errors"
+              aria-describedby="dificultad-error">
+              <option value="" disabled>Selecciona una dificultad</option>
+              @for (dificultad of dificultades; track dificultad) {
+                <option [value]="dificultad">{{ capitalizar(dificultad) }}</option>
+              }
+            </select>
+            @if (mostrarError('dificultad'); as mensaje) {
+              <p id="dificultad-error" class="mt-1 text-sm text-red-600">{{ mensaje }}</p>
+            }
+          </div>
+
+          <div>
+            <label for="status" class="mb-1 block text-sm font-semibold text-tinta">Estado</label>
+            <select id="status" formControlName="status" class="w-full rounded-lg border border-crema-300 bg-crema-50 px-3 py-2 text-sm outline-none transition focus:border-bosque-500 focus:ring-2 focus:ring-bosque-300">
+              @for (estado of estados; track estado) {
+                <option [value]="estado">{{ etiquetaEstado(estado) }}</option>
+              }
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <section class="space-y-4">
+        <h2 class="border-b border-crema-200 pb-2 text-lg font-bold text-bosque-900">Localización</h2>
+
+        <div class="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label for="ubicacion" class="mb-1 block text-sm font-semibold text-tinta">Ubicación *</label>
+            <input
+              id="ubicacion"
+              type="text"
+              formControlName="ubicacion"
+              placeholder="Ontinyent"
+              class="w-full rounded-lg border border-crema-300 bg-crema-50 px-3 py-2 text-sm outline-none transition focus:border-bosque-500 focus:ring-2 focus:ring-bosque-300"
+              [class.border-red-400]="formulario.get('ubicacion')?.touched && formulario.get('ubicacion')?.errors"
+              aria-describedby="ubicacion-error" />
+            @if (mostrarError('ubicacion'); as mensaje) {
+              <p id="ubicacion-error" class="mt-1 text-sm text-red-600">{{ mensaje }}</p>
+            }
+          </div>
+
+          <div>
+            <label for="provincia" class="mb-1 block text-sm font-semibold text-tinta">Provincia *</label>
+            <input
+              id="provincia"
+              type="text"
+              formControlName="provincia"
+              placeholder="Valencia"
+              class="w-full rounded-lg border border-crema-300 bg-crema-50 px-3 py-2 text-sm outline-none transition focus:border-bosque-500 focus:ring-2 focus:ring-bosque-300"
+              [class.border-red-400]="formulario.get('provincia')?.touched && formulario.get('provincia')?.errors"
+              aria-describedby="provincia-error" />
+            @if (mostrarError('provincia'); as mensaje) {
+              <p id="provincia-error" class="mt-1 text-sm text-red-600">{{ mensaje }}</p>
+            }
+          </div>
+        </div>
+      </section>
+
+      <section class="space-y-4">
+        <h2 class="border-b border-crema-200 pb-2 text-lg font-bold text-bosque-900">Recorrido</h2>
+
+        <div class="grid gap-4 sm:grid-cols-3">
+          <div>
+            <label for="distanciaKm" class="mb-1 block text-sm font-semibold text-tinta">Distancia (km) *</label>
+            <input
+              id="distanciaKm"
+              type="number"
+              min="0"
+              max="500"
+              step="0.1"
+              formControlName="distanciaKm"
+              class="w-full rounded-lg border border-crema-300 bg-crema-50 px-3 py-2 text-sm outline-none transition focus:border-bosque-500 focus:ring-2 focus:ring-bosque-300"
+              [class.border-red-400]="formulario.get('distanciaKm')?.touched && formulario.get('distanciaKm')?.errors"
+              aria-describedby="distanciaKm-error" />
+            @if (mostrarError('distanciaKm'); as mensaje) {
+              <p id="distanciaKm-error" class="mt-1 text-sm text-red-600">{{ mensaje }}</p>
+            }
+          </div>
+
+          <div>
+            <label for="desnivelM" class="mb-1 block text-sm font-semibold text-tinta">Desnivel (m) *</label>
+            <input
+              id="desnivelM"
+              type="number"
+              min="0"
+              max="10000"
+              formControlName="desnivelM"
+              class="w-full rounded-lg border border-crema-300 bg-crema-50 px-3 py-2 text-sm outline-none transition focus:border-bosque-500 focus:ring-2 focus:ring-bosque-300"
+              [class.border-red-400]="formulario.get('desnivelM')?.touched && formulario.get('desnivelM')?.errors"
+              aria-describedby="desnivelM-error" />
+            @if (mostrarError('desnivelM'); as mensaje) {
+              <p id="desnivelM-error" class="mt-1 text-sm text-red-600">{{ mensaje }}</p>
+            }
+          </div>
+
+          <div>
+            <label for="duracionHoras" class="mb-1 block text-sm font-semibold text-tinta">Duración (h) *</label>
+            <input
+              id="duracionHoras"
+              type="number"
+              min="0"
+              max="100"
+              step="0.1"
+              formControlName="duracionHoras"
+              class="w-full rounded-lg border border-crema-300 bg-crema-50 px-3 py-2 text-sm outline-none transition focus:border-bosque-500 focus:ring-2 focus:ring-bosque-300"
+              [class.border-red-400]="formulario.get('duracionHoras')?.touched && formulario.get('duracionHoras')?.errors"
+              aria-describedby="duracionHoras-error" />
+            @if (mostrarError('duracionHoras'); as mensaje) {
+              <p id="duracionHoras-error" class="mt-1 text-sm text-red-600">{{ mensaje }}</p>
+            }
+          </div>
+        </div>
+
+        <label class="flex cursor-pointer items-center gap-2 text-sm font-semibold text-tinta">
+          <input type="checkbox" formControlName="circular" class="h-4 w-4 rounded border-crema-300 accent-bosque-600" />
+          Ruta circular
+        </label>
+      </section>
+
+      <section class="space-y-4">
+        <h2 class="border-b border-crema-200 pb-2 text-lg font-bold text-bosque-900">Imagen</h2>
+
+        <div>
+          <label for="imagen" class="mb-1 block text-sm font-semibold text-tinta">URL de la imagen</label>
+          <input
+            id="imagen"
+            type="url"
+            formControlName="imagen"
+            placeholder="https://…"
+            class="w-full rounded-lg border border-crema-300 bg-crema-50 px-3 py-2 text-sm outline-none transition focus:border-bosque-500 focus:ring-2 focus:ring-bosque-300"
+            [class.border-red-400]="formulario.get('imagen')?.touched && formulario.get('imagen')?.errors"
+            aria-describedby="imagen-error" />
+          @if (mostrarError('imagen'); as mensaje) {
+            <p id="imagen-error" class="mt-1 text-sm text-red-600">{{ mensaje }}</p>
+          }
+        </div>
+
+        @if (formulario.get('imagen')?.value && !formulario.get('imagen')?.errors) {
+          <img
+            [src]="formulario.get('imagen')?.value"
+            alt="Vista previa"
+            class="h-40 w-full rounded-xl border border-crema-200 object-cover" />
+        }
+      </section>
+
+      <div class="flex flex-col-reverse gap-3 border-t border-crema-200 pt-5 sm:flex-row sm:justify-end">
+        <a routerLink="/rutas"
+           class="rounded-lg border border-crema-300 px-5 py-2.5 text-center text-sm font-semibold text-tinta transition-colors hover:bg-crema-100">
+          Cancelar
+        </a>
+        <button
+          type="submit"
+          [disabled]="store.cargando() || (esEdicion() && !rutaOriginal())"
+          class="rounded-lg bg-bosque-700 px-6 py-2.5 text-sm font-semibold text-white shadow transition-colors hover:bg-bosque-600 disabled:cursor-not-allowed disabled:opacity-60">
+          {{ store.cargando() ? 'Guardando…' : esEdicion() ? 'Guardar cambios' : 'Crear ruta' }}
+        </button>
+      </div>
+    </form>
+  }
+</div>
