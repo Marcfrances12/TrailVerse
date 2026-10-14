@@ -19,8 +19,8 @@
             [class.grayscale]="!ruta.isActive"
             [class.opacity-60]="!ruta.isActive">
           <td class="px-4 py-3">
-            @if (ruta.imagen) {
-              <img [src]="ruta.imagen" [alt]="ruta.nombre" class="h-12 w-12 rounded-lg object-cover" />
+            @if (ruta.coverImage?.url) {
+              <img [src]="ruta.coverImage.url" [alt]="ruta.coverImage.alt || ruta.nombre" class="h-12 w-12 rounded-lg object-cover" />
             } @else {
               <div class="grid h-12 w-12 place-items-center rounded-lg bg-bosque-700">
                 <svg viewBox="0 0 24 24" class="h-6 w-6 text-bosque-300" aria-hidden="true">
@@ -34,7 +34,7 @@
               {{ ruta.nombre }}
             </a>
           </td>
-          <td class="px-4 py-3 text-tinta-suave">{{ ruta.ubicacion }} · {{ ruta.provincia }}</td>
+          <td class="px-4 py-3 text-tinta-suave">{{ nombreUbicacion(ruta) }}</td>
           <td class="px-4 py-3">
             <span class="rounded-full px-2.5 py-1 text-xs font-semibold" [class]="clasesDificultad(ruta.dificultad)">
               {{ etiquetasDificultad[ruta.dificultad] }}

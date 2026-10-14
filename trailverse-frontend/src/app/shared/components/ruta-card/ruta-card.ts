@@ -16,6 +16,14 @@ export class RutaCard {
   readonly formatMetros = formatMetros;
   readonly formatDuracion = formatDuracion;
 
+  nombreUbicacion(ruta: Ruta): string {
+    const loc = ruta.locationId;
+    if (typeof loc === 'object' && loc !== null) {
+      return `${loc.nombre} · ${loc.provincia}`;
+    }
+    return '';
+  }
+
   clasesDificultad(dificultad: Dificultad): string {
     switch (dificultad) {
       case 'facil':

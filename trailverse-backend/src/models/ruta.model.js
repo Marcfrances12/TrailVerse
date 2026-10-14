@@ -33,21 +33,53 @@ const rutaSchema = new mongoose.Schema(
       required: [true, "La duración es obligatoria"],
       min: [0, "La duración no puede ser negativa"]
     },
-    ubicacion: {
-      type: String,
-      required: [true, "La ubicación es obligatoria"],
-      trim: true
-    },
-    provincia: {
-      type: String,
-      required: [true, "La provincia es obligatoria"],
-      trim: true
-    },
     circular: {
       type: Boolean,
       default: false
     },
-    imagen: {
+    hostId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Host",
+      default: null
+    },
+    locationId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Location",
+      default: null
+    },
+    categoryIds: {
+      type: [mongoose.Schema.Types.ObjectId],
+      ref: "Category",
+      default: []
+    },
+    coverImage: {
+      url: { type: String, default: "" },
+      alt: { type: String, default: "" }
+    },
+    startPoint: {
+      type: {
+        type: String,
+        enum: ["Point"],
+        default: "Point"
+      },
+      coordinates: {
+        type: [Number],
+        validate: {
+          validator: function (coords) {
+            return (
+              Array.isArray(coords) &&
+              coords.length === 2 &&
+              coords[0] >= -180 &&
+              coords[0] <= 180 &&
+              coords[1] >= -90 &&
+              coords[1] <= 90
+            );
+          },
+          message: "Las coordenadas deben ser [lng, lat] válidas"
+        }
+      }
+    },
+    gpxUrl: {
       type: String,
       default: ""
     },
@@ -79,5 +111,7 @@ const rutaSchema = new mongoose.Schema(
     }
   }
 );
+
+rutaSchema.index({ startPoint: "2dsphere" });
 
 module.exports = mongoose.model("Ruta", rutaSchema);

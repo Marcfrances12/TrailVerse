@@ -2,6 +2,43 @@ export type Dificultad = 'facil' | 'media' | 'dificil';
 
 export type EstadoRuta = 'draft' | 'published' | 'archived';
 
+export interface Location {
+  _id: string;
+  nombre: string;
+  slug: string;
+  provincia: string;
+  comunidad: string;
+  pais: string;
+  geo: {
+    type: string;
+    coordinates: number[];
+  };
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Host {
+  _id: string;
+  name: string;
+  slug: string;
+  bio: string;
+  contactEmail: string;
+  phone: string;
+  isActive: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Category {
+  _id: string;
+  name: string;
+  slug: string;
+  type: 'ruta' | 'producto' | 'evento';
+  parentId: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface Ruta {
   _id: string;
   nombre: string;
@@ -10,10 +47,19 @@ export interface Ruta {
   distanciaKm: number;
   desnivelM: number;
   duracionHoras: number;
-  ubicacion: string;
-  provincia: string;
   circular: boolean;
-  imagen: string;
+  hostId: Host | string;
+  locationId: Location | string;
+  categoryIds: Category[] | string[];
+  coverImage: {
+    url: string;
+    alt: string;
+  };
+  startPoint: {
+    type: string;
+    coordinates: number[];
+  };
+  gpxUrl: string;
   slug: string;
   isActive: boolean;
   status: EstadoRuta;
@@ -29,10 +75,19 @@ export interface RutaInput {
   distanciaKm: number;
   desnivelM: number;
   duracionHoras: number;
-  ubicacion: string;
-  provincia: string;
   circular?: boolean;
-  imagen?: string;
+  hostId?: string;
+  locationId?: string;
+  categoryIds?: string[];
+  coverImage?: {
+    url: string;
+    alt: string;
+  };
+  startPoint?: {
+    type: string;
+    coordinates: number[];
+  };
+  gpxUrl?: string;
   status?: EstadoRuta;
 }
 

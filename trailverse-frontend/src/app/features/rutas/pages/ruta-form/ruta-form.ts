@@ -58,10 +58,9 @@ export class RutaForm {
     distanciaKm: [null as number | null, [Validators.required, Validators.min(0), Validators.max(500)]],
     desnivelM: [null as number | null, [Validators.required, Validators.min(0), Validators.max(10000)]],
     duracionHoras: [null as number | null, [Validators.required, Validators.min(0), Validators.max(100)]],
-    ubicacion: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(60)]],
-    provincia: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(60)]],
+    locationId: ['', Validators.required],
     circular: [false],
-    imagen: ['', [urlValidator, Validators.maxLength(500)]],
+    coverImageUrl: ['', [urlValidator, Validators.maxLength(500)]],
     status: ['published', Validators.required]
   });
 
@@ -91,10 +90,9 @@ export class RutaForm {
       distanciaKm: ruta.distanciaKm,
       desnivelM: ruta.desnivelM,
       duracionHoras: ruta.duracionHoras,
-      ubicacion: ruta.ubicacion,
-      provincia: ruta.provincia,
+      locationId: typeof ruta.locationId === 'object' && ruta.locationId !== null ? ruta.locationId._id : ruta.locationId ?? '',
       circular: ruta.circular,
-      imagen: ruta.imagen,
+      coverImageUrl: ruta.coverImage?.url ?? '',
       status: ruta.status
     });
   }
@@ -142,10 +140,9 @@ export class RutaForm {
       distanciaKm: Number(valores.distanciaKm),
       desnivelM: Number(valores.desnivelM),
       duracionHoras: Number(valores.duracionHoras),
-      ubicacion: String(valores.ubicacion ?? '').trim(),
-      provincia: String(valores.provincia ?? '').trim(),
+      locationId: String(valores.locationId ?? ''),
       circular: Boolean(valores.circular),
-      imagen: String(valores.imagen ?? '').trim(),
+      coverImage: { url: String(valores.coverImageUrl ?? '').trim(), alt: '' },
       status: (valores.status as EstadoRuta) ?? 'published'
     };
 

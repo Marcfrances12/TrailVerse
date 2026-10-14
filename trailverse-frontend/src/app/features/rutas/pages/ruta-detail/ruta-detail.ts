@@ -30,6 +30,14 @@ export class RutaDetail {
   readonly formatFecha = formatFecha;
   readonly capitalizar = capitalizar;
 
+  nombreUbicacion(ruta: Ruta): string {
+    const loc = ruta.locationId;
+    if (typeof loc === 'object' && loc !== null) {
+      return `${loc.nombre} · ${loc.provincia}`;
+    }
+    return '';
+  }
+
   constructor() {
     effect(() => {
       const slug = this.slug();

@@ -102,36 +102,19 @@
       <section class="space-y-4">
         <h2 class="border-b border-crema-200 pb-2 text-lg font-bold text-bosque-900">Localización</h2>
 
-        <div class="grid gap-4 sm:grid-cols-2">
-          <div>
-            <label for="ubicacion" class="mb-1 block text-sm font-semibold text-tinta">Ubicación *</label>
-            <input
-              id="ubicacion"
-              type="text"
-              formControlName="ubicacion"
-              placeholder="Ontinyent"
-              class="w-full rounded-lg border border-crema-300 bg-crema-50 px-3 py-2 text-sm outline-none transition focus:border-bosque-500 focus:ring-2 focus:ring-bosque-300"
-              [class.border-red-400]="formulario.get('ubicacion')?.touched && formulario.get('ubicacion')?.errors"
-              aria-describedby="ubicacion-error" />
-            @if (mostrarError('ubicacion'); as mensaje) {
-              <p id="ubicacion-error" class="mt-1 text-sm text-red-600">{{ mensaje }}</p>
-            }
-          </div>
-
-          <div>
-            <label for="provincia" class="mb-1 block text-sm font-semibold text-tinta">Provincia *</label>
-            <input
-              id="provincia"
-              type="text"
-              formControlName="provincia"
-              placeholder="Valencia"
-              class="w-full rounded-lg border border-crema-300 bg-crema-50 px-3 py-2 text-sm outline-none transition focus:border-bosque-500 focus:ring-2 focus:ring-bosque-300"
-              [class.border-red-400]="formulario.get('provincia')?.touched && formulario.get('provincia')?.errors"
-              aria-describedby="provincia-error" />
-            @if (mostrarError('provincia'); as mensaje) {
-              <p id="provincia-error" class="mt-1 text-sm text-red-600">{{ mensaje }}</p>
-            }
-          </div>
+        <div>
+          <label for="locationId" class="mb-1 block text-sm font-semibold text-tinta">ID de ubicación *</label>
+          <input
+            id="locationId"
+            type="text"
+            formControlName="locationId"
+            placeholder="ID de la ubicación"
+            class="w-full rounded-lg border border-crema-300 bg-crema-50 px-3 py-2 text-sm outline-none transition focus:border-bosque-500 focus:ring-2 focus:ring-bosque-300"
+            [class.border-red-400]="formulario.get('locationId')?.touched && formulario.get('locationId')?.errors"
+            aria-describedby="locationId-error" />
+          @if (mostrarError('locationId'); as mensaje) {
+            <p id="locationId-error" class="mt-1 text-sm text-red-600">{{ mensaje }}</p>
+          }
         </div>
       </section>
 
@@ -197,26 +180,26 @@
       </section>
 
       <section class="space-y-4">
-        <h2 class="border-b border-crema-200 pb-2 text-lg font-bold text-bosque-900">Imagen</h2>
+        <h2 class="border-b border-crema-200 pb-2 text-lg font-bold text-bosque-900">Imagen de portada</h2>
 
         <div>
-          <label for="imagen" class="mb-1 block text-sm font-semibold text-tinta">URL de la imagen</label>
+          <label for="coverImageUrl" class="mb-1 block text-sm font-semibold text-tinta">URL de la imagen</label>
           <input
-            id="imagen"
+            id="coverImageUrl"
             type="url"
-            formControlName="imagen"
+            formControlName="coverImageUrl"
             placeholder="https://…"
             class="w-full rounded-lg border border-crema-300 bg-crema-50 px-3 py-2 text-sm outline-none transition focus:border-bosque-500 focus:ring-2 focus:ring-bosque-300"
-            [class.border-red-400]="formulario.get('imagen')?.touched && formulario.get('imagen')?.errors"
-            aria-describedby="imagen-error" />
-          @if (mostrarError('imagen'); as mensaje) {
-            <p id="imagen-error" class="mt-1 text-sm text-red-600">{{ mensaje }}</p>
+            [class.border-red-400]="formulario.get('coverImageUrl')?.touched && formulario.get('coverImageUrl')?.errors"
+            aria-describedby="coverImageUrl-error" />
+          @if (mostrarError('coverImageUrl'); as mensaje) {
+            <p id="coverImageUrl-error" class="mt-1 text-sm text-red-600">{{ mensaje }}</p>
           }
         </div>
 
-        @if (formulario.get('imagen')?.value && !formulario.get('imagen')?.errors) {
+        @if (formulario.get('coverImageUrl')?.value && !formulario.get('coverImageUrl')?.errors) {
           <img
-            [src]="formulario.get('imagen')?.value"
+            [src]="formulario.get('coverImageUrl')?.value"
             alt="Vista previa"
             class="h-40 w-full rounded-xl border border-crema-200 object-cover" />
         }

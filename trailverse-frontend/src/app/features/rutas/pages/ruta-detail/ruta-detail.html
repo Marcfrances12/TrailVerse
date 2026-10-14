@@ -26,8 +26,8 @@
              [class]="{ 'grayscale opacity-80': !rutaActual.isActive }">
 
       <div class="relative h-64 sm:h-80 lg:h-96">
-        @if (rutaActual.imagen) {
-          <img [src]="rutaActual.imagen" [alt]="rutaActual.nombre" class="h-full w-full object-cover" />
+        @if (rutaActual.coverImage?.url) {
+          <img [src]="rutaActual.coverImage.url" [alt]="rutaActual.coverImage.alt || rutaActual.nombre" class="h-full w-full object-cover" />
         } @else {
           <div class="grid h-full w-full place-items-center bg-bosque-700">
             <svg viewBox="0 0 24 24" class="h-24 w-24 text-bosque-300" aria-hidden="true">
@@ -64,7 +64,7 @@
                 <path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0Z" />
                 <circle cx="12" cy="10" r="3" />
               </svg>
-              {{ rutaActual.ubicacion }} · {{ rutaActual.provincia }}
+              {{ nombreUbicacion(rutaActual) }}
             </p>
           </div>
 
