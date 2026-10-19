@@ -3,6 +3,7 @@ import { RouterLink } from '@angular/router';
 import { Ruta, ETIQUETAS_DIFICULTAD, Dificultad } from '../../../core/models/ruta.model';
 import { formatDuracion, formatKm, formatMetros } from '../../utils/formatos';
 import { ActionBotones } from '../action-botones/action-botones';
+import { RutaCard } from '../../../features/rutas/components/ruta-card/ruta-card';
 
 @Component({
   selector: 'app-admin-table',

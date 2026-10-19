@@ -1,0 +1,66 @@
+
+> api-rutas-senderismo@1.0.0 dev
+> nodemon src/app.js
+
+[33m[nodemon] 3.1.14[39m
+[33m[nodemon] to restart at any time, enter `rs`[39m
+[33m[nodemon] watching path(s): *.*[39m
+[33m[nodemon] watching extensions: js,mjs,cjs,json[39m
+[32m[nodemon] starting `node src/app.js`[39m
+MongoDB conectado correctamente
+Servidor ejecutándose en http://localhost:3000
+[0mGET /api/locations [32m200[0m 16.279 ms - 1462[0m
+[0mGET /api/categories?type=ruta [32m200[0m 4.627 ms - 623[0m
+[0mPOST /api/rutas [32m201[0m 39.349 ms - 1684[0m
+[0mGET /api/rutas/slug/ruta-prueba-imagenes [32m200[0m 30.187 ms - 1804[0m
+[0mGET /api/locations [32m200[0m 6.009 ms - 1462[0m
+[0mPOST /api/rutas [32m201[0m 36.800 ms - 549[0m
+[0mPUT /api/rutas/6ad5e8769fe8dbf870673b3a [32m200[0m 53.318 ms - 1502[0m
+[0mGET /api/rutas [32m200[0m 28.883 ms - 6189[0m
+[0mDELETE /api/rutas/6ad5e88b9fe8dbf870673b49 [32m200[0m 10.346 ms - 663[0m
+[0mDELETE /api/rutas/6ad5e8769fe8dbf870673b3a [32m200[0m 10.239 ms - 825[0m
+[0mGET /api/rutas [32m200[0m 14.857 ms - 4865[0m
+[0mGET /api/docs [33m404[0m 0.339 ms - 60[0m
+[0mGET /favicon.ico [33m404[0m 0.137 ms - 63[0m
+[0mGET /rutas [33m404[0m 0.181 ms - 57[0m
+[0mGET /rutas [33m404[0m 0.160 ms - 57[0m
+[0mGET /favicon.ico [33m404[0m 0.162 ms - 63[0m
+[0mGET /rutas [33m404[0m 0.164 ms - 57[0m
+[0mGET /favicon.ico [33m404[0m 0.281 ms - 63[0m
+[0mGET /rutas [33m404[0m 0.172 ms - 57[0m
+[0mGET /favicon.ico [33m404[0m 0.164 ms - 63[0m
+[0mGET /rutas [33m404[0m 0.231 ms - 57[0m
+[0mGET /favicon.ico [33m404[0m 0.269 ms - 63[0m
+[0mGET /rutas [33m404[0m 0.210 ms - 57[0m
+[0mGET /favicon.ico [33m404[0m 0.448 ms - 63[0m
+[0mGET /rutas [33m404[0m 0.176 ms - 57[0m
+[0mGET /favicon.ico [33m404[0m 0.161 ms - 63[0m
+[0mGET /rutas [33m404[0m 0.233 ms - 57[0m
+[0mGET /favicon.ico [33m404[0m 0.447 ms - 63[0m
+[0mGET /rutas [33m404[0m 0.167 ms - 57[0m
+[0mGET /favicon.ico [33m404[0m 0.244 ms - 63[0m
+[0mGET /ruta [33m404[0m 0.172 ms - 56[0m
+[0mGET / [32m200[0m 0.485 ms - 121[0m
+[0mGET /api/rutas [32m200[0m 20.826 ms - 4865[0m
+[0mGET /api/locations [32m200[0m 6.373 ms - 1462[0m
+[0mGET /api/categories?type=ruta [32m200[0m 6.333 ms - 623[0m
+[0mGET /api/rutas [36m304[0m 13.198 ms - -[0m
+[0mGET /api/locations [36m304[0m 5.382 ms - -[0m
+[0mGET /api/categories?type=ruta [36m304[0m 4.535 ms - -[0m
+[0mGET /api/rutas/slug/ruta-del-penon-de-ifach [32m200[0m 12.403 ms - 1815[0m
+[0mPUT /api/rutas/6ad5e863e2bd2461957eaff4 [32m200[0m 24.291 ms - 1793[0m
+[0mGET /api/locations [36m304[0m 4.655 ms - -[0m
+[0mGET /api/categories?type=ruta [36m304[0m 4.287 ms - -[0m
+[0mPUT /api/rutas/6ad5e863e2bd2461957eaff4 [32m200[0m 25.231 ms - 2136[0m
+[0mGET /api/locations [36m304[0m 6.836 ms - -[0m
+[0mGET /api/categories?type=ruta [36m304[0m 6.763 ms - -[0m
+[0mGET /api/locations [36m304[0m 3.417 ms - -[0m
+[0mGET /api/categories?type=ruta [36m304[0m 8.251 ms - -[0m
+[0mPOST /api/rutas [32m201[0m 15.128 ms - 1325[0m
+[0mGET /api/rutas/slug/ruta-la-font-del-sapo [32m200[0m 11.296 ms - 1463[0m
+[0mGET /api/locations [36m304[0m 7.808 ms - -[0m
+[0mGET /api/categories?type=ruta [36m304[0m 7.375 ms - -[0m
+[0mGET /api/locations [36m304[0m 3.624 ms - -[0m
+[0mGET /api/categories?type=ruta [36m304[0m 3.890 ms - -[0m
+[0mPATCH /api/rutas/6ad5e9729fe8dbf870673b96/deactivate [32m200[0m 6.635 ms - 811[0m
+[0mGET /api/rutas [32m200[0m 23.759 ms - 5590[0m

@@ -121,6 +121,14 @@ const seed = async () => {
       { rutaId: rutas[4]._id, startDate: new Date(now.getFullYear(), now.getMonth() + 1, 18, 7, 0), meetingPoint: "Serra, plaza del pueblo", price: { amount: 10, currency: "EUR" }, capacity: 20, stock: 20, status: "open" }
     ]);
 
+    await Image.insertMany([
+      { url: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b", alt: "Peñón de Ifach", entityType: "ruta", entityId: rutas[0]._id, position: 0, isCover: true },
+      { url: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4", alt: "Vistas del Mediterráneo", entityType: "ruta", entityId: rutas[0]._id, position: 1, isCover: false },
+      { url: "https://images.unsplash.com/photo-1551632811-561732d1e306", alt: "Montgó", entityType: "ruta", entityId: rutas[1]._id, position: 0, isCover: true },
+      { url: "https://images.unsplash.com/photo-1464278533981-50106e6176b1", alt: "Sierra Calderona", entityType: "ruta", entityId: rutas[4]._id, position: 0, isCover: true },
+      { url: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e", alt: "Bosque mediterráneo", entityType: "ruta", entityId: rutas[4]._id, position: 1, isCover: false }
+    ]);
+
     await Promise.all([
       Role.syncIndexes(),
       User.syncIndexes(),

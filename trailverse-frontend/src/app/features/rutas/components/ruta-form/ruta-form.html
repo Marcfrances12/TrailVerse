@@ -19,8 +19,7 @@
     </div>
   } @else if (esEdicion() && store.error() && !rutaOriginal()) {
     <app-error-state [mensaje]="store.error()!" />
-    <a routerLink="/rutas"
-       class="inline-block rounded-lg bg-bosque-700 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-bosque-600">
+    <a routerLink="/rutas" class="inline-block rounded-lg bg-bosque-700 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-bosque-600">
       Ver todas las rutas
     </a>
   } @else {
@@ -41,11 +40,7 @@
 
         <div>
           <label for="nombre" class="mb-1 block text-sm font-semibold text-tinta">Nombre *</label>
-          <input
-            id="nombre"
-            type="text"
-            formControlName="nombre"
-            placeholder="Ruta del Montgó"
+          <input id="nombre" type="text" formControlName="nombre" placeholder="Ruta del Montgó"
             class="w-full rounded-lg border border-crema-300 bg-crema-50 px-3 py-2 text-sm outline-none transition focus:border-bosque-500 focus:ring-2 focus:ring-bosque-300"
             [class.border-red-400]="formulario.get('nombre')?.touched && formulario.get('nombre')?.errors"
             aria-describedby="nombre-error" />
@@ -56,10 +51,7 @@
 
         <div>
           <label for="descripcion" class="mb-1 block text-sm font-semibold text-tinta">Descripción *</label>
-          <textarea
-            id="descripcion"
-            rows="4"
-            formControlName="descripcion"
+          <textarea id="descripcion" rows="4" formControlName="descripcion"
             placeholder="Describe el recorrido, el entorno natural y las vistas…"
             class="w-full rounded-lg border border-crema-300 bg-crema-50 px-3 py-2 text-sm outline-none transition focus:border-bosque-500 focus:ring-2 focus:ring-bosque-300"
             [class.border-red-400]="formulario.get('descripcion')?.touched && formulario.get('descripcion')?.errors"
@@ -72,9 +64,7 @@
         <div class="grid gap-4 sm:grid-cols-2">
           <div>
             <label for="dificultad" class="mb-1 block text-sm font-semibold text-tinta">Dificultad *</label>
-            <select
-              id="dificultad"
-              formControlName="dificultad"
+            <select id="dificultad" formControlName="dificultad"
               class="w-full rounded-lg border border-crema-300 bg-crema-50 px-3 py-2 text-sm outline-none transition focus:border-bosque-500 focus:ring-2 focus:ring-bosque-300"
               [class.border-red-400]="formulario.get('dificultad')?.touched && formulario.get('dificultad')?.errors"
               aria-describedby="dificultad-error">
@@ -100,21 +90,33 @@
       </section>
 
       <section class="space-y-4">
-        <h2 class="border-b border-crema-200 pb-2 text-lg font-bold text-bosque-900">Localización</h2>
+        <h2 class="border-b border-crema-200 pb-2 text-lg font-bold text-bosque-900">Localización y categorías</h2>
 
         <div>
-          <label for="locationId" class="mb-1 block text-sm font-semibold text-tinta">ID de ubicación *</label>
-          <input
-            id="locationId"
-            type="text"
-            formControlName="locationId"
-            placeholder="ID de la ubicación"
+          <label for="locationId" class="mb-1 block text-sm font-semibold text-tinta">Ubicación *</label>
+          <select id="locationId" formControlName="locationId"
             class="w-full rounded-lg border border-crema-300 bg-crema-50 px-3 py-2 text-sm outline-none transition focus:border-bosque-500 focus:ring-2 focus:ring-bosque-300"
             [class.border-red-400]="formulario.get('locationId')?.touched && formulario.get('locationId')?.errors"
-            aria-describedby="locationId-error" />
+            aria-describedby="locationId-error">
+            <option value="" disabled>Selecciona una ubicación</option>
+            @for (loc of locations(); track loc._id) {
+              <option [value]="loc._id">{{ loc.nombre }} ({{ loc.provincia }})</option>
+            }
+          </select>
           @if (mostrarError('locationId'); as mensaje) {
             <p id="locationId-error" class="mt-1 text-sm text-red-600">{{ mensaje }}</p>
           }
+        </div>
+
+        <div>
+          <label for="categoryIds" class="mb-1 block text-sm font-semibold text-tinta">Categorías</label>
+          <select id="categoryIds" formControlName="categoryIds" multiple
+            class="w-full rounded-lg border border-crema-300 bg-crema-50 px-3 py-2 text-sm outline-none transition focus:border-bosque-500 focus:ring-2 focus:ring-bosque-300"
+            [class.border-red-400]="formulario.get('categoryIds')?.touched && formulario.get('categoryIds')?.errors">
+            @for (cat of categorias(); track cat._id) {
+              <option [value]="cat._id">{{ cat.name }}</option>
+            }
+          </select>
         </div>
       </section>
 
@@ -124,13 +126,7 @@
         <div class="grid gap-4 sm:grid-cols-3">
           <div>
             <label for="distanciaKm" class="mb-1 block text-sm font-semibold text-tinta">Distancia (km) *</label>
-            <input
-              id="distanciaKm"
-              type="number"
-              min="0"
-              max="500"
-              step="0.1"
-              formControlName="distanciaKm"
+            <input id="distanciaKm" type="number" min="0" max="500" step="0.1" formControlName="distanciaKm"
               class="w-full rounded-lg border border-crema-300 bg-crema-50 px-3 py-2 text-sm outline-none transition focus:border-bosque-500 focus:ring-2 focus:ring-bosque-300"
               [class.border-red-400]="formulario.get('distanciaKm')?.touched && formulario.get('distanciaKm')?.errors"
               aria-describedby="distanciaKm-error" />
@@ -138,15 +134,9 @@
               <p id="distanciaKm-error" class="mt-1 text-sm text-red-600">{{ mensaje }}</p>
             }
           </div>
-
           <div>
             <label for="desnivelM" class="mb-1 block text-sm font-semibold text-tinta">Desnivel (m) *</label>
-            <input
-              id="desnivelM"
-              type="number"
-              min="0"
-              max="10000"
-              formControlName="desnivelM"
+            <input id="desnivelM" type="number" min="0" max="10000" formControlName="desnivelM"
               class="w-full rounded-lg border border-crema-300 bg-crema-50 px-3 py-2 text-sm outline-none transition focus:border-bosque-500 focus:ring-2 focus:ring-bosque-300"
               [class.border-red-400]="formulario.get('desnivelM')?.touched && formulario.get('desnivelM')?.errors"
               aria-describedby="desnivelM-error" />
@@ -154,16 +144,9 @@
               <p id="desnivelM-error" class="mt-1 text-sm text-red-600">{{ mensaje }}</p>
             }
           </div>
-
           <div>
             <label for="duracionHoras" class="mb-1 block text-sm font-semibold text-tinta">Duración (h) *</label>
-            <input
-              id="duracionHoras"
-              type="number"
-              min="0"
-              max="100"
-              step="0.1"
-              formControlName="duracionHoras"
+            <input id="duracionHoras" type="number" min="0" max="100" step="0.1" formControlName="duracionHoras"
               class="w-full rounded-lg border border-crema-300 bg-crema-50 px-3 py-2 text-sm outline-none transition focus:border-bosque-500 focus:ring-2 focus:ring-bosque-300"
               [class.border-red-400]="formulario.get('duracionHoras')?.touched && formulario.get('duracionHoras')?.errors"
               aria-describedby="duracionHoras-error" />
@@ -180,39 +163,48 @@
       </section>
 
       <section class="space-y-4">
-        <h2 class="border-b border-crema-200 pb-2 text-lg font-bold text-bosque-900">Imagen de portada</h2>
+        <h2 class="border-b border-crema-200 pb-2 text-lg font-bold text-bosque-900">Imágenes</h2>
 
-        <div>
-          <label for="coverImageUrl" class="mb-1 block text-sm font-semibold text-tinta">URL de la imagen</label>
-          <input
-            id="coverImageUrl"
-            type="url"
-            formControlName="coverImageUrl"
-            placeholder="https://…"
-            class="w-full rounded-lg border border-crema-300 bg-crema-50 px-3 py-2 text-sm outline-none transition focus:border-bosque-500 focus:ring-2 focus:ring-bosque-300"
-            [class.border-red-400]="formulario.get('coverImageUrl')?.touched && formulario.get('coverImageUrl')?.errors"
-            aria-describedby="coverImageUrl-error" />
-          @if (mostrarError('coverImageUrl'); as mensaje) {
-            <p id="coverImageUrl-error" class="mt-1 text-sm text-red-600">{{ mensaje }}</p>
+        @for (url of urlsImagenes(); track $index; let i = $index) {
+          <div class="flex items-start gap-2">
+            <div class="flex-1">
+              <label [for]="'imagen-' + i" class="mb-1 block text-sm font-semibold text-tinta">
+                URL imagen {{ i + 1 }}
+              </label>
+              <input [id]="'imagen-' + i" type="url" [value]="url" (input)="actualizarUrl(i, $any($event.target).value)"
+                placeholder="https://…"
+                class="w-full rounded-lg border border-crema-300 bg-crema-50 px-3 py-2 text-sm outline-none transition focus:border-bosque-500 focus:ring-2 focus:ring-bosque-300" />
+            </div>
+            @if (urlsImagenes().length > 1) {
+              <button type="click" (click)="eliminarImagen(i)" aria-label="Eliminar imagen"
+                class="mt-6 rounded-lg p-2 text-red-600 transition-colors hover:bg-red-50">
+                <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M6 6 l12 12 M18 6 l-12 12" />
+                </svg>
+              </button>
+            }
+          </div>
+
+          @if (url && url.trim() !== '') {
+            <img [src]="url" alt="Vista previa" class="h-40 w-full rounded-xl border border-crema-200 object-cover" />
           }
-        </div>
-
-        @if (formulario.get('coverImageUrl')?.value && !formulario.get('coverImageUrl')?.errors) {
-          <img
-            [src]="formulario.get('coverImageUrl')?.value"
-            alt="Vista previa"
-            class="h-40 w-full rounded-xl border border-crema-200 object-cover" />
         }
+
+        <button type="button" (click)="agregarImagen()"
+          class="inline-flex items-center gap-1.5 rounded-lg border border-dashed border-bosque-400 px-4 py-2 text-sm font-semibold text-bosque-700 transition-colors hover:bg-bosque-50">
+          <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 5v14 M5 12h14" />
+          </svg>
+          Añadir otra imagen
+        </button>
       </section>
 
       <div class="flex flex-col-reverse gap-3 border-t border-crema-200 pt-5 sm:flex-row sm:justify-end">
         <a routerLink="/rutas"
-           class="rounded-lg border border-crema-300 px-5 py-2.5 text-center text-sm font-semibold text-tinta transition-colors hover:bg-crema-100">
+          class="rounded-lg border border-crema-300 px-5 py-2.5 text-center text-sm font-semibold text-tinta transition-colors hover:bg-crema-100">
           Cancelar
         </a>
-        <button
-          type="submit"
-          [disabled]="store.cargando() || (esEdicion() && !rutaOriginal())"
+        <button type="submit" [disabled]="store.cargando() || (esEdicion() && !rutaOriginal())"
           class="rounded-lg bg-bosque-700 px-6 py-2.5 text-sm font-semibold text-white shadow transition-colors hover:bg-bosque-600 disabled:cursor-not-allowed disabled:opacity-60">
           {{ store.cargando() ? 'Guardando…' : esEdicion() ? 'Guardar cambios' : 'Crear ruta' }}
         </button>

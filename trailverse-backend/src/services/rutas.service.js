@@ -1,4 +1,5 @@
 const rutasRepo = require("../repos/rutas.repo");
+const imagenesService = require("./images.service");
 const AppError = require("../utils/AppError");
 const escapeRegex = require("../utils/escapeRegex");
 const { generateSlug } = require("../utils/slug");
@@ -9,6 +10,26 @@ const {
   createRutaSchema,
   updateRutaSchema
 } = require("../validators/rutas.validator");
+
+// Adjunta las imágenes de la colección `images` a una ruta ya cargada.
+async function conImagenes(ruta) {
+  if (!ruta) {
+    return ruta;
+  }
+
+  const imagenes = await imagenesService.obtenerImagenes(ruta._id);
+
+  return { ...ruta.toObject(), images: imagenes };
+}
+
+// coverImage = primera imagen (para listados rápidos).
+function portadaDe(images, actual) {
+  if (Array.isArray(images) && images.length > 0) {
+    return { url: images[0].url || "", alt: images[0].alt || "" };
+  }
+
+  return actual || { url: "", alt: "" };
+}
 
 async function validarId(id) {
   return validarConZod(idParamSchema, { id }, "params").id;
@@ -70,7 +91,7 @@ async function getRutaById(id) {
     throw AppError.notFound("Ruta no encontrada");
   }
 
-  return ruta;
+  return conImagenes(ruta);
 }
 
 async function getRutaBySlug(slug) {
@@ -82,19 +103,29 @@ async function getRutaBySlug(slug) {
     throw AppError.notFound("Ruta no encontrada");
   }
 
-  return ruta;
+  return conImagenes(ruta);
 }
 
 async function createRuta(datos) {
-  
   const datosValidos = validarConZod(createRutaSchema, datos, "body");
+  const { images, ...resto } = datosValidos;
+
   const slug = await construirSlugUnico(datosValidos.nombre);
 
-  return rutasRepo.create({ ...datosValidos, slug });
+  const ruta = await rutasRepo.create({
+    ...resto,
+    coverImage: portadaDe(images, resto.coverImage),
+    slug
+  });
+
+  if (Array.isArray(images)) {
+    await imagenesService.guardarImagenes(ruta._id, images);
+  }
+
+  return conImagenes(ruta);
 }
 
 async function updateRuta(id, datos) {
- 
   const idValido = await validarId(id);
 
   const datosValidos = validarConZod(updateRutaSchema, datos, "body");
@@ -105,15 +136,24 @@ async function updateRuta(id, datos) {
     throw AppError.notFound("Ruta no encontrada");
   }
 
+  const { images, ...resto } = datosValidos;
 
-  const ruta = await rutasRepo.update(idValido, datosValidos);
+  // Si se envían imágenes, la primera pasa a ser la portada.
+  if (Array.isArray(images)) {
+    resto.coverImage = portadaDe(images, rutaActual.coverImage);
+  }
 
- 
+  const ruta = await rutasRepo.update(idValido, resto);
+
   if (!ruta) {
     throw AppError.notFound("Ruta no encontrada");
   }
 
-  return ruta;
+  if (Array.isArray(images)) {
+    await imagenesService.guardarImagenes(idValido, images);
+  }
+
+  return conImagenes(ruta);
 }
 
 async function activateRuta(id) {

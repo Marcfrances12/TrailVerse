@@ -39,6 +39,16 @@ export interface Category {
   updated_at: string;
 }
 
+export interface RutaImage {
+  _id: string;
+  url: string;
+  alt: string;
+  position: number;
+  isCover: boolean;
+  entityType: string;
+  entityId: string;
+}
+
 export interface Ruta {
   _id: string;
   nombre: string;
@@ -55,6 +65,7 @@ export interface Ruta {
     url: string;
     alt: string;
   };
+  images: RutaImage[];
   startPoint: {
     type: string;
     coordinates: number[];
@@ -83,6 +94,10 @@ export interface RutaInput {
     url: string;
     alt: string;
   };
+  images?: {
+    url: string;
+    alt?: string;
+  }[];
   startPoint?: {
     type: string;
     coordinates: number[];

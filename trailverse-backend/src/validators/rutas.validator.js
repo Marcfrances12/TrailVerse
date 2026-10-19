@@ -36,6 +36,40 @@ const slugParamSchema = z.object({
 // ---------- body ----------
 // strictObject: rechaza campos desconocidos (slug, deleted_at, isActive...),
 // así nadie puede colarlos por POST/PUT.
+const objectIdString = (campo) =>
+  z
+    .string({ error: `${campo} es obligatorio y debe ser un ID válido` })
+    .regex(/^[0-9a-fA-F]{24}$/, { error: `${campo} no es un ID de MongoDB válido` });
+
+// GeoJSON Point: { type: "Point", coordinates: [lng, lat] }
+const startPointSchema = z
+  .object({
+    type: z.literal("Point", { error: "startPoint.type debe ser 'Point'" }),
+    coordinates: z
+      .array(z.number({ error: "coordinates debe ser [lng, lat]" }), {
+        error: "coordinates debe ser un array [lng, lat]"
+      })
+      .length(2, { error: "coordinates debe tener 2 valores [lng, lat]" })
+  })
+  .refine(
+    (punto) =>
+      punto.coordinates[0] >= -180 &&
+      punto.coordinates[0] <= 180 &&
+      punto.coordinates[1] >= -90 &&
+      punto.coordinates[1] <= 90,
+    { error: "Las coordenadas deben ser [lng, lat] dentro de rango" }
+  )
+  .optional();
+
+// Una imagen: URL obligatoria (puede ir vacía) y texto alternativo opcional.
+const imagenSchema = z.object({
+  url: z.union([
+    z.literal(""),
+    z.url({ error: "La URL de la imagen no es válida" })
+  ], { error: "La URL de la imagen es obligatoria" }),
+  alt: z.string({ error: "alt debe ser texto" }).optional()
+});
+
 const createRutaSchema = z.strictObject({
   nombre: textoObligatorio("El nombre", 3),
   descripcion: textoObligatorio("La descripción"),
@@ -45,12 +79,15 @@ const createRutaSchema = z.strictObject({
   distanciaKm: numeroNoNegativo("La distancia"),
   desnivelM: numeroNoNegativo("El desnivel"),
   duracionHoras: numeroNoNegativo("La duración"),
-  ubicacion: textoObligatorio("La ubicación"),
-  provincia: textoObligatorio("La provincia"),
+  locationId: objectIdString("La ubicación"),
+  categoryIds: z.array(objectIdString("La categoría")).optional(),
   circular: z.boolean({ error: "circular debe ser true o false" }).optional(),
-  imagen: z
-    .union([z.literal(""), z.url({ error: "La imagen debe ser una URL válida" })])
-    .optional(),
+  coverImage: z.object({
+    url: z.union([z.literal(""), z.url({ error: "La URL de la imagen no es válida" })]).optional(),
+    alt: z.string().optional()
+  }).optional(),
+  images: z.array(imagenSchema, { error: "images debe ser un array de imágenes" }).optional(),
+  startPoint: startPointSchema,
   status: z.enum(STATUS, { error: `status debe ser: ${STATUS.join(", ")}` }).optional()
 });
 

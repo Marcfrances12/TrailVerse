@@ -1,7 +1,7 @@
 import { Component, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { Ruta, ETIQUETAS_DIFICULTAD, Dificultad } from '../../../core/models/ruta.model';
-import { formatDuracion, formatKm, formatMetros } from '../../utils/formatos';
+import { Ruta, ETIQUETAS_DIFICULTAD, Dificultad } from '../../../../core/models/ruta.model';
+import { formatDuracion, formatKm, formatMetros } from '../../../../shared/utils/formatos';
 
 @Component({
   selector: 'app-ruta-card',

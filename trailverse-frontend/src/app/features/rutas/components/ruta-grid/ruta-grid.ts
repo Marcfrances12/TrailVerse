@@ -1,5 +1,5 @@
 import { Component, input } from '@angular/core';
-import { Ruta } from '../../../core/models/ruta.model';
+import { Ruta } from '../../../../core/models/ruta.model';
 import { RutaCard } from '../ruta-card/ruta-card';
 
 @Component({

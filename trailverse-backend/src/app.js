@@ -8,6 +8,8 @@ const express = require("express");
 const cors = require("cors");
 const connectDB = require("./config/database");
 const rutasRoutes = require("./routes/rutas.routes");
+const categoriesRoutes = require("./routes/categories.routes");
+const locationsRoutes = require("./routes/locations.routes");
 const { notFound, errorHandler } = require("./middlewares/error.middleware");
 
 const app = express();
@@ -52,6 +54,8 @@ app.get("/api/health", (req, res) => {
 });
 
 app.use("/api/rutas", rutasRoutes);
+app.use("/api/categories", categoriesRoutes);
+app.use("/api/locations", locationsRoutes);
 
 app.use(notFound);
 app.use(errorHandler);
