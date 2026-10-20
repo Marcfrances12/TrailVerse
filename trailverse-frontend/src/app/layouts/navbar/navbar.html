@@ -1,61 +1,11 @@
-﻿<header class="sticky top-0 z-40 border-b border-bosque-900/60 bg-bosque-900 text-crema-50 shadow-lg">
-  <nav class="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6" aria-label="NavegaciÃ³n principal">
-    <a routerLink="/rutas" class="flex items-center gap-2.5" (click)="cerrar()">
-      <span class="grid h-9 w-9 place-items-center rounded-xl bg-bosque-600 shadow-inner">
-        <svg viewBox="0 0 24 24" class="h-5 w-5" aria-hidden="true">
-          <path d="M2 20 L8.5 7 L12 13 L15 9.5 L22 20 Z" fill="#d8f3dc" />
-          <path d="M15.2 7.2 a1.6 1.6 0 1 0 0.1 0 Z" fill="#1b4332" />
-          <circle cx="15.8" cy="7.4" r="1.4" fill="#f4f1e6" />
-        </svg>
-      </span>
-      <span class="text-lg font-bold tracking-tight">
-        Trail<span class="text-bosque-300">Verse</span>
-      </span>
-    </a>
-
-    <div class="hidden items-center gap-2 sm:flex">
-      <a routerLink="/rutas"
-         routerLinkActive="bg-bosque-700 text-white"
-         class="rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-bosque-700/70"
-         [routerLinkActiveOptions]="{ exact: true }">
-        Rutas
+﻿<header class="sticky top-0 z-30 border-b border-crema-200 bg-white/90 backdrop-blur-sm">
+  <nav class="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6" aria-label="Navegación principal">
+    <div class="flex items-center gap-2">
+      <a routerLink="/rutas" class="text-sm font-semibold text-bosque-700 hover:text-bosque-500">
+        TrailVerse
       </a>
-      <a routerLink="/rutas/new"
-         class="ml-2 rounded-lg bg-bosque-500 px-4 py-2 text-sm font-semibold text-bosque-950 transition-colors hover:bg-bosque-400">
-        + Crear ruta
-      </a>
+      <span class="text-crema-300">/</span>
+      <span class="text-sm text-tinta-suave">Admin</span>
     </div>
-
-    <button
-      type="button"
-      class="inline-flex items-center justify-center rounded-lg p-2 text-crema-100 transition-colors hover:bg-bosque-700 sm:hidden"
-      aria-label="Abrir menÃº"
-      aria-expanded="false"
-      (click)="toggle()">
-      <svg viewBox="0 0 24 24" class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-        @if (!abierto()) {
-          <path d="M4 7h16 M4 12h16 M4 17h16" />
-        } @else {
-          <path d="M6 6 l12 12 M18 6 l-12 12" />
-        }
-      </svg>
-    </button>
   </nav>
-
-  @if (abierto()) {
-    <div class="border-t border-bosque-700/60 bg-bosque-900 px-4 pb-4 sm:hidden">
-      <a routerLink="/rutas"
-         routerLinkActive="bg-bosque-700 text-white"
-         class="block rounded-lg px-3 py-2.5 text-sm font-medium transition-colors hover:bg-bosque-700/70"
-         [routerLinkActiveOptions]="{ exact: true }"
-         (click)="cerrar()">
-        Rutas
-      </a>
-      <a routerLink="/rutas/new"
-         class="mt-2 block rounded-lg bg-bosque-500 px-3 py-2.5 text-center text-sm font-semibold text-bosque-950 transition-colors hover:bg-bosque-400"
-         (click)="cerrar()">
-        + Crear ruta
-      </a>
-    </div>
-  }
 </header>

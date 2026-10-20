@@ -7,6 +7,13 @@ const getAll = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
+const getDeleted = async (req, res, next) => {
+  try {
+    const locations = await locationsService.getLocationsEliminadas();
+    res.status(200).json({ ok: true, total: locations.length, data: locations });
+  } catch (error) { next(error); }
+};
+
 const getById = async (req, res, next) => {
   try {
     const location = await locationsService.getLocationById(req.params.id);
@@ -28,6 +35,20 @@ const update = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
+const activate = async (req, res, next) => {
+  try {
+    const location = await locationsService.activateLocation(req.params.id);
+    res.status(200).json({ ok: true, message: "Ubicación activada correctamente", data: location });
+  } catch (error) { next(error); }
+};
+
+const deactivate = async (req, res, next) => {
+  try {
+    const location = await locationsService.deactivateLocation(req.params.id);
+    res.status(200).json({ ok: true, message: "Ubicación desactivada correctamente", data: location });
+  } catch (error) { next(error); }
+};
+
 const remove = async (req, res, next) => {
   try {
     await locationsService.deleteLocation(req.params.id);
@@ -35,4 +56,4 @@ const remove = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
-module.exports = { getAll, getById, create, update, remove };
+module.exports = { getAll, getDeleted, getById, create, update, activate, deactivate, remove };

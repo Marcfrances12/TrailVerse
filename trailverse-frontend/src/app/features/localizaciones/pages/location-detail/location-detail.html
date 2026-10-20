@@ -1,0 +1,97 @@
+<div class="space-y-6">
+  <a routerLink="/admin/localizaciones" class="inline-flex items-center gap-1.5 text-sm font-semibold text-bosque-700 transition-colors hover:text-bosque-500">
+    <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M15 18 L9 12 L15 6" />
+    </svg>
+    Volver a localizaciones
+  </a>
+
+  @if (location(); as locData) {
+    @let loc = locData.data;
+    <article class="overflow-hidden rounded-2xl border border-crema-200 bg-white shadow-sm"
+             [class]="{ 'grayscale opacity-80': !loc.isActive }">
+
+      <div class="grid gap-8 p-6 lg:grid-cols-[1fr_280px]">
+        <div class="space-y-6">
+          <div>
+            <h1 class="text-2xl font-bold text-bosque-900 sm:text-3xl">{{ loc.nombre }}</h1>
+          </div>
+
+          <dl class="grid grid-cols-2 gap-4 sm:grid-cols-4">
+            <div class="rounded-xl bg-crema-100 p-3 text-center">
+              <dt class="text-[11px] uppercase tracking-wide text-tinta-suave">Provincia</dt>
+              <dd class="mt-1 text-lg font-bold text-bosque-800">{{ loc.provincia }}</dd>
+            </div>
+            <div class="rounded-xl bg-crema-100 p-3 text-center">
+              <dt class="text-[11px] uppercase tracking-wide text-tinta-suave">Comunidad</dt>
+              <dd class="mt-1 text-lg font-bold text-bosque-800">{{ loc.comunidad }}</dd>
+            </div>
+            <div class="rounded-xl bg-crema-100 p-3 text-center">
+              <dt class="text-[11px] uppercase tracking-wide text-tinta-suave">País</dt>
+              <dd class="mt-1 text-lg font-bold text-bosque-800">{{ loc.pais }}</dd>
+            </div>
+            <div class="rounded-xl bg-crema-100 p-3 text-center">
+              <dt class="text-[11px] uppercase tracking-wide text-tinta-suave">Coordenadas</dt>
+              <dd class="mt-1 text-lg font-bold text-bosque-800">
+                @if (loc.geo?.coordinates) {
+                  {{ loc.geo!.coordinates[0] }}, {{ loc.geo!.coordinates[1] }}
+                } @else {
+                  —
+                }
+              </dd>
+            </div>
+          </dl>
+        </div>
+
+        <aside class="space-y-4 rounded-2xl border border-crema-200 bg-crema-50 p-4">
+          <div>
+            <h2 class="text-sm font-bold uppercase tracking-wide text-tinta-suave">Acciones</h2>
+            <div class="mt-3 grid gap-2">
+              <a [routerLink]="['/admin/localizaciones', loc._id, 'edit']"
+                 class="rounded-lg bg-bosque-700 px-4 py-2.5 text-center text-sm font-semibold text-white transition-colors hover:bg-bosque-600">
+                Editar localización
+              </a>
+
+              @if (loc.isActive) {
+                <button type="button"
+                        class="rounded-lg bg-red-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-red-700"
+                        (click)="cambiarEstado(loc)">
+                  Desactivar
+                </button>
+              } @else {
+                <button type="button"
+                        class="rounded-lg bg-bosque-500 px-4 py-2.5 text-sm font-semibold text-bosque-950 transition-colors hover:bg-bosque-400"
+                        (click)="cambiarEstado(loc)">
+                  Activar
+                </button>
+              }
+
+              <button type="button"
+                      class="rounded-lg border border-red-300 px-4 py-2.5 text-sm font-semibold text-red-700 transition-colors hover:bg-red-50"
+                      (click)="eliminar(loc)">
+                Eliminar
+              </button>
+            </div>
+          </div>
+
+          <dl class="space-y-2 border-t border-crema-200 pt-4 text-sm">
+            <div class="flex justify-between gap-2">
+              <dt class="text-tinta-suave">Visibilidad</dt>
+              <dd class="font-semibold" [class.text-red-700]="!loc.isActive" [class.text-bosque-700]="loc.isActive">
+                {{ loc.isActive ? 'Activa' : 'Desactivada' }}
+              </dd>
+            </div>
+            <div class="flex justify-between gap-2">
+              <dt class="text-tinta-suave">Creada</dt>
+              <dd class="text-right font-semibold text-tinta">{{ formatFecha(loc.created_at) }}</dd>
+            </div>
+            <div class="flex justify-between gap-2">
+              <dt class="text-tinta-suave">Actualizada</dt>
+              <dd class="text-right font-semibold text-tinta">{{ formatFecha(loc.updated_at) }}</dd>
+            </div>
+          </dl>
+        </aside>
+      </div>
+    </article>
+  }
+</div>

@@ -10,6 +10,9 @@ const connectDB = require("./config/database");
 const rutasRoutes = require("./routes/rutas.routes");
 const categoriesRoutes = require("./routes/categories.routes");
 const locationsRoutes = require("./routes/locations.routes");
+const hostsRoutes = require("./routes/hosts.routes");
+const usersRoutes = require("./routes/users.routes");
+const rolesRoutes = require("./routes/roles.routes");
 const { notFound, errorHandler } = require("./middlewares/error.middleware");
 
 const app = express();
@@ -41,6 +44,11 @@ app.get("/", (req, res) => {
     version: "1.0.0",
     endpoints: {
       rutas: "/api/rutas",
+      locations: "/api/locations",
+      categories: "/api/categories",
+      hosts: "/api/hosts",
+      users: "/api/users",
+      roles: "/api/roles",
       health: "/api/health"
     }
   });
@@ -56,6 +64,9 @@ app.get("/api/health", (req, res) => {
 app.use("/api/rutas", rutasRoutes);
 app.use("/api/categories", categoriesRoutes);
 app.use("/api/locations", locationsRoutes);
+app.use("/api/hosts", hostsRoutes);
+app.use("/api/users", usersRoutes);
+app.use("/api/roles", rolesRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

@@ -1,14 +1,20 @@
 <div class="space-y-6">
-  <div class="flex flex-col gap-1">
-    <h1 class="text-2xl font-bold text-bosque-900 sm:text-3xl">Rutas de senderismo</h1>
-    <p class="text-tinta-suave">
-      @if (store.total() > 0) {
-        {{ store.total() }} {{ store.total() === 1 ? 'ruta' : 'rutas' }} disponibles
-        (@if (store.activas() !== store.total()) { {{ store.activas() }} activas })
-      } @else {
-        Descubre y gestiona las mejores rutas
-      }
-    </p>
+  <div class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+    <div>
+      <h1 class="text-2xl font-bold text-bosque-900 sm:text-3xl">Rutas de senderismo</h1>
+      <p class="text-tinta-suave">
+        @if (store.total() > 0) {
+          {{ store.total() }} {{ store.total() === 1 ? 'ruta' : 'rutas' }} disponibles
+          (@if (store.activas() !== store.total()) { {{ store.activas() }} activas })
+        } @else {
+          Descubre y gestiona las mejores rutas
+        }
+      </p>
+    </div>
+    <a routerLink="/rutas/new"
+       class="rounded-lg bg-bosque-700 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-bosque-600">
+      + Nueva ruta
+    </a>
   </div>
 
   @if (store.cargando()) {

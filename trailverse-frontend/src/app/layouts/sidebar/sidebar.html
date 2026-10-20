@@ -1,0 +1,113 @@
+<!-- Overlay para móvil -->
+@if (abierto()) {
+  <div class="fixed inset-0 z-40 bg-black/50 lg:hidden" (click)="cerrar()" aria-hidden="true"></div>
+}
+
+<!-- Sidebar -->
+<aside
+  class="fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-bosque-800 bg-bosque-900 text-crema-100 transition-transform duration-300 lg:translate-x-0"
+  [class.-translate-x-full]="!abierto()"
+  aria-label="Panel de administración">
+
+  <!-- Logo -->
+  <div class="flex items-center gap-2.5 border-b border-bosque-700 px-5 py-4">
+    <a routerLink="/rutas" class="flex items-center gap-2.5" (click)="cerrar()">
+      <span class="grid h-9 w-9 place-items-center rounded-xl bg-bosque-600 shadow-inner">
+        <svg viewBox="0 0 24 24" class="h-5 w-5" aria-hidden="true">
+          <path d="M2 20 L8.5 7 L12 13 L15 9.5 L22 20 Z" fill="#d8f3dc" />
+          <path d="M15.2 7.2 a1.6 1.6 0 1 0 0.1 0 Z" fill="#1b4332" />
+          <circle cx="15.8" cy="7.4" r="1.4" fill="#f4f1e6" />
+        </svg>
+      </span>
+      <span class="text-lg font-bold tracking-tight">
+        Trail<span class="text-bosque-300">Verse</span>
+      </span>
+    </a>
+    <button
+      type="button"
+      class="ml-auto rounded-lg p-1.5 text-crema-200 hover:bg-bosque-700 lg:hidden"
+      (click)="cerrar()"
+      aria-label="Cerrar menú">
+      <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M6 6 l12 12 M18 6 l-12 12" />
+      </svg>
+    </button>
+  </div>
+
+  <!-- Navegación -->
+  <nav class="flex-1 space-y-4 overflow-y-auto px-3 py-4">
+    <div class="space-y-1">
+      <p class="px-3 pb-2 text-xs font-semibold uppercase tracking-wider text-bosque-400">
+        Rutas
+      </p>
+
+      <a routerLink="/rutas"
+         routerLinkActive="bg-bosque-700 text-white"
+         class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors hover:bg-bosque-800"
+         (click)="cerrar()">
+        <svg viewBox="0 0 24 24" class="h-5 w-5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+          <path d="M2 20 L8.5 7 L12 13 L15 9.5 L22 20 Z" />
+        </svg>
+        Rutas
+      </a>
+    </div>
+
+    <div class="space-y-1">
+      <p class="px-3 pb-2 text-xs font-semibold uppercase tracking-wider text-bosque-400">
+        Admin
+      </p>
+
+      <a routerLink="/admin/categorias"
+         routerLinkActive="bg-bosque-700 text-white"
+         class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors hover:bg-bosque-800"
+         (click)="cerrar()">
+        <svg viewBox="0 0 24 24" class="h-5 w-5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+          <path d="M20.59 13.41 11 3.83A2 2 0 0 0 9.59 3.24H4a2 2 0 0 0-2 2v5.59a2 2 0 0 0 .59 1.41l9.58 9.59a2 2 0 0 0 2.83 0l5.59-5.59a2 2 0 0 0 0-2.83Z" />
+          <circle cx="7.5" cy="7.5" r="0.5" fill="currentColor" />
+        </svg>
+        Categorías
+      </a>
+
+      <a routerLink="/admin/hosts"
+         routerLinkActive="bg-bosque-700 text-white"
+         class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors hover:bg-bosque-800"
+         (click)="cerrar()">
+        <svg viewBox="0 0 24 24" class="h-5 w-5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+          <path d="M3 9.5 12 3l9 6.5" />
+          <path d="M19 9.5V20a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V9.5" />
+          <path d="M9 21v-6h6v6" />
+        </svg>
+        Hosts
+      </a>
+
+      <a routerLink="/admin/usuarios"
+         routerLinkActive="bg-bosque-700 text-white"
+         class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors hover:bg-bosque-800"
+         (click)="cerrar()">
+        <svg viewBox="0 0 24 24" class="h-5 w-5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+          <circle cx="9" cy="7" r="4" />
+          <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+          <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+        </svg>
+        Usuarios
+      </a>
+
+      <a routerLink="/admin/localizaciones"
+         routerLinkActive="bg-bosque-700 text-white"
+         class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors hover:bg-bosque-800"
+         (click)="cerrar()">
+        <svg viewBox="0 0 24 24" class="h-5 w-5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+          <path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0Z" />
+          <circle cx="12" cy="10" r="3" />
+        </svg>
+        Localizaciones
+      </a>
+    </div>
+  </nav>
+
+  <!-- Footer -->
+  <div class="border-t border-bosque-700 px-4 py-3">
+    <p class="text-xs text-bosque-400">TrailVerse Admin v1.0</p>
+  </div>
+</aside>

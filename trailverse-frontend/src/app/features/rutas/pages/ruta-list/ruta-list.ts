@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import Swal from 'sweetalert2';
 import { RutasStore } from '../../../../core/stores/rutas.store';
 import { AdminTable } from '../../../../shared/components/admin-table/admin-table';
@@ -9,7 +10,7 @@ import { Ruta } from '../../../../core/models/ruta.model';
 
 @Component({
   selector: 'app-ruta-list',
-  imports: [AdminTable, SkeletonGrid, EmptyState, ErrorState],
+  imports: [RouterLink, AdminTable, SkeletonGrid, EmptyState, ErrorState],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './ruta-list.html'
 })

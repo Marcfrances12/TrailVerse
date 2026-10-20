@@ -1,14 +1,22 @@
 const express = require("express");
 const controller = require("../controllers/categories.controller");
-const { idParamSchema } = require("../validators/rutas.validator");
+const {
+  idParamSchema,
+  createCategorySchema,
+  updateCategorySchema,
+  listCategoriesQuerySchema
+} = require("../validators/categories.validator");
 const validate = require("../middlewares/validate.middleware");
 
 const router = express.Router();
 
-router.get("/", controller.getAll);
+router.get("/", validate({ query: listCategoriesQuerySchema }), controller.getAll);
+router.get("/deleted", controller.getDeleted);
 router.get("/:id", validate({ params: idParamSchema }), controller.getById);
-router.post("/", controller.create);
-router.put("/:id", validate({ params: idParamSchema }), controller.update);
+router.post("/", validate({ body: createCategorySchema }), controller.create);
+router.put("/:id", validate({ params: idParamSchema, body: updateCategorySchema }), controller.update);
+router.patch("/:id/activate", validate({ params: idParamSchema }), controller.activate);
+router.patch("/:id/deactivate", validate({ params: idParamSchema }), controller.deactivate);
 router.delete("/:id", validate({ params: idParamSchema }), controller.remove);
 
 module.exports = router;

@@ -1,19 +1,9 @@
-import { Component, signal } from '@angular/core';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { Component } from '@angular/core';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-navbar',
-  imports: [RouterLink, RouterLinkActive],
+  imports: [RouterLink],
   templateUrl: './navbar.html'
 })
-export class Navbar {
-  readonly abierto = signal(false);
-
-  toggle(): void {
-    this.abierto.update((valor) => !valor);
-  }
-
-  cerrar(): void {
-    this.abierto.set(false);
-  }
-}
+export class Navbar {}

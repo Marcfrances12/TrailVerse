@@ -7,6 +7,13 @@ const getAll = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
+const getDeleted = async (req, res, next) => {
+  try {
+    const categories = await categoriesService.getCategoriesEliminadas();
+    res.status(200).json({ ok: true, total: categories.length, data: categories });
+  } catch (error) { next(error); }
+};
+
 const getById = async (req, res, next) => {
   try {
     const category = await categoriesService.getCategoryById(req.params.id);
@@ -28,6 +35,20 @@ const update = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
+const activate = async (req, res, next) => {
+  try {
+    const category = await categoriesService.activateCategory(req.params.id);
+    res.status(200).json({ ok: true, message: "Categoría activada correctamente", data: category });
+  } catch (error) { next(error); }
+};
+
+const deactivate = async (req, res, next) => {
+  try {
+    const category = await categoriesService.deactivateCategory(req.params.id);
+    res.status(200).json({ ok: true, message: "Categoría desactivada correctamente", data: category });
+  } catch (error) { next(error); }
+};
+
 const remove = async (req, res, next) => {
   try {
     await categoriesService.deleteCategory(req.params.id);
@@ -35,4 +56,4 @@ const remove = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
-module.exports = { getAll, getById, create, update, remove };
+module.exports = { getAll, getDeleted, getById, create, update, activate, deactivate, remove };

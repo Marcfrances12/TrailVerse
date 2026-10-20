@@ -1,0 +1,124 @@
+<div class="mx-auto max-w-3xl space-y-6">
+  <a routerLink="/admin/localizaciones" class="inline-flex items-center gap-1.5 text-sm font-semibold text-bosque-700 transition-colors hover:text-bosque-500">
+    <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M15 18 L9 12 L15 6" />
+    </svg>
+    Volver a localizaciones
+  </a>
+
+  <h1 class="text-2xl font-bold text-bosque-900 sm:text-3xl">
+    {{ esEdicion() ? 'Editar localización' : 'Crear nueva localización' }}
+  </h1>
+
+  @if (esEdicion() && !locationOriginal() && store.cargando()) {
+    <div class="space-y-4" role="status" aria-label="Cargando datos de la localización">
+      <div class="h-10 w-1/3 animate-pulse rounded-lg bg-crema-200"></div>
+      <div class="h-24 animate-pulse rounded-xl bg-crema-200"></div>
+      <div class="h-24 animate-pulse rounded-xl bg-crema-200"></div>
+    </div>
+  } @else if (esEdicion() && store.error() && !locationOriginal()) {
+    <app-error-state [mensaje]="store.error()!" />
+  } @else {
+    @if (erroresServidor().length) {
+      <div class="rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900" role="alert">
+        <p class="font-semibold">No se ha podido guardar. Revisa estos errores:</p>
+        <ul class="mt-2 list-inside list-disc space-y-1">
+          @for (mensaje of erroresServidor(); track mensaje) {
+            <li>{{ mensaje }}</li>
+          }
+        </ul>
+      </div>
+    }
+
+    <form [formGroup]="formulario" (ngSubmit)="guardar()" novalidate class="space-y-6 rounded-2xl border border-crema-200 bg-white p-6 shadow-sm">
+      <section class="space-y-4">
+        <h2 class="border-b border-crema-200 pb-2 text-lg font-bold text-bosque-900">Datos generales</h2>
+
+        <div>
+          <label for="nombre" class="mb-1 block text-sm font-semibold text-tinta">Nombre *</label>
+          <input id="nombre" type="text" formControlName="nombre" placeholder="Calpe"
+            class="w-full rounded-lg border border-crema-300 bg-crema-50 px-3 py-2 text-sm outline-none transition focus:border-bosque-500 focus:ring-2 focus:ring-bosque-300"
+            [class.border-red-400]="formulario.get('nombre')?.touched && formulario.get('nombre')?.errors"
+            aria-describedby="nombre-error" />
+          @if (mostrarError('nombre'); as mensaje) {
+            <p id="nombre-error" class="mt-1 text-sm text-red-600">{{ mensaje }}</p>
+          }
+        </div>
+      </section>
+
+      <section class="space-y-4">
+        <h2 class="border-b border-crema-200 pb-2 text-lg font-bold text-bosque-900">Ubicación</h2>
+
+        <div class="grid gap-4 sm:grid-cols-3">
+          <div>
+            <label for="provincia" class="mb-1 block text-sm font-semibold text-tinta">Provincia *</label>
+            <input id="provincia" type="text" formControlName="provincia" placeholder="Alicante"
+              class="w-full rounded-lg border border-crema-300 bg-crema-50 px-3 py-2 text-sm outline-none transition focus:border-bosque-500 focus:ring-2 focus:ring-bosque-300"
+              [class.border-red-400]="formulario.get('provincia')?.touched && formulario.get('provincia')?.errors"
+              aria-describedby="provincia-error" />
+            @if (mostrarError('provincia'); as mensaje) {
+              <p id="provincia-error" class="mt-1 text-sm text-red-600">{{ mensaje }}</p>
+            }
+          </div>
+
+          <div>
+            <label for="comunidad" class="mb-1 block text-sm font-semibold text-tinta">Comunidad autónoma *</label>
+            <input id="comunidad" type="text" formControlName="comunidad" placeholder="Comunidad Valenciana"
+              class="w-full rounded-lg border border-crema-300 bg-crema-50 px-3 py-2 text-sm outline-none transition focus:border-bosque-500 focus:ring-2 focus:ring-bosque-300"
+              [class.border-red-400]="formulario.get('comunidad')?.touched && formulario.get('comunidad')?.errors"
+              aria-describedby="comunidad-error" />
+            @if (mostrarError('comunidad'); as mensaje) {
+              <p id="comunidad-error" class="mt-1 text-sm text-red-600">{{ mensaje }}</p>
+            }
+          </div>
+
+          <div>
+            <label for="pais" class="mb-1 block text-sm font-semibold text-tinta">País *</label>
+            <input id="pais" type="text" formControlName="pais" placeholder="España"
+              class="w-full rounded-lg border border-crema-300 bg-crema-50 px-3 py-2 text-sm outline-none transition focus:border-bosque-500 focus:ring-2 focus:ring-bosque-300"
+              [class.border-red-400]="formulario.get('pais')?.touched && formulario.get('pais')?.errors"
+              aria-describedby="pais-error" />
+            @if (mostrarError('pais'); as mensaje) {
+              <p id="pais-error" class="mt-1 text-sm text-red-600">{{ mensaje }}</p>
+            }
+          </div>
+        </div>
+
+        <div class="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label for="latitud" class="mb-1 block text-sm font-semibold text-tinta">Latitud</label>
+            <input id="latitud" type="number" step="any" formControlName="latitud" placeholder="38.6434"
+              class="w-full rounded-lg border border-crema-300 bg-crema-50 px-3 py-2 text-sm outline-none transition focus:border-bosque-500 focus:ring-2 focus:ring-bosque-300"
+              [class.border-red-400]="formulario.get('latitud')?.touched && formulario.get('latitud')?.errors"
+              aria-describedby="latitud-error" />
+            @if (mostrarError('latitud'); as mensaje) {
+              <p id="latitud-error" class="mt-1 text-sm text-red-600">{{ mensaje }}</p>
+            }
+          </div>
+
+          <div>
+            <label for="longitud" class="mb-1 block text-sm font-semibold text-tinta">Longitud</label>
+            <input id="longitud" type="number" step="any" formControlName="longitud" placeholder="-0.0457"
+              class="w-full rounded-lg border border-crema-300 bg-crema-50 px-3 py-2 text-sm outline-none transition focus:border-bosque-500 focus:ring-2 focus:ring-bosque-300"
+              [class.border-red-400]="formulario.get('longitud')?.touched && formulario.get('longitud')?.errors"
+              aria-describedby="longitud-error" />
+            @if (mostrarError('longitud'); as mensaje) {
+              <p id="longitud-error" class="mt-1 text-sm text-red-600">{{ mensaje }}</p>
+            }
+          </div>
+        </div>
+      </section>
+
+      <div class="flex flex-col-reverse gap-3 border-t border-crema-200 pt-5 sm:flex-row sm:justify-end">
+        <a routerLink="/admin/localizaciones"
+          class="rounded-lg border border-crema-300 px-5 py-2.5 text-center text-sm font-semibold text-tinta transition-colors hover:bg-crema-100">
+          Cancelar
+        </a>
+        <button type="submit" [disabled]="store.cargando() || (esEdicion() && !locationOriginal())"
+          class="rounded-lg bg-bosque-700 px-6 py-2.5 text-sm font-semibold text-white shadow transition-colors hover:bg-bosque-600 disabled:cursor-not-allowed disabled:opacity-60">
+          {{ store.cargando() ? 'Guardando…' : esEdicion() ? 'Guardar cambios' : 'Crear localización' }}
+        </button>
+      </div>
+    </form>
+  }
+</div>

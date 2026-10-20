@@ -22,6 +22,14 @@ const categorySchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Category",
       default: null
+    },
+    isActive: {
+      type: Boolean,
+      default: true
+    },
+    deleted_at: {
+      type: Date,
+      default: null
     }
   },
   {

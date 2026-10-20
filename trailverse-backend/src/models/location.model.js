@@ -52,6 +52,14 @@ const locationSchema = new mongoose.Schema(
           message: "Las coordenadas deben ser [lng, lat] válidas"
         }
       }
+    },
+    isActive: {
+      type: Boolean,
+      default: true
+    },
+    deleted_at: {
+      type: Date,
+      default: null
     }
   },
   {

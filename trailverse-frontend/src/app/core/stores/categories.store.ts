@@ -1,0 +1,93 @@
+import { Injectable, computed, inject, signal } from '@angular/core';
+import { firstValueFrom } from 'rxjs';
+import Swal from 'sweetalert2';
+import { CategoriesApiService } from '../services/categories-api.service';
+import { Category, CategoryInput, CategoriesFiltros } from '../models/category.model';
+
+@Injectable({ providedIn: 'root' })
+export class CategoriesStore {
+  private readonly api = inject(CategoriesApiService);
+
+  private readonly _categories = signal<Category[]>([]);
+  private readonly _cargando = signal(false);
+  private readonly _error = signal<string | null>(null);
+  private readonly _cargada = signal(false);
+  private readonly _filtros = signal<CategoriesFiltros>({});
+  private ultimaClave = '';
+
+  readonly categories = this._categories.asReadonly();
+  readonly cargando = this._cargando.asReadonly();
+  readonly error = this._error.asReadonly();
+  readonly cargada = this._cargada.asReadonly();
+  readonly filtros = this._filtros.asReadonly();
+
+  readonly total = computed(() => this._categories().length);
+  readonly activas = computed(() => this._categories().filter((c) => c.isActive).length);
+
+  private claveDe(filtros: CategoriesFiltros): string {
+    return JSON.stringify(Object.entries(filtros).sort());
+  }
+
+  private mensajeDeError(error: unknown): string {
+    const cuerpo = (error as any)?.error;
+    if (typeof cuerpo?.error === 'string') return cuerpo.error;
+    if (typeof (error as any)?.message === 'string') return (error as any).message;
+    return 'Se ha producido un error inesperado.';
+  }
+
+  private avisar(titulo: string): void {
+    Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: titulo, showConfirmButton: false, timer: 2500, timerProgressBar: true });
+  }
+
+  async cargar(opciones: { filtros?: CategoriesFiltros; forzar?: boolean } = {}): Promise<void> {
+    const filtros = opciones.filtros ?? {};
+    const clave = this.claveDe(filtros);
+    if (!opciones.forzar && this._cargada() && clave === this.ultimaClave) return;
+
+    this._cargando.set(true);
+    this._error.set(null);
+    try {
+      const respuesta = await firstValueFrom(this.api.listar(filtros));
+      this._categories.set(respuesta.data);
+      this._filtros.set(filtros);
+      this.ultimaClave = clave;
+      this._cargada.set(true);
+    } catch (error) {
+      this._error.set(this.mensajeDeError(error));
+      throw error;
+    } finally {
+      this._cargando.set(false);
+    }
+  }
+
+  async crear(datos: CategoryInput): Promise<Category> {
+    const respuesta = await firstValueFrom(this.api.crear(datos));
+    this.avisar('Categoría creada');
+    await this.cargar({ forzar: true });
+    return respuesta.data;
+  }
+
+  async actualizar(id: string, datos: Partial<CategoryInput>): Promise<Category> {
+    const respuesta = await firstValueFrom(this.api.actualizar(id, datos));
+    this.avisar('Categoría actualizada');
+    await this.cargar({ forzar: true });
+    return respuesta.data;
+  }
+
+  async cambiarEstado(category: Category, activar: boolean): Promise<void> {
+    if (activar) {
+      await firstValueFrom(this.api.activar(category._id));
+      this.avisar('Categoría activada');
+    } else {
+      await firstValueFrom(this.api.desactivar(category._id));
+      this.avisar('Categoría desactivada');
+    }
+    await this.cargar({ forzar: true });
+  }
+
+  async eliminar(category: Category): Promise<void> {
+    await firstValueFrom(this.api.eliminar(category._id));
+    this.avisar('Categoría eliminada');
+    await this.cargar({ forzar: true });
+  }
+}

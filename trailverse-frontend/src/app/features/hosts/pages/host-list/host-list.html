@@ -1,0 +1,62 @@
+<div class="space-y-6">
+  <div class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+    <div>
+      <h1 class="text-2xl font-bold text-bosque-900 sm:text-3xl">Hosts</h1>
+      <p class="text-tinta-suave">
+        @if (store.total() > 0) {
+          {{ store.total() }} {{ store.total() === 1 ? 'host' : 'hosts' }}
+        } @else {
+          Gestiona los anfitriones de las rutas
+        }
+      </p>
+    </div>
+    <a routerLink="/admin/hosts/new" class="rounded-lg bg-bosque-700 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-bosque-600">
+      + Nuevo host
+    </a>
+  </div>
+
+  @if (store.cargando()) {
+    <app-skeleton-grid />
+  } @else if (store.error()) {
+    <app-error-state [mensaje]="store.error()!" (reintentar)="reintentar()" />
+  } @else if (store.hosts().length === 0) {
+    <app-empty-state [titulo]="'Sin resultados'" [mensaje]="'Aún no hay hosts registrados.'" />
+  } @else {
+    <div class="overflow-x-auto rounded-2xl border border-crema-200 bg-white shadow-sm">
+      <table class="w-full min-w-[700px] text-left text-sm">
+        <thead>
+          <tr class="border-b border-crema-200 bg-crema-50 text-xs uppercase tracking-wide text-tinta-suave">
+            <th class="px-4 py-3 font-semibold">Nombre</th>
+            <th class="px-4 py-3 font-semibold">Email</th>
+            <th class="px-4 py-3 font-semibold">Teléfono</th>
+            <th class="px-4 py-3 font-semibold">Estado</th>
+            <th class="px-4 py-3 text-right font-semibold">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (host of store.hosts(); track host._id) {
+            <tr class="border-b border-crema-100 transition-colors hover:bg-crema-50/50" [class.grayscale]="!host.isActive" [class.opacity-60]="!host.isActive">
+              <td class="px-4 py-3 font-semibold text-bosque-700">{{ host.name }}</td>
+              <td class="px-4 py-3 text-tinta-suave">{{ host.contactEmail }}</td>
+              <td class="px-4 py-3 text-tinta-suave">{{ host.phone || '—' }}</td>
+              <td class="px-4 py-3">
+                <span class="rounded-full px-2.5 py-1 text-xs font-semibold" [class.bg-bosque-100]="host.isActive" [class.text-bosque-800]="host.isActive" [class.bg-red-100]="!host.isActive" [class.text-red-700]="!host.isActive">
+                  {{ host.isActive ? 'Activo' : 'Inactivo' }}
+                </span>
+              </td>
+              <td class="px-4 py-3">
+                <div class="flex items-center justify-end gap-2">
+                  <button type="button" class="rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors" [class.bg-bosque-600]="host.isActive" [class.text-white]="host.isActive" [class.hover:bg-bosque-500]="host.isActive" [class.bg-red-600]="!host.isActive" [class.hover:bg-red-500]="!host.isActive" (click)="cambiarEstado(host)">
+                    {{ host.isActive ? 'Desactivar' : 'Activar' }}
+                  </button>
+                  <a [routerLink]="['/admin/hosts', host._id, 'edit']" class="rounded-lg bg-crema-200 px-3 py-1.5 text-xs font-semibold text-tinta transition-colors hover:bg-crema-300">Editar</a>
+                  <button type="button" class="rounded-lg bg-red-100 px-3 py-1.5 text-xs font-semibold text-red-700 transition-colors hover:bg-red-200" (click)="eliminar(host)">Borrar</button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>
