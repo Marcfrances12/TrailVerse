@@ -7,6 +7,11 @@ const departureSchema = new mongoose.Schema(
       ref: "Ruta",
       required: [true, "La ruta es obligatoria"]
     },
+    sku: {
+      type: String,
+      unique: true,
+      trim: true
+    },
     startDate: {
       type: Date,
       required: [true, "La fecha de inicio es obligatoria"]

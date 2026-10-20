@@ -12,6 +12,7 @@ const categoriesRoutes = require("./routes/categories.routes");
 const locationsRoutes = require("./routes/locations.routes");
 const hostsRoutes = require("./routes/hosts.routes");
 const usersRoutes = require("./routes/users.routes");
+const departuresRoutes = require("./routes/departures.routes");
 const rolesRoutes = require("./routes/roles.routes");
 const { notFound, errorHandler } = require("./middlewares/error.middleware");
 
@@ -48,6 +49,7 @@ app.get("/", (req, res) => {
       categories: "/api/categories",
       hosts: "/api/hosts",
       users: "/api/users",
+      departures: "/api/departures",
       roles: "/api/roles",
       health: "/api/health"
     }
@@ -66,6 +68,7 @@ app.use("/api/categories", categoriesRoutes);
 app.use("/api/locations", locationsRoutes);
 app.use("/api/hosts", hostsRoutes);
 app.use("/api/users", usersRoutes);
+app.use("/api/departures", departuresRoutes);
 app.use("/api/roles", rolesRoutes);
 
 app.use(notFound);
