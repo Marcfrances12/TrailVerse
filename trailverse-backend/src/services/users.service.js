@@ -87,6 +87,22 @@ async function deleteUser(id) {
   return user;
 }
 
+async function restoreUser(id) {
+  const idValido = await validarId(id);
+  const user = await usersRepo.restore(idValido);
+  if (!user) throw AppError.notFound("Usuario no encontrado en la papelera");
+  const userObj = user.toObject ? user.toObject() : user;
+  delete userObj.passwordHash;
+  return userObj;
+}
+
+async function hardDeleteUser(id) {
+  const idValido = await validarId(id);
+  const user = await usersRepo.hardDelete(idValido);
+  if (!user) throw AppError.notFound("Usuario no encontrado");
+  return user;
+}
+
 module.exports = {
   getUsers,
   getUsersEliminados,
@@ -95,5 +111,7 @@ module.exports = {
   updateUser,
   activateUser,
   deactivateUser,
-  deleteUser
+  deleteUser,
+  restoreUser,
+  hardDeleteUser
 };

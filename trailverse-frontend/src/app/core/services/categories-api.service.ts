@@ -46,4 +46,16 @@ export class CategoriesApiService {
   eliminar(id: string): Observable<RecursoRespuesta<Category>> {
     return this.api.delete<RecursoRespuesta<Category>>(`/categories/${id}`);
   }
+
+  eliminados(): Observable<ListaRespuesta<Category>> {
+    return this.api.get<ListaRespuesta<Category>>('/categories/deleted');
+  }
+
+  restaurar(id: string): Observable<RecursoRespuesta<Category>> {
+    return this.api.patch<RecursoRespuesta<Category>, object>(`/categories/${id}/restore`, {});
+  }
+
+  borrarDefinitivo(id: string): Observable<RecursoRespuesta<Category>> {
+    return this.api.delete<RecursoRespuesta<Category>>(`/categories/${id}/permanent`);
+  }
 }

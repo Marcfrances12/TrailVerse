@@ -1,92 +1,150 @@
 <div class="space-y-6">
   <div class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
     <div>
-      <h1 class="text-2xl font-bold text-bosque-900 sm:text-3xl">Localizaciones</h1>
+      <h1 class="text-2xl font-bold text-bosque-900 sm:text-3xl">
+        {{ modoPapelera() ? 'Localizaciones eliminadas' : 'Localizaciones' }}
+      </h1>
       <p class="text-tinta-suave">
-        @if (store.total() > 0) {
-          {{ store.total() }} {{ store.total() === 1 ? 'localización' : 'localizaciones' }} disponibles
-          (@if (store.activas() !== store.total()) { {{ store.activas() }} activas })
+        @if (modoPapelera()) {
+          @if (store.totalEliminados() > 0) {
+            {{ store.totalEliminados() }} {{ store.totalEliminados() === 1 ? 'localización eliminada' : 'localizaciones eliminadas' }}
+          } @else {
+            No hay localizaciones eliminadas
+          }
         } @else {
-          Gestiona las localizaciones del sistema
+          @if (store.total() > 0) {
+            {{ store.total() }} {{ store.total() === 1 ? 'localización' : 'localizaciones' }} disponibles
+            (@if (store.activas() !== store.total()) { {{ store.activas() }} activas })
+          } @else {
+            Gestiona las localizaciones del sistema
+          }
         }
       </p>
     </div>
-    <a routerLink="/admin/localizaciones/new"
-       class="rounded-lg bg-bosque-700 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-bosque-600">
-      + Nueva localización
-    </a>
+    <div class="flex items-center gap-2">
+      <button type="button" (click)="alternarPapelera()"
+        class="inline-flex items-center gap-1.5 rounded-lg border px-4 py-2.5 text-sm font-semibold transition-colors"
+        [class.bg-bosque-700]="modoPapelera()" [class.text-white]="modoPapelera()" [class.border-bosque-700]="modoPapelera()"
+        [class.border-crema-300]="!modoPapelera()" [class.text-tinta]="!modoPapelera()" [class.hover:bg-crema-100]="!modoPapelera()">
+        <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+          <path d="M3 6h18 M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
+          <path d="M10 11v6 M14 11v6" />
+        </svg>
+        {{ modoPapelera() ? 'Ver activas' : 'Papelera' }}
+      </button>
+      @if (!modoPapelera()) {
+        <a routerLink="/admin/localizaciones/new" class="rounded-lg bg-bosque-700 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-bosque-600">
+          + Nueva localización
+        </a>
+      }
+    </div>
   </div>
 
-  @if (store.cargando()) {
-    <app-skeleton-grid />
-  } @else if (store.error()) {
-    <app-error-state [mensaje]="store.error()!" (reintentar)="reintentar()" />
-  } @else if (store.locations().length === 0) {
-    <app-empty-state
-      [titulo]="'Sin resultados'"
-      [mensaje]="'Aún no hay localizaciones registradas.'" />
-  } @else {
-    <div class="overflow-x-auto rounded-2xl border border-crema-200 bg-white shadow-sm">
-      <table class="w-full min-w-[900px] text-left text-sm">
-        <thead>
-          <tr class="border-b border-crema-200 bg-crema-50 text-xs uppercase tracking-wide text-tinta-suave">
-            <th class="px-4 py-3 font-semibold">Nombre</th>
-            <th class="px-4 py-3 font-semibold">Provincia</th>
-            <th class="px-4 py-3 font-semibold">Comunidad</th>
-            <th class="px-4 py-3 font-semibold">Estado</th>
-            <th class="px-4 py-3 text-right font-semibold">Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (loc of store.locations(); track loc._id) {
-            <tr class="border-b border-crema-100 transition-colors hover:bg-crema-50/50"
-                [class.grayscale]="!loc.isActive"
-                [class.opacity-60]="!loc.isActive">
-              <td class="px-4 py-3">
-                <a [routerLink]="['/admin/localizaciones', loc._id]" class="font-semibold text-bosque-700 hover:text-bosque-500">
-                  {{ loc.nombre }}
-                </a>
-              </td>
-              <td class="px-4 py-3 text-tinta-suave">{{ loc.provincia }}</td>
-              <td class="px-4 py-3 text-tinta-suave">{{ loc.comunidad }}</td>
-              <td class="px-4 py-3">
-                <span class="rounded-full px-2.5 py-1 text-xs font-semibold"
-                      [class.bg-bosque-100]="loc.isActive"
-                      [class.text-bosque-800]="loc.isActive"
-                      [class.bg-red-100]="!loc.isActive"
-                      [class.text-red-700]="!loc.isActive">
-                  {{ loc.isActive ? 'Activa' : 'Inactiva' }}
-                </span>
-              </td>
-              <td class="px-4 py-3">
-                <div class="flex items-center justify-end gap-2">
-                  <button
-                    type="button"
-                    class="rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors"
-                    [class.bg-bosque-600]="loc.isActive"
-                    [class.text-white]="loc.isActive"
-                    [class.hover:bg-bosque-500]="loc.isActive"
-                    [class.bg-red-600]="!loc.isActive"
-                    [class.hover:bg-red-500]="!loc.isActive"
-                    (click)="cambiarEstado(loc)">
-                    {{ loc.isActive ? 'Desactivar' : 'Activar' }}
-                  </button>
-                  <a [routerLink]="['/admin/localizaciones', loc._id, 'edit']"
-                     class="rounded-lg bg-crema-200 px-3 py-1.5 text-xs font-semibold text-tinta transition-colors hover:bg-crema-300">
-                    Editar
-                  </a>
-                  <button
-                    type="button"
-                    class="rounded-lg bg-red-100 px-3 py-1.5 text-xs font-semibold text-red-700 transition-colors hover:bg-red-200"
-                    (click)="eliminar(loc)">
-                    Borrar
-                  </button>
-                </div>
-              </td>
+  @if (modoPapelera()) {
+    @if (store.cargandoEliminados()) {
+      <app-skeleton-grid />
+    } @else if (store.errorEliminados()) {
+      <app-error-state [mensaje]="store.errorEliminados()!" (reintentar)="reintentarPapelera()" />
+    } @else if (store.eliminados().length === 0) {
+      <app-empty-state [titulo]="'Papelera vacía'" [mensaje]="'No hay localizaciones eliminadas.'" />
+    } @else {
+      <div class="overflow-x-auto rounded-2xl border border-crema-200 bg-white shadow-sm">
+        <table class="w-full min-w-[700px] text-left text-sm">
+          <thead>
+            <tr class="border-b border-crema-200 bg-crema-50 text-xs uppercase tracking-wide text-tinta-suave">
+              <th class="px-4 py-3 font-semibold">Nombre</th>
+              <th class="px-4 py-3 font-semibold">Provincia</th>
+              <th class="px-4 py-3 font-semibold">Eliminada</th>
+              <th class="px-4 py-3 text-right font-semibold">Acciones</th>
             </tr>
-          }
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody>
+            @for (loc of store.eliminados(); track loc._id) {
+              <tr class="border-b border-crema-100 transition-colors hover:bg-crema-50/50 opacity-70">
+                <td class="px-4 py-3 font-semibold text-bosque-700">{{ loc.nombre }}</td>
+                <td class="px-4 py-3 text-tinta-suave">{{ loc.provincia }}</td>
+                <td class="px-4 py-3 text-tinta-suave">{{ formatFecha(loc.deleted_at) }}</td>
+                <td class="px-4 py-3">
+                  <div class="flex items-center justify-end gap-2">
+                    <button type="button" (click)="restaurar(loc)"
+                      class="rounded-lg bg-bosque-600 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-bosque-500">
+                      Restaurar
+                    </button>
+                    <button type="button" (click)="borrarDefinitivo(loc)"
+                      class="rounded-lg bg-red-100 px-3 py-1.5 text-xs font-semibold text-red-700 transition-colors hover:bg-red-200">
+                      Eliminar definitivo
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  } @else {
+    @if (store.cargando()) {
+      <app-skeleton-grid />
+    } @else if (store.error()) {
+      <app-error-state [mensaje]="store.error()!" (reintentar)="reintentar()" />
+    } @else if (store.locations().length === 0) {
+      <app-empty-state [titulo]="'Sin resultados'" [mensaje]="'Aún no hay localizaciones registradas.'" />
+    } @else {
+      <div class="overflow-x-auto rounded-2xl border border-crema-200 bg-white shadow-sm">
+        <table class="w-full min-w-[900px] text-left text-sm">
+          <thead>
+            <tr class="border-b border-crema-200 bg-crema-50 text-xs uppercase tracking-wide text-tinta-suave">
+              <th class="px-4 py-3 font-semibold">Nombre</th>
+              <th class="px-4 py-3 font-semibold">Provincia</th>
+              <th class="px-4 py-3 font-semibold">Comunidad</th>
+              <th class="px-4 py-3 font-semibold">Estado</th>
+              <th class="px-4 py-3 text-right font-semibold">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (loc of store.locations(); track loc._id) {
+              <tr class="border-b border-crema-100 transition-colors hover:bg-crema-50/50"
+                  [class.grayscale]="!loc.isActive" [class.opacity-60]="!loc.isActive">
+                <td class="px-4 py-3">
+                  <a [routerLink]="['/admin/localizaciones', loc._id]" class="font-semibold text-bosque-700 hover:text-bosque-500">
+                    {{ loc.nombre }}
+                  </a>
+                </td>
+                <td class="px-4 py-3 text-tinta-suave">{{ loc.provincia }}</td>
+                <td class="px-4 py-3 text-tinta-suave">{{ loc.comunidad }}</td>
+                <td class="px-4 py-3">
+                  <span class="rounded-full px-2.5 py-1 text-xs font-semibold"
+                        [class.bg-bosque-100]="loc.isActive" [class.text-bosque-800]="loc.isActive"
+                        [class.bg-red-100]="!loc.isActive" [class.text-red-700]="!loc.isActive">
+                    {{ loc.isActive ? 'Activa' : 'Inactiva' }}
+                  </span>
+                </td>
+                <td class="px-4 py-3">
+                  <div class="flex items-center justify-end gap-2">
+                    <button type="button"
+                            class="rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors"
+                            [class.bg-bosque-600]="loc.isActive" [class.text-white]="loc.isActive" [class.hover:bg-bosque-500]="loc.isActive"
+                            [class.bg-red-600]="!loc.isActive" [class.hover:bg-red-500]="!loc.isActive"
+                            (click)="cambiarEstado(loc)">
+                      {{ loc.isActive ? 'Desactivar' : 'Activar' }}
+                    </button>
+                    <a [routerLink]="['/admin/localizaciones', loc._id, 'edit']"
+                       class="rounded-lg bg-crema-200 px-3 py-1.5 text-xs font-semibold text-tinta transition-colors hover:bg-crema-300">
+                      Editar
+                    </a>
+                    <button type="button"
+                            class="rounded-lg bg-red-100 px-3 py-1.5 text-xs font-semibold text-red-700 transition-colors hover:bg-red-200"
+                            (click)="eliminar(loc)">
+                      Borrar
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
   }
 </div>

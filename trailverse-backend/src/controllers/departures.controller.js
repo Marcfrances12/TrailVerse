@@ -56,4 +56,18 @@ const remove = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
-module.exports = { getAll, getDeleted, getById, create, update, activate, deactivate, remove };
+const restore = async (req, res, next) => {
+  try {
+    const departure = await departuresService.restoreDeparture(req.params.id);
+    res.status(200).json({ ok: true, message: "Salida restaurada correctamente", data: departure });
+  } catch (error) { next(error); }
+};
+
+const hardDelete = async (req, res, next) => {
+  try {
+    await departuresService.hardDeleteDeparture(req.params.id);
+    res.status(200).json({ ok: true, message: "Salida eliminada definitivamente" });
+  } catch (error) { next(error); }
+};
+
+module.exports = { getAll, getDeleted, getById, create, update, activate, deactivate, remove, restore, hardDelete };

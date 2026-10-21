@@ -3,7 +3,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CategoriesStore } from '../../../../core/stores/categories.store';
-import { Category, CategoryInput, CategoryType } from '../../../../core/models/category.model';
+import { Category, CategoryInput } from '../../../../core/models/category.model';
 import { CategoriesApiService } from '../../../../core/services/categories-api.service';
 import { detallesDeError } from '../../../../shared/utils/errores';
 import { ErrorState } from '../../../../shared/components/error-state/error-state';
@@ -29,15 +29,9 @@ export class CategoryForm {
 
   readonly categoryOriginal = signal<Category | null>(null);
   readonly erroresServidor = signal<string[]>([]);
-  readonly tiposCategoria: { valor: CategoryType; etiqueta: string }[] = [
-    { valor: 'ruta', etiqueta: 'Ruta' },
-    { valor: 'producto', etiqueta: 'Producto' },
-    { valor: 'evento', etiqueta: 'Evento' }
-  ];
 
   readonly formulario = this.fb.group({
     name: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(80)]],
-    type: ['ruta' as CategoryType, Validators.required],
     parentId: ['']
   });
 
@@ -49,7 +43,7 @@ export class CategoryForm {
           next: (res) => {
             const cat = res.data;
             this.categoryOriginal.set(cat);
-            this.formulario.patchValue({ name: cat.name, type: cat.type, parentId: cat.parentId || '' });
+            this.formulario.patchValue({ name: cat.name, parentId: cat.parentId || '' });
           },
           error: () => undefined
         });
@@ -73,7 +67,7 @@ export class CategoryForm {
     const valores = this.formulario.getRawValue();
     const datos: CategoryInput = {
       name: String(valores.name ?? '').trim(),
-      type: valores.type as CategoryType,
+      type: 'ruta',
       parentId: valores.parentId || null
     };
     try {

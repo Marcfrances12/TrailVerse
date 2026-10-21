@@ -52,4 +52,16 @@ export class RutasApiService {
   eliminar(id: string): Observable<RecursoRespuesta<Ruta>> {
     return this.api.delete<RecursoRespuesta<Ruta>>(`/rutas/${id}`);
   }
+
+  eliminados(): Observable<ListaRespuesta<Ruta>> {
+    return this.api.get<ListaRespuesta<Ruta>>('/rutas/deleted');
+  }
+
+  restaurar(id: string): Observable<RecursoRespuesta<Ruta>> {
+    return this.api.patch<RecursoRespuesta<Ruta>, object>(`/rutas/${id}/restore`, {});
+  }
+
+  borrarDefinitivo(id: string): Observable<RecursoRespuesta<Ruta>> {
+    return this.api.delete<RecursoRespuesta<Ruta>>(`/rutas/${id}/permanent`);
+  }
 }

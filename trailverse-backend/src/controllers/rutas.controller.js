@@ -124,6 +124,33 @@ const softDelete = async (req, res, next) => {
   }
 };
 
+const restore = async (req, res, next) => {
+  try {
+    const ruta = await rutasService.restoreRuta(req.params.id);
+
+    res.status(200).json({
+      ok: true,
+      message: "Ruta restaurada correctamente",
+      data: ruta
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const hardDelete = async (req, res, next) => {
+  try {
+    await rutasService.hardDeleteRuta(req.params.id);
+
+    res.status(200).json({
+      ok: true,
+      message: "Ruta eliminada definitivamente"
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getAll,
   getDeleted,
@@ -133,5 +160,7 @@ module.exports = {
   update,
   activate,
   deactivate,
-  softDelete
+  softDelete,
+  restore,
+  hardDelete
 };

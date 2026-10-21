@@ -1,0 +1,45 @@
+<div class="space-y-6">
+  @if (role()?.data; as r) {
+    <a routerLink="/admin/roles" class="inline-flex items-center gap-1.5 text-sm font-semibold text-bosque-700 hover:text-bosque-500">
+      <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M15 18 L9 12 L15 6" /></svg>
+      Volver a roles
+    </a>
+
+    <article class="overflow-hidden rounded-2xl border border-crema-200 bg-white shadow-sm"
+             [class.grayscale]="!r.isActive" [class.opacity-80]="!r.isActive">
+      <div class="grid gap-8 p-6 lg:grid-cols-[1fr_280px]">
+        <div class="space-y-4">
+          <h1 class="text-2xl font-bold text-bosque-900 sm:text-3xl">{{ r.name }}</h1>
+          <div>
+            <h2 class="mb-2 text-sm font-bold uppercase tracking-wide text-tinta-suave">Permisos</h2>
+            <div class="flex flex-wrap gap-2">
+              @for (permiso of r.permissions; track permiso) {
+                <span class="rounded-full bg-crema-100 px-3 py-1 text-sm font-medium text-tinta">{{ etiquetaPermiso(permiso) }}</span>
+              }
+              @if (r.permissions.length === 0) {
+                <span class="text-sm text-tinta-suave">Sin permisos asignados</span>
+              }
+            </div>
+          </div>
+        </div>
+        <aside class="space-y-4 rounded-2xl border border-crema-200 bg-crema-50 p-4">
+          <h2 class="text-sm font-bold uppercase tracking-wide text-tinta-suave">Acciones</h2>
+          <div class="grid gap-2">
+            <a [routerLink]="['/admin/roles', r._id, 'edit']" class="rounded-lg bg-bosque-700 px-4 py-2.5 text-center text-sm font-semibold text-white hover:bg-bosque-600">Editar</a>
+            @if (r.isActive) {
+              <button type="button" class="rounded-lg bg-red-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-red-700" (click)="cambiarEstado(r)">Desactivar</button>
+            } @else {
+              <button type="button" class="rounded-lg bg-bosque-500 px-4 py-2.5 text-sm font-semibold text-bosque-950 hover:bg-bosque-400" (click)="cambiarEstado(r)">Activar</button>
+            }
+            <button type="button" class="rounded-lg border border-red-300 px-4 py-2.5 text-sm font-semibold text-red-700 hover:bg-red-50" (click)="eliminar(r)">Eliminar</button>
+          </div>
+          <dl class="space-y-2 border-t border-crema-200 pt-4 text-sm">
+            <div class="flex justify-between"><dt class="text-tinta-suave">Visibilidad</dt><dd class="font-semibold" [class.text-red-700]="!r.isActive" [class.text-bosque-700]="r.isActive">{{ r.isActive ? 'Activo' : 'Inactivo' }}</dd></div>
+            <div class="flex justify-between"><dt class="text-tinta-suave">Creado</dt><dd class="text-right font-semibold text-tinta">{{ formatFecha(r.created_at) }}</dd></div>
+            <div class="flex justify-between"><dt class="text-tinta-suave">Actualizado</dt><dd class="text-right font-semibold text-tinta">{{ formatFecha(r.updated_at) }}</dd></div>
+          </dl>
+        </aside>
+      </div>
+    </article>
+  }
+</div>

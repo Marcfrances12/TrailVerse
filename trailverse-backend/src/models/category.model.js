@@ -16,7 +16,7 @@ const categorySchema = new mongoose.Schema(
     type: {
       type: String,
       required: [true, "El tipo es obligatorio"],
-      enum: ["ruta", "producto", "evento"]
+      enum: ["ruta"]
     },
     parentId: {
       type: mongoose.Schema.Types.ObjectId,

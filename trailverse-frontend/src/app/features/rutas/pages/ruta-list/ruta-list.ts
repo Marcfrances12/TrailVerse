@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import Swal from 'sweetalert2';
 import { RutasStore } from '../../../../core/stores/rutas.store';
@@ -7,6 +7,7 @@ import { SkeletonGrid } from '../../../../shared/components/skeleton-grid/skelet
 import { EmptyState } from '../../../../shared/components/empty-state/empty-state';
 import { ErrorState } from '../../../../shared/components/error-state/error-state';
 import { Ruta } from '../../../../core/models/ruta.model';
+import { formatFecha } from '../../../../shared/utils/formatos';
 
 @Component({
   selector: 'app-ruta-list',
@@ -16,6 +17,8 @@ import { Ruta } from '../../../../core/models/ruta.model';
 })
 export class RutaList implements OnInit {
   readonly store = inject(RutasStore);
+  readonly modoPapelera = signal(false);
+  readonly formatFecha = formatFecha;
 
   ngOnInit(): void {
     this.store.cargar().catch(() => undefined);
@@ -23,6 +26,18 @@ export class RutaList implements OnInit {
 
   reintentar(): void {
     this.store.cargar({ forzar: true }).catch(() => undefined);
+  }
+
+  reintentarPapelera(): void {
+    this.store.cargarEliminados().catch(() => undefined);
+  }
+
+  alternarPapelera(): void {
+    const activar = !this.modoPapelera();
+    this.modoPapelera.set(activar);
+    if (activar) {
+      this.store.cargarEliminados().catch(() => undefined);
+    }
   }
 
   async cambiarEstado(ruta: Ruta): Promise<void> {
@@ -68,5 +83,37 @@ export class RutaList implements OnInit {
       await this.store.eliminar(ruta);
     } catch {
     }
+  }
+
+  async restaurar(ruta: Ruta): Promise<void> {
+    const resultado = await Swal.fire({
+      title: '¿Restaurar esta ruta?',
+      text: `"${ruta.nombre}" volverá a estar activa en el listado.`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, restaurar',
+      confirmButtonColor: '#2d6a4f',
+      cancelButtonText: 'Cancelar'
+    });
+    if (!resultado.isConfirmed) return;
+    try {
+      await this.store.restaurar(ruta);
+    } catch { /* interceptor */ }
+  }
+
+  async borrarDefinitivo(ruta: Ruta): Promise<void> {
+    const resultado = await Swal.fire({
+      title: '¿Eliminar definitivamente?',
+      text: `"${ruta.nombre}" se borrará de forma permanente. Esta acción no se puede deshacer.`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, eliminar para siempre',
+      confirmButtonColor: '#b91c1c',
+      cancelButtonText: 'Cancelar'
+    });
+    if (!resultado.isConfirmed) return;
+    try {
+      await this.store.borrarDefinitivo(ruta);
+    } catch { /* interceptor */ }
   }
 }

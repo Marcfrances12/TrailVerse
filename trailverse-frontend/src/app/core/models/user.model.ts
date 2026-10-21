@@ -4,6 +4,7 @@ export interface User {
   email: string;
   roleId: string | { _id: string; name: string; permissions: string[] };
   isActive: boolean;
+  deleted_at: string | null;
   created_at: string;
   updated_at: string;
 }

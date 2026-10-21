@@ -12,6 +12,14 @@ const roleSchema = new mongoose.Schema(
     permissions: {
       type: [String],
       default: []
+    },
+    isActive: {
+      type: Boolean,
+      default: true
+    },
+    deleted_at: {
+      type: Date,
+      default: null
     }
   },
   {

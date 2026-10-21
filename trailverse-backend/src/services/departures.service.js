@@ -52,6 +52,37 @@ async function updateDeparture(id, datos) {
   const departure = await departuresRepo.update(idValido, datos);
   if (!departure) throw AppError.notFound("Salida no encontrada");
   return departure;
+
+
+
+  const datosValidos = validarConZod(updateRutaSchema, datos, "body");
+
+  const rutaActual = await rutasRepo.getById(idValido);
+
+  if (!rutaActual) {
+    throw AppError.notFound("Ruta no encontrada");
+  }
+
+
+  // construirSkuUnico
+
+  //validate relations
+
+  //validate stock price capacity
+
+
+  const { images, ...resto } = datosValidos;
+
+  // Si se envían imágenes, la primera pasa a ser la portada.
+  if (Array.isArray(images)) {
+    resto.coverImage = portadaDe(images, rutaActual.coverImage);
+  }
+
+  const ruta = await rutasRepo.update(idValido, resto);
+
+  if (!ruta) {
+    throw AppError.notFound("Ruta no encontrada");
+  }
 }
 
 async function activateDeparture(id) {
@@ -75,6 +106,20 @@ async function deleteDeparture(id) {
   return departure;
 }
 
+async function restoreDeparture(id) {
+  const idValido = await validarId(id);
+  const departure = await departuresRepo.restore(idValido);
+  if (!departure) throw AppError.notFound("Salida no encontrada en la papelera");
+  return departure;
+}
+
+async function hardDeleteDeparture(id) {
+  const idValido = await validarId(id);
+  const departure = await departuresRepo.hardDelete(idValido);
+  if (!departure) throw AppError.notFound("Salida no encontrada");
+  return departure;
+}
+
 module.exports = {
   getDepartures,
   getDeparturesEliminados,
@@ -83,5 +128,7 @@ module.exports = {
   updateDeparture,
   activateDeparture,
   deactivateDeparture,
-  deleteDeparture
+  deleteDeparture,
+  restoreDeparture,
+  hardDeleteDeparture
 };

@@ -1,0 +1,45 @@
+<div class="mx-auto max-w-2xl space-y-6">
+  <a routerLink="/admin/roles" class="inline-flex items-center gap-1.5 text-sm font-semibold text-bosque-700 hover:text-bosque-500">
+    <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M15 18 L9 12 L15 6" /></svg>
+    Volver a roles
+  </a>
+
+  <h1 class="text-2xl font-bold text-bosque-900 sm:text-3xl">{{ esEdicion() ? 'Editar rol' : 'Crear nuevo rol' }}</h1>
+
+  @if (erroresServidor().length) {
+    <div class="rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900" role="alert">
+      <p class="font-semibold">No se ha podido guardar. Revisa estos errores:</p>
+      <ul class="mt-2 list-inside list-disc space-y-1">@for (mensaje of erroresServidor(); track mensaje) { <li>{{ mensaje }}</li> }</ul>
+    </div>
+  }
+
+  <form [formGroup]="formulario" (ngSubmit)="guardar()" novalidate class="space-y-6 rounded-2xl border border-crema-200 bg-white p-6 shadow-sm">
+    <div>
+      <label for="name" class="mb-1 block text-sm font-semibold text-tinta">Nombre *</label>
+      <input id="name" type="text" formControlName="name" placeholder="admin"
+        class="w-full rounded-lg border border-crema-300 bg-crema-50 px-3 py-2 text-sm outline-none transition focus:border-bosque-500 focus:ring-2 focus:ring-bosque-300"
+        [class.border-red-400]="formulario.get('name')?.touched && formulario.get('name')?.errors" />
+      <p class="mt-1 text-xs text-tinta-suave">Solo minúsculas, números y guiones bajos (ej: admin, organizer, user).</p>
+      @if (mostrarError('name'); as mensaje) { <p class="mt-1 text-sm text-red-600">{{ mensaje }}</p> }
+    </div>
+
+    <div>
+      <label for="permissions" class="mb-1 block text-sm font-semibold text-tinta">Permisos</label>
+      <select id="permissions" formControlName="permissions" multiple size="6"
+        class="w-full rounded-lg border border-crema-300 bg-crema-50 px-3 py-2 text-sm outline-none transition focus:border-bosque-500 focus:ring-2 focus:ring-bosque-300">
+        @for (permiso of permisos; track permiso.valor) {
+          <option [value]="permiso.valor">{{ permiso.etiqueta }}</option>
+        }
+      </select>
+      <p class="mt-1 text-xs text-tinta-suave">Mantén pulsado Ctrl (Windows) o Cmd (Mac) para seleccionar varios.</p>
+    </div>
+
+    <div class="flex flex-col-reverse gap-3 border-t border-crema-200 pt-5 sm:flex-row sm:justify-end">
+      <a routerLink="/admin/roles" class="rounded-lg border border-crema-300 px-5 py-2.5 text-center text-sm font-semibold text-tinta hover:bg-crema-100">Cancelar</a>
+      <button type="submit" [disabled]="store.cargando()"
+        class="rounded-lg bg-bosque-700 px-6 py-2.5 text-sm font-semibold text-white shadow hover:bg-bosque-600 disabled:cursor-not-allowed disabled:opacity-60">
+        {{ store.cargando() ? 'Guardando…' : esEdicion() ? 'Guardar cambios' : 'Crear rol' }}
+      </button>
+    </div>
+  </form>
+</div>

@@ -59,9 +59,8 @@ const seed = async () => {
       { name: "Rutas costeras", slug: "rutas-costeras", type: "ruta" },
       { name: "Rutas de montaña", slug: "rutas-montana", type: "ruta" },
       { name: "Ciclismo", slug: "ciclismo", type: "ruta" },
-      { name: "Material trekking", slug: "material-trekking", type: "producto" },
-      { name: "Ropa outdoor", slug: "ropa-outdoor", type: "producto" },
-      { name: "Excursiones guiadas", slug: "excursiones-guiadas", type: "evento" }
+      { name: "Rutas de cascadas", slug: "rutas-de-cascadas", type: "ruta" },
+      { name: "Rutas para familias", slug: "rutas-para-familias", type: "ruta" }
     ]);
 
     const rutas = await Ruta.insertMany([

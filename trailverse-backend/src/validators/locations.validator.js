@@ -41,7 +41,11 @@ const updateLocationSchema = z
   );
 
 const listLocationsQuerySchema = z.object({
-  provincia: z.string().trim().optional()
+  provincia: z.string().trim().optional(),
+  isActive: z
+    .enum(["true", "false"], { error: "Debe ser true o false" })
+    .transform((valor) => valor === "true")
+    .optional()
 });
 
 module.exports = {

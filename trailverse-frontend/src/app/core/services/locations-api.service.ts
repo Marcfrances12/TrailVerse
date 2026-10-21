@@ -46,4 +46,16 @@ export class LocationsApiService {
   eliminar(id: string): Observable<RecursoRespuesta<Location>> {
     return this.api.delete<RecursoRespuesta<Location>>(`/locations/${id}`);
   }
+
+  eliminados(): Observable<ListaRespuesta<Location>> {
+    return this.api.get<ListaRespuesta<Location>>('/locations/deleted');
+  }
+
+  restaurar(id: string): Observable<RecursoRespuesta<Location>> {
+    return this.api.patch<RecursoRespuesta<Location>, object>(`/locations/${id}/restore`, {});
+  }
+
+  borrarDefinitivo(id: string): Observable<RecursoRespuesta<Location>> {
+    return this.api.delete<RecursoRespuesta<Location>>(`/locations/${id}/permanent`);
+  }
 }

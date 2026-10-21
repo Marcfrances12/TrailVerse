@@ -56,4 +56,18 @@ const remove = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
-module.exports = { getAll, getDeleted, getById, create, update, activate, deactivate, remove };
+const restore = async (req, res, next) => {
+  try {
+    const user = await usersService.restoreUser(req.params.id);
+    res.status(200).json({ ok: true, message: "Usuario restaurado correctamente", data: user });
+  } catch (error) { next(error); }
+};
+
+const hardDelete = async (req, res, next) => {
+  try {
+    await usersService.hardDeleteUser(req.params.id);
+    res.status(200).json({ ok: true, message: "Usuario eliminado definitivamente" });
+  } catch (error) { next(error); }
+};
+
+module.exports = { getAll, getDeleted, getById, create, update, activate, deactivate, remove, restore, hardDelete };

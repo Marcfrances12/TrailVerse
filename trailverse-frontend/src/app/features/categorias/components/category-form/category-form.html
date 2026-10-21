@@ -19,12 +19,6 @@
       <input id="name" type="text" formControlName="name" placeholder="Montaña" class="w-full rounded-lg border border-crema-300 bg-crema-50 px-3 py-2 text-sm outline-none transition focus:border-bosque-500 focus:ring-2 focus:ring-bosque-300" [class.border-red-400]="formulario.get('name')?.touched && formulario.get('name')?.errors" />
       @if (mostrarError('name'); as mensaje) { <p class="mt-1 text-sm text-red-600">{{ mensaje }}</p> }
     </div>
-    <div>
-      <label for="type" class="mb-1 block text-sm font-semibold text-tinta">Tipo *</label>
-      <select id="type" formControlName="type" class="w-full rounded-lg border border-crema-300 bg-crema-50 px-3 py-2 text-sm outline-none transition focus:border-bosque-500 focus:ring-2 focus:ring-bosque-300">
-        @for (tipo of tiposCategoria; track tipo.valor) { <option [value]="tipo.valor">{{ tipo.etiqueta }}</option> }
-      </select>
-    </div>
     <div class="flex flex-col-reverse gap-3 border-t border-crema-200 pt-5 sm:flex-row sm:justify-end">
       <a routerLink="/admin/categorias" class="rounded-lg border border-crema-300 px-5 py-2.5 text-center text-sm font-semibold text-tinta hover:bg-crema-100">Cancelar</a>
       <button type="submit" class="rounded-lg bg-bosque-700 px-6 py-2.5 text-sm font-semibold text-white shadow hover:bg-bosque-600">{{ store.cargando() ? 'Guardando…' : esEdicion() ? 'Guardar cambios' : 'Crear categoría' }}</button>

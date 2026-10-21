@@ -13,6 +13,7 @@ export interface Location {
     type: string;
     coordinates: number[];
   };
+  isActive: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -33,8 +34,9 @@ export interface Category {
   _id: string;
   name: string;
   slug: string;
-  type: 'ruta' | 'producto' | 'evento';
+  type: 'ruta';
   parentId: string | null;
+  isActive: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -87,7 +89,7 @@ export interface RutaInput {
   desnivelM: number;
   duracionHoras: number;
   circular?: boolean;
-  hostId?: string;
+  hostId?: string | null;
   locationId?: string;
   categoryIds?: string[];
   coverImage?: {

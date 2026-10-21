@@ -46,4 +46,16 @@ export class DeparturesApiService {
   eliminar(id: string): Observable<RecursoRespuesta<Departure>> {
     return this.api.delete<RecursoRespuesta<Departure>>(`/departures/${id}`);
   }
+
+  eliminados(): Observable<ListaRespuesta<Departure>> {
+    return this.api.get<ListaRespuesta<Departure>>('/departures/deleted');
+  }
+
+  restaurar(id: string): Observable<RecursoRespuesta<Departure>> {
+    return this.api.patch<RecursoRespuesta<Departure>, object>(`/departures/${id}/restore`, {});
+  }
+
+  borrarDefinitivo(id: string): Observable<RecursoRespuesta<Departure>> {
+    return this.api.delete<RecursoRespuesta<Departure>>(`/departures/${id}/permanent`);
+  }
 }

@@ -83,6 +83,23 @@ const softDelete = async (id) => {
     .populate('categoryIds', 'name slug type');
 };
 
+// Restaura una ruta marcada como borrada (quita el soft delete)
+const restore = async (id) => {
+  return Ruta.findOneAndUpdate(
+    { _id: id, deleted_at: { $ne: null } },
+    { deleted_at: null, isActive: true },
+    { new: true }
+  )
+    .populate('locationId', 'nombre provincia comunidad pais')
+    .populate('hostId', 'name slug')
+    .populate('categoryIds', 'name slug type');
+};
+
+// Borrado definitivo: elimina el documento de la base de datos
+const hardDelete = async (id) => {
+  return Ruta.findByIdAndDelete(id);
+};
+
 module.exports = {
   getAll,
   getDeleted,
@@ -92,5 +109,7 @@ module.exports = {
   create,
   update,
   setActive,
-  softDelete
+  softDelete,
+  restore,
+  hardDelete
 };

@@ -13,6 +13,9 @@ export class DeparturesStore {
   private readonly _error = signal<string | null>(null);
   private readonly _cargada = signal(false);
   private readonly _filtros = signal<DeparturesFiltros>({});
+  private readonly _eliminados = signal<Departure[]>([]);
+  private readonly _cargandoEliminados = signal(false);
+  private readonly _errorEliminados = signal<string | null>(null);
   private ultimaClave = '';
 
   readonly departures = this._departures.asReadonly();
@@ -20,9 +23,13 @@ export class DeparturesStore {
   readonly error = this._error.asReadonly();
   readonly cargada = this._cargada.asReadonly();
   readonly filtros = this._filtros.asReadonly();
+  readonly eliminados = this._eliminados.asReadonly();
+  readonly cargandoEliminados = this._cargandoEliminados.asReadonly();
+  readonly errorEliminados = this._errorEliminados.asReadonly();
 
   readonly total = computed(() => this._departures().length);
   readonly activos = computed(() => this._departures().filter((d) => d.isActive).length);
+  readonly totalEliminados = computed(() => this._eliminados().length);
 
   private claveDe(filtros: DeparturesFiltros): string {
     return JSON.stringify(Object.entries(filtros).sort());
@@ -89,5 +96,32 @@ export class DeparturesStore {
     await firstValueFrom(this.api.eliminar(departure._id));
     this.avisar('Salida eliminada');
     await this.cargar({ forzar: true });
+  }
+
+  async cargarEliminados(): Promise<void> {
+    this._cargandoEliminados.set(true);
+    this._errorEliminados.set(null);
+    try {
+      const respuesta = await firstValueFrom(this.api.eliminados());
+      this._eliminados.set(respuesta.data);
+    } catch (error) {
+      this._errorEliminados.set(this.mensajeDeError(error));
+      throw error;
+    } finally {
+      this._cargandoEliminados.set(false);
+    }
+  }
+
+  async restaurar(departure: Departure): Promise<void> {
+    await firstValueFrom(this.api.restaurar(departure._id));
+    this._eliminados.update((lista) => lista.filter((item) => item._id !== departure._id));
+    await this.cargar({ forzar: true });
+    this.avisar('Salida restaurada');
+  }
+
+  async borrarDefinitivo(departure: Departure): Promise<void> {
+    await firstValueFrom(this.api.borrarDefinitivo(departure._id));
+    this._eliminados.update((lista) => lista.filter((item) => item._id !== departure._id));
+    this.avisar('Salida eliminada definitivamente');
   }
 }

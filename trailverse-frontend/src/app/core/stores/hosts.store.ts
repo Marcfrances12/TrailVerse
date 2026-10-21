@@ -13,6 +13,9 @@ export class HostsStore {
   private readonly _error = signal<string | null>(null);
   private readonly _cargada = signal(false);
   private readonly _filtros = signal<HostsFiltros>({});
+  private readonly _eliminados = signal<Host[]>([]);
+  private readonly _cargandoEliminados = signal(false);
+  private readonly _errorEliminados = signal<string | null>(null);
   private ultimaClave = '';
 
   readonly hosts = this._hosts.asReadonly();
@@ -20,9 +23,13 @@ export class HostsStore {
   readonly error = this._error.asReadonly();
   readonly cargada = this._cargada.asReadonly();
   readonly filtros = this._filtros.asReadonly();
+  readonly eliminados = this._eliminados.asReadonly();
+  readonly cargandoEliminados = this._cargandoEliminados.asReadonly();
+  readonly errorEliminados = this._errorEliminados.asReadonly();
 
   readonly total = computed(() => this._hosts().length);
   readonly activos = computed(() => this._hosts().filter((h) => h.isActive).length);
+  readonly totalEliminados = computed(() => this._eliminados().length);
 
   private claveDe(filtros: HostsFiltros): string {
     return JSON.stringify(Object.entries(filtros).sort());
@@ -89,5 +96,32 @@ export class HostsStore {
     await firstValueFrom(this.api.eliminar(host._id));
     this.avisar('Host eliminado');
     await this.cargar({ forzar: true });
+  }
+
+  async cargarEliminados(): Promise<void> {
+    this._cargandoEliminados.set(true);
+    this._errorEliminados.set(null);
+    try {
+      const respuesta = await firstValueFrom(this.api.eliminados());
+      this._eliminados.set(respuesta.data);
+    } catch (error) {
+      this._errorEliminados.set(this.mensajeDeError(error));
+      throw error;
+    } finally {
+      this._cargandoEliminados.set(false);
+    }
+  }
+
+  async restaurar(host: Host): Promise<void> {
+    await firstValueFrom(this.api.restaurar(host._id));
+    this._eliminados.update((lista) => lista.filter((item) => item._id !== host._id));
+    await this.cargar({ forzar: true });
+    this.avisar('Host restaurado');
+  }
+
+  async borrarDefinitivo(host: Host): Promise<void> {
+    await firstValueFrom(this.api.borrarDefinitivo(host._id));
+    this._eliminados.update((lista) => lista.filter((item) => item._id !== host._id));
+    this.avisar('Host eliminado definitivamente');
   }
 }

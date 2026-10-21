@@ -19,6 +19,9 @@ export class RutasStore {
   private readonly _error = signal<string | null>(null);
   private readonly _cargada = signal(false);
   private readonly _filtros = signal<RutasFiltros>({});
+  private readonly _eliminados = signal<Ruta[]>([]);
+  private readonly _cargandoEliminados = signal(false);
+  private readonly _errorEliminados = signal<string | null>(null);
   private ultimaClave = '';
 
   readonly rutas = this._rutas.asReadonly();
@@ -27,9 +30,13 @@ export class RutasStore {
   readonly error = this._error.asReadonly();
   readonly cargada = this._cargada.asReadonly();
   readonly filtros = this._filtros.asReadonly();
+  readonly eliminados = this._eliminados.asReadonly();
+  readonly cargandoEliminados = this._cargandoEliminados.asReadonly();
+  readonly errorEliminados = this._errorEliminados.asReadonly();
 
   readonly total = computed(() => this._rutas().length);
   readonly activas = computed(() => this._rutas().filter((ruta) => ruta.isActive).length);
+  readonly totalEliminados = computed(() => this._eliminados().length);
 
   private claveDe(filtros: RutasFiltros): string {
     return JSON.stringify(Object.entries(filtros).sort());
@@ -165,6 +172,36 @@ export class RutasStore {
     } finally {
       this._cargando.set(false);
     }
+  }
+
+  /** Carga la lista de rutas eliminadas (soft delete) para la papelera. */
+  async cargarEliminados(): Promise<void> {
+    this._cargandoEliminados.set(true);
+    this._errorEliminados.set(null);
+    try {
+      const respuesta = await firstValueFrom(this.api.eliminados());
+      this._eliminados.set(respuesta.data);
+    } catch (error) {
+      this._errorEliminados.set(this.mensajeDeError(error));
+      throw error;
+    } finally {
+      this._cargandoEliminados.set(false);
+    }
+  }
+
+  /** Restaura una ruta de la papelera y la devuelve al listado. */
+  async restaurar(ruta: Ruta): Promise<void> {
+    await firstValueFrom(this.api.restaurar(ruta._id));
+    this._eliminados.update((lista) => lista.filter((item) => item._id !== ruta._id));
+    await this.cargar({ forzar: true });
+    this.avisar('Ruta restaurada correctamente');
+  }
+
+  /** Elimina definitivamente una ruta (borrado físico). */
+  async borrarDefinitivo(ruta: Ruta): Promise<void> {
+    await firstValueFrom(this.api.borrarDefinitivo(ruta._id));
+    this._eliminados.update((lista) => lista.filter((item) => item._id !== ruta._id));
+    this.avisar('Ruta eliminada definitivamente');
   }
 
   limpiarSeleccion(): void {

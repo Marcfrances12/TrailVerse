@@ -80,6 +80,7 @@ const createRutaSchema = z.strictObject({
   desnivelM: numeroNoNegativo("El desnivel"),
   duracionHoras: numeroNoNegativo("La duración"),
   locationId: objectIdString("La ubicación"),
+  hostId: objectIdString("El host").nullable().optional(),
   categoryIds: z.array(objectIdString("La categoría")).optional(),
   circular: z.boolean({ error: "circular debe ser true o false" }).optional(),
   coverImage: z.object({

@@ -109,6 +109,17 @@
         </div>
 
         <div>
+          <label for="hostId" class="mb-1 block text-sm font-semibold text-tinta">Host</label>
+          <select id="hostId" formControlName="hostId"
+            class="w-full rounded-lg border border-crema-300 bg-crema-50 px-3 py-2 text-sm outline-none transition focus:border-bosque-500 focus:ring-2 focus:ring-bosque-300">
+            <option value="">— Sin host —</option>
+            @for (host of hosts(); track host._id) {
+              <option [value]="host._id">{{ host.name }}</option>
+            }
+          </select>
+        </div>
+
+        <div>
           <label for="categoryIds" class="mb-1 block text-sm font-semibold text-tinta">Categorías</label>
           <select id="categoryIds" formControlName="categoryIds" multiple
             class="w-full rounded-lg border border-crema-300 bg-crema-50 px-3 py-2 text-sm outline-none transition focus:border-bosque-500 focus:ring-2 focus:ring-bosque-300"

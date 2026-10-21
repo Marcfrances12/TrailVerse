@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import Swal from 'sweetalert2';
 import { DeparturesStore } from '../../../../core/stores/departures.store';
@@ -16,7 +16,7 @@ import { formatFecha } from '../../../../shared/utils/formatos';
 })
 export class DepartureList implements OnInit {
   readonly store = inject(DeparturesStore);
-
+  readonly modoPapelera = signal(false);
   readonly statuses = ESTATUSES;
   readonly formatFecha = formatFecha;
 
@@ -26,6 +26,18 @@ export class DepartureList implements OnInit {
 
   reintentar(): void {
     this.store.cargar({ forzar: true }).catch(() => undefined);
+  }
+
+  reintentarPapelera(): void {
+    this.store.cargarEliminados().catch(() => undefined);
+  }
+
+  alternarPapelera(): void {
+    const activar = !this.modoPapelera();
+    this.modoPapelera.set(activar);
+    if (activar) {
+      this.store.cargarEliminados().catch(() => undefined);
+    }
   }
 
   nombreRuta(d: Departure): string {
@@ -81,6 +93,38 @@ export class DepartureList implements OnInit {
     if (!resultado.isConfirmed) return;
     try {
       await this.store.eliminar(d);
+    } catch { /* interceptor */ }
+  }
+
+  async restaurar(d: Departure): Promise<void> {
+    const resultado = await Swal.fire({
+      title: '¿Restaurar esta salida?',
+      text: `"${d.sku}" volverá a estar activa en el listado.`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, restaurar',
+      confirmButtonColor: '#2d6a4f',
+      cancelButtonText: 'Cancelar'
+    });
+    if (!resultado.isConfirmed) return;
+    try {
+      await this.store.restaurar(d);
+    } catch { /* interceptor */ }
+  }
+
+  async borrarDefinitivo(d: Departure): Promise<void> {
+    const resultado = await Swal.fire({
+      title: '¿Eliminar definitivamente?',
+      text: `"${d.sku}" se borrará de forma permanente. Esta acción no se puede deshacer.`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, eliminar para siempre',
+      confirmButtonColor: '#b91c1c',
+      cancelButtonText: 'Cancelar'
+    });
+    if (!resultado.isConfirmed) return;
+    try {
+      await this.store.borrarDefinitivo(d);
     } catch { /* interceptor */ }
   }
 }

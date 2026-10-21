@@ -13,6 +13,9 @@ export class UsersStore {
   private readonly _error = signal<string | null>(null);
   private readonly _cargada = signal(false);
   private readonly _filtros = signal<UsersFiltros>({});
+  private readonly _eliminados = signal<User[]>([]);
+  private readonly _cargandoEliminados = signal(false);
+  private readonly _errorEliminados = signal<string | null>(null);
   private ultimaClave = '';
 
   readonly users = this._users.asReadonly();
@@ -20,9 +23,13 @@ export class UsersStore {
   readonly error = this._error.asReadonly();
   readonly cargada = this._cargada.asReadonly();
   readonly filtros = this._filtros.asReadonly();
+  readonly eliminados = this._eliminados.asReadonly();
+  readonly cargandoEliminados = this._cargandoEliminados.asReadonly();
+  readonly errorEliminados = this._errorEliminados.asReadonly();
 
   readonly total = computed(() => this._users().length);
   readonly activos = computed(() => this._users().filter((u) => u.isActive).length);
+  readonly totalEliminados = computed(() => this._eliminados().length);
 
   private claveDe(filtros: UsersFiltros): string {
     return JSON.stringify(Object.entries(filtros).sort());
@@ -89,5 +96,32 @@ export class UsersStore {
     await firstValueFrom(this.api.eliminar(user._id));
     this.avisar('Usuario eliminado');
     await this.cargar({ forzar: true });
+  }
+
+  async cargarEliminados(): Promise<void> {
+    this._cargandoEliminados.set(true);
+    this._errorEliminados.set(null);
+    try {
+      const respuesta = await firstValueFrom(this.api.eliminados());
+      this._eliminados.set(respuesta.data);
+    } catch (error) {
+      this._errorEliminados.set(this.mensajeDeError(error));
+      throw error;
+    } finally {
+      this._cargandoEliminados.set(false);
+    }
+  }
+
+  async restaurar(user: User): Promise<void> {
+    await firstValueFrom(this.api.restaurar(user._id));
+    this._eliminados.update((lista) => lista.filter((item) => item._id !== user._id));
+    await this.cargar({ forzar: true });
+    this.avisar('Usuario restaurado');
+  }
+
+  async borrarDefinitivo(user: User): Promise<void> {
+    await firstValueFrom(this.api.borrarDefinitivo(user._id));
+    this._eliminados.update((lista) => lista.filter((item) => item._id !== user._id));
+    this.avisar('Usuario eliminado definitivamente');
   }
 }

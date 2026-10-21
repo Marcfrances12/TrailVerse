@@ -18,5 +18,7 @@ router.put("/:id", validate({ params: idParamSchema, body: updateUserSchema }), 
 router.patch("/:id/activate", validate({ params: idParamSchema }), controller.activate);
 router.patch("/:id/deactivate", validate({ params: idParamSchema }), controller.deactivate);
 router.delete("/:id", validate({ params: idParamSchema }), controller.remove);
+router.patch("/:id/restore", validate({ params: idParamSchema }), controller.restore);
+router.delete("/:id/permanent", validate({ params: idParamSchema }), controller.hardDelete);
 
 module.exports = router;

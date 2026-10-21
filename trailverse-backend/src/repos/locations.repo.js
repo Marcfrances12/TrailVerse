@@ -44,4 +44,16 @@ const softDelete = async (id) => {
   );
 };
 
-module.exports = { getAll, getDeleted, getById, slugExists, create, update, setActive, softDelete };
+const restore = async (id) => {
+  return Location.findOneAndUpdate(
+    { _id: id, deleted_at: { $ne: null } },
+    { deleted_at: null, isActive: true },
+    { new: true }
+  );
+};
+
+const hardDelete = async (id) => {
+  return Location.findByIdAndDelete(id);
+};
+
+module.exports = { getAll, getDeleted, getById, slugExists, create, update, setActive, softDelete, restore, hardDelete };

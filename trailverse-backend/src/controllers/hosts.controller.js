@@ -63,4 +63,18 @@ const remove = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
-module.exports = { getAll, getDeleted, getById, getBySlug, create, update, activate, deactivate, remove };
+const restore = async (req, res, next) => {
+  try {
+    const host = await hostsService.restoreHost(req.params.id);
+    res.status(200).json({ ok: true, message: "Host restaurado correctamente", data: host });
+  } catch (error) { next(error); }
+};
+
+const hardDelete = async (req, res, next) => {
+  try {
+    await hostsService.hardDeleteHost(req.params.id);
+    res.status(200).json({ ok: true, message: "Host eliminado definitivamente" });
+  } catch (error) { next(error); }
+};
+
+module.exports = { getAll, getDeleted, getById, getBySlug, create, update, activate, deactivate, remove, restore, hardDelete };

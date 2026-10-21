@@ -3,7 +3,9 @@ const User = require("../models/user.model");
 const noBorrados = { deleted_at: null };
 
 const getAll = async (filtros = {}) => {
-  return User.find({ ...filtros, ...noBorrados }).sort({ name: 1 });
+  return User.find({ ...filtros, ...noBorrados })
+    .populate("roleId", "name permissions")
+    .sort({ name: 1 });
 };
 
 const getDeleted = async () => {
@@ -48,4 +50,16 @@ const softDelete = async (id) => {
   );
 };
 
-module.exports = { getAll, getDeleted, getById, getByEmail, emailExists, create, update, setActive, softDelete };
+const restore = async (id) => {
+  return User.findOneAndUpdate(
+    { _id: id, deleted_at: { $ne: null } },
+    { deleted_at: null, isActive: true },
+    { new: true }
+  ).populate("roleId", "name permissions");
+};
+
+const hardDelete = async (id) => {
+  return User.findByIdAndDelete(id);
+};
+
+module.exports = { getAll, getDeleted, getById, getByEmail, emailExists, create, update, setActive, softDelete, restore, hardDelete };

@@ -1,4 +1,4 @@
-export type CategoryType = 'ruta' | 'producto' | 'evento';
+export type CategoryType = 'ruta';
 
 export interface Category {
   _id: string;
@@ -7,6 +7,7 @@ export interface Category {
   type: CategoryType;
   parentId: string | null;
   isActive: boolean;
+  deleted_at: string | null;
   created_at: string;
   updated_at: string;
 }

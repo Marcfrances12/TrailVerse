@@ -12,7 +12,8 @@ import {
   Ruta,
   RutaInput,
   Location,
-  Category
+  Category,
+  Host
 } from '../../../../core/models/ruta.model';
 import { environment } from '@environments/environment';
 import { urlValidator } from '../../../../shared/utils/validators';
@@ -48,6 +49,7 @@ export class RutaForm {
 
   readonly locations = signal<Location[]>([]);
   readonly categorias = signal<Category[]>([]);
+  readonly hosts = signal<Host[]>([]);
   readonly urlsImagenes = signal<string[]>(['']);
 
   readonly formulario = this.fb.group({
@@ -58,6 +60,7 @@ export class RutaForm {
     desnivelM: [null as number | null, [Validators.required, Validators.min(0), Validators.max(10000)]],
     duracionHoras: [null as number | null, [Validators.required, Validators.min(0), Validators.max(100)]],
     locationId: ['', Validators.required],
+    hostId: [''],
     categoryIds: [[] as string[]],
     circular: [false],
     status: ['published', Validators.required]
@@ -84,15 +87,19 @@ export class RutaForm {
   }
 
   private cargarDatosAuxiliares(): void {
-    this.http.get<{ data: Location[] }>(`${environment.API_URL}/locations`)
-      .subscribe({ next: (res) => this.locations.set(res.data) });
+    this.http.get<{ data: Location[] }>(`${environment.API_URL}/locations?isActive=true`)
+      .subscribe({ next: (res) => this.locations.set(res.data.filter((l) => l.isActive)) });
 
-    this.http.get<{ data: Category[] }>(`${environment.API_URL}/categories?type=ruta`)
-      .subscribe({ next: (res) => this.categorias.set(res.data) });
+    this.http.get<{ data: Category[] }>(`${environment.API_URL}/categories?type=ruta&isActive=true`)
+      .subscribe({ next: (res) => this.categorias.set(res.data.filter((c) => c.isActive)) });
+
+    this.http.get<{ data: Host[] }>(`${environment.API_URL}/hosts?isActive=true`)
+      .subscribe({ next: (res) => this.hosts.set(res.data.filter((h) => h.isActive)) });
   }
 
   private rellenar(ruta: Ruta): void {
     const locId = typeof ruta.locationId === 'object' && ruta.locationId !== null ? ruta.locationId._id : ruta.locationId ?? '';
+    const hostId = typeof ruta.hostId === 'object' && ruta.hostId !== null ? ruta.hostId._id : ruta.hostId ?? '';
     const catIds = ruta.categoryIds
       .map((c) => typeof c === 'object' && c !== null ? c._id : c)
       .filter(Boolean);
@@ -105,6 +112,7 @@ export class RutaForm {
       desnivelM: ruta.desnivelM,
       duracionHoras: ruta.duracionHoras,
       locationId: locId,
+      hostId,
       categoryIds: catIds,
       circular: ruta.circular,
       status: ruta.status
@@ -168,6 +176,7 @@ export class RutaForm {
       desnivelM: Number(valores.desnivelM),
       duracionHoras: Number(valores.duracionHoras),
       locationId: String(valores.locationId ?? ''),
+      hostId: valores.hostId ? String(valores.hostId) : null,
       categoryIds: valores.categoryIds as string[],
       circular: Boolean(valores.circular),
       images: imagenes.map((url) => ({ url, alt: '' })),

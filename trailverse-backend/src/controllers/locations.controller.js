@@ -56,4 +56,18 @@ const remove = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
-module.exports = { getAll, getDeleted, getById, create, update, activate, deactivate, remove };
+const restore = async (req, res, next) => {
+  try {
+    const location = await locationsService.restoreLocation(req.params.id);
+    res.status(200).json({ ok: true, message: "Ubicación restaurada correctamente", data: location });
+  } catch (error) { next(error); }
+};
+
+const hardDelete = async (req, res, next) => {
+  try {
+    await locationsService.hardDeleteLocation(req.params.id);
+    res.status(200).json({ ok: true, message: "Ubicación eliminada definitivamente" });
+  } catch (error) { next(error); }
+};
+
+module.exports = { getAll, getDeleted, getById, create, update, activate, deactivate, remove, restore, hardDelete };

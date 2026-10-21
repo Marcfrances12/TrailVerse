@@ -136,6 +136,12 @@ async function updateRuta(id, datos) {
     throw AppError.notFound("Ruta no encontrada");
   }
 
+
+  // construirSlugUnico
+
+  //validate relations
+
+
   const { images, ...resto } = datosValidos;
 
   // Si se envían imágenes, la primera pasa a ser la portada.
@@ -192,6 +198,30 @@ async function deleteRuta(id) {
   return ruta;
 }
 
+async function restoreRuta(id) {
+  const idValido = await validarId(id);
+
+  const ruta = await rutasRepo.restore(idValido);
+
+  if (!ruta) {
+    throw AppError.notFound("Ruta no encontrada en la papelera");
+  }
+
+  return ruta;
+}
+
+async function hardDeleteRuta(id) {
+  const idValido = await validarId(id);
+
+  const ruta = await rutasRepo.hardDelete(idValido);
+
+  if (!ruta) {
+    throw AppError.notFound("Ruta no encontrada");
+  }
+
+  return ruta;
+}
+
 module.exports = {
   getRutas,
   getRutasEliminadas,
@@ -201,5 +231,7 @@ module.exports = {
   updateRuta,
   activateRuta,
   deactivateRuta,
-  deleteRuta
+  deleteRuta,
+  restoreRuta,
+  hardDeleteRuta
 };

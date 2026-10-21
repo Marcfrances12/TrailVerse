@@ -22,6 +22,7 @@ async function construirSlugUnico(name) {
 async function getCategories(query = {}) {
   const filtros = {};
   if (query.type) filtros.type = query.type;
+  if (query.isActive !== undefined) filtros.isActive = query.isActive;
   return categoriesRepo.getAll(filtros);
 }
 
@@ -72,6 +73,20 @@ async function deleteCategory(id) {
   return category;
 }
 
+async function restoreCategory(id) {
+  const idValido = await validarId(id);
+  const category = await categoriesRepo.restore(idValido);
+  if (!category) throw AppError.notFound("Categoría no encontrada en la papelera");
+  return category;
+}
+
+async function hardDeleteCategory(id) {
+  const idValido = await validarId(id);
+  const category = await categoriesRepo.hardDelete(idValido);
+  if (!category) throw AppError.notFound("Categoría no encontrada");
+  return category;
+}
+
 module.exports = {
   getCategories,
   getCategoriesEliminadas,
@@ -80,5 +95,7 @@ module.exports = {
   updateCategory,
   activateCategory,
   deactivateCategory,
-  deleteCategory
+  deleteCategory,
+  restoreCategory,
+  hardDeleteCategory
 };

@@ -1,68 +1,137 @@
 <div class="space-y-6">
   <div class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
     <div>
-      <h1 class="text-2xl font-bold text-bosque-900 sm:text-3xl">Usuarios</h1>
+      <h1 class="text-2xl font-bold text-bosque-900 sm:text-3xl">
+        {{ modoPapelera() ? 'Usuarios eliminados' : 'Usuarios' }}
+      </h1>
       <p class="text-tinta-suave">
-        @if (store.total() > 0) {
-          {{ store.total() }} {{ store.total() === 1 ? 'usuario' : 'usuarios' }}
+        @if (modoPapelera()) {
+          @if (store.totalEliminados() > 0) {
+            {{ store.totalEliminados() }} {{ store.totalEliminados() === 1 ? 'usuario eliminado' : 'usuarios eliminados' }}
+          } @else {
+            No hay usuarios eliminados
+          }
         } @else {
-          Gestiona los usuarios del sistema
+          @if (store.total() > 0) {
+            {{ store.total() }} {{ store.total() === 1 ? 'usuario' : 'usuarios' }}
+          } @else {
+            Gestiona los usuarios del sistema
+          }
         }
       </p>
     </div>
-    <a routerLink="/admin/usuarios/new" class="rounded-lg bg-bosque-700 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-bosque-600">
-      + Nuevo usuario
-    </a>
+    <div class="flex items-center gap-2">
+      <button type="button" (click)="alternarPapelera()"
+        class="inline-flex items-center gap-1.5 rounded-lg border px-4 py-2.5 text-sm font-semibold transition-colors"
+        [class.bg-bosque-700]="modoPapelera()" [class.text-white]="modoPapelera()" [class.border-bosque-700]="modoPapelera()"
+        [class.border-crema-300]="!modoPapelera()" [class.text-tinta]="!modoPapelera()" [class.hover:bg-crema-100]="!modoPapelera()">
+        <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+          <path d="M3 6h18 M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
+          <path d="M10 11v6 M14 11v6" />
+        </svg>
+        {{ modoPapelera() ? 'Ver activos' : 'Papelera' }}
+      </button>
+      @if (!modoPapelera()) {
+        <a routerLink="/admin/usuarios/new" class="rounded-lg bg-bosque-700 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-bosque-600">
+          + Nuevo usuario
+        </a>
+      }
+    </div>
   </div>
 
-  @if (store.cargando()) {
-    <app-skeleton-grid />
-  } @else if (store.error()) {
-    <app-error-state [mensaje]="store.error()!" (reintentar)="reintentar()" />
-  } @else if (store.users().length === 0) {
-    <app-empty-state [titulo]="'Sin resultados'" [mensaje]="'Aún no hay usuarios registrados.'" />
-  } @else {
-    <div class="overflow-x-auto rounded-2xl border border-crema-200 bg-white shadow-sm">
-      <table class="w-full min-w-[700px] text-left text-sm">
-        <thead>
-          <tr class="border-b border-crema-200 bg-crema-50 text-xs uppercase tracking-wide text-tinta-suave">
-            <th class="px-4 py-3 font-semibold">Nombre</th>
-            <th class="px-4 py-3 font-semibold">Email</th>
-            <th class="px-4 py-3 font-semibold">Rol</th>
-            <th class="px-4 py-3 font-semibold">Estado</th>
-            <th class="px-4 py-3 text-right font-semibold">Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (user of store.users(); track user._id) {
-            <tr class="border-b border-crema-100 transition-colors hover:bg-crema-50/50" [class.grayscale]="!user.isActive" [class.opacity-60]="!user.isActive">
-              <td class="px-4 py-3 font-semibold text-bosque-700">{{ user.name }}</td>
-              <td class="px-4 py-3 text-tinta-suave">{{ user.email }}</td>
-              <td class="px-4 py-3 text-tinta-suave">
-                @if (typeof user.roleId === 'object' && user.roleId !== null) {
-                  {{ user.roleId.name }}
-                } @else {
-                  —
-                }
-              </td>
-              <td class="px-4 py-3">
-                <span class="rounded-full px-2.5 py-1 text-xs font-semibold" [class.bg-bosque-100]="user.isActive" [class.text-bosque-800]="user.isActive" [class.bg-red-100]="!user.isActive" [class.text-red-700]="!user.isActive">
-                  {{ user.isActive ? 'Activo' : 'Inactivo' }}
-                </span>
-              </td>
-              <td class="px-4 py-3">
-                <div class="flex items-center justify-end gap-2">
-                  <button type="button" class="rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors" [class.bg-bosque-600]="user.isActive" [class.text-white]="user.isActive" [class.hover:bg-bosque-500]="user.isActive" [class.bg-red-600]="!user.isActive" [class.hover:bg-red-500]="!user.isActive" (click)="cambiarEstado(user)">
-                    {{ user.isActive ? 'Desactivar' : 'Activar' }}
-                  </button>
-                  <a [routerLink]="['/admin/usuarios', user._id, 'edit']" class="rounded-lg bg-crema-200 px-3 py-1.5 text-xs font-semibold text-tinta transition-colors hover:bg-crema-300">Editar</a>
-                  <button type="button" class="rounded-lg bg-red-100 px-3 py-1.5 text-xs font-semibold text-red-700 transition-colors hover:bg-red-200" (click)="eliminar(user)">Borrar</button>
-                </div>
-              </td>
+  @if (modoPapelera()) {
+    @if (store.cargandoEliminados()) {
+      <app-skeleton-grid />
+    } @else if (store.errorEliminados()) {
+      <app-error-state [mensaje]="store.errorEliminados()!" (reintentar)="reintentarPapelera()" />
+    } @else if (store.eliminados().length === 0) {
+      <app-empty-state [titulo]="'Papelera vacía'" [mensaje]="'No hay usuarios eliminados.'" />
+    } @else {
+      <div class="overflow-x-auto rounded-2xl border border-crema-200 bg-white shadow-sm">
+        <table class="w-full min-w-[700px] text-left text-sm">
+          <thead>
+            <tr class="border-b border-crema-200 bg-crema-50 text-xs uppercase tracking-wide text-tinta-suave">
+              <th class="px-4 py-3 font-semibold">Nombre</th>
+              <th class="px-4 py-3 font-semibold">Email</th>
+              <th class="px-4 py-3 font-semibold">Eliminado</th>
+              <th class="px-4 py-3 text-right font-semibold">Acciones</th>
             </tr>
-          }
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody>
+            @for (user of store.eliminados(); track user._id) {
+              <tr class="border-b border-crema-100 transition-colors hover:bg-crema-50/50 opacity-70">
+                <td class="px-4 py-3 font-semibold text-bosque-700">{{ user.name }}</td>
+                <td class="px-4 py-3 text-tinta-suave">{{ user.email }}</td>
+                <td class="px-4 py-3 text-tinta-suave">{{ formatFecha(user.deleted_at) }}</td>
+                <td class="px-4 py-3">
+                  <div class="flex items-center justify-end gap-2">
+                    <button type="button" (click)="restaurar(user)"
+                      class="rounded-lg bg-bosque-600 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-bosque-500">
+                      Restaurar
+                    </button>
+                    <button type="button" (click)="borrarDefinitivo(user)"
+                      class="rounded-lg bg-red-100 px-3 py-1.5 text-xs font-semibold text-red-700 transition-colors hover:bg-red-200">
+                      Eliminar definitivo
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  } @else {
+    @if (store.cargando()) {
+      <app-skeleton-grid />
+    } @else if (store.error()) {
+      <app-error-state [mensaje]="store.error()!" (reintentar)="reintentar()" />
+    } @else if (store.users().length === 0) {
+      <app-empty-state [titulo]="'Sin resultados'" [mensaje]="'Aún no hay usuarios registrados.'" />
+    } @else {
+      <div class="overflow-x-auto rounded-2xl border border-crema-200 bg-white shadow-sm">
+        <table class="w-full min-w-[700px] text-left text-sm">
+          <thead>
+            <tr class="border-b border-crema-200 bg-crema-50 text-xs uppercase tracking-wide text-tinta-suave">
+              <th class="px-4 py-3 font-semibold">Nombre</th>
+              <th class="px-4 py-3 font-semibold">Email</th>
+              <th class="px-4 py-3 font-semibold">Rol</th>
+              <th class="px-4 py-3 font-semibold">Estado</th>
+              <th class="px-4 py-3 text-right font-semibold">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (user of store.users(); track user._id) {
+              <tr class="border-b border-crema-100 transition-colors hover:bg-crema-50/50" [class.grayscale]="!user.isActive" [class.opacity-60]="!user.isActive">
+                <td class="px-4 py-3 font-semibold text-bosque-700">{{ user.name }}</td>
+                <td class="px-4 py-3 text-tinta-suave">{{ user.email }}</td>
+                <td class="px-4 py-3 text-tinta-suave">
+                  @if (typeof user.roleId === 'object' && user.roleId !== null) {
+                    {{ user.roleId.name }}
+                  } @else {
+                    —
+                  }
+                </td>
+                <td class="px-4 py-3">
+                  <span class="rounded-full px-2.5 py-1 text-xs font-semibold" [class.bg-bosque-100]="user.isActive" [class.text-bosque-800]="user.isActive" [class.bg-red-100]="!user.isActive" [class.text-red-700]="!user.isActive">
+                    {{ user.isActive ? 'Activo' : 'Inactivo' }}
+                  </span>
+                </td>
+                <td class="px-4 py-3">
+                  <div class="flex items-center justify-end gap-2">
+                    <button type="button" class="rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors" [class.bg-bosque-600]="user.isActive" [class.text-white]="user.isActive" [class.hover:bg-bosque-500]="user.isActive" [class.bg-red-600]="!user.isActive" [class.hover:bg-red-500]="!user.isActive" (click)="cambiarEstado(user)">
+                      {{ user.isActive ? 'Desactivar' : 'Activar' }}
+                    </button>
+                    <a [routerLink]="['/admin/usuarios', user._id, 'edit']" class="rounded-lg bg-crema-200 px-3 py-1.5 text-xs font-semibold text-tinta transition-colors hover:bg-crema-300">Editar</a>
+                    <button type="button" class="rounded-lg bg-red-100 px-3 py-1.5 text-xs font-semibold text-red-700 transition-colors hover:bg-red-200" (click)="eliminar(user)">Borrar</button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
   }
 </div>

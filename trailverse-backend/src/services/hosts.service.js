@@ -78,6 +78,20 @@ async function deleteHost(id) {
   return host;
 }
 
+async function restoreHost(id) {
+  const idValido = await validarId(id);
+  const host = await hostsRepo.restore(idValido);
+  if (!host) throw AppError.notFound("Host no encontrado en la papelera");
+  return host;
+}
+
+async function hardDeleteHost(id) {
+  const idValido = await validarId(id);
+  const host = await hostsRepo.hardDelete(idValido);
+  if (!host) throw AppError.notFound("Host no encontrado");
+  return host;
+}
+
 module.exports = {
   getHosts,
   getHostsEliminados,
@@ -87,5 +101,7 @@ module.exports = {
   updateHost,
   activateHost,
   deactivateHost,
-  deleteHost
+  deleteHost,
+  restoreHost,
+  hardDeleteHost
 };

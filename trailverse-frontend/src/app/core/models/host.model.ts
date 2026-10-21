@@ -7,6 +7,7 @@ export interface Host {
   phone: string;
   userId: string | { _id: string; name: string; email: string };
   isActive: boolean;
+  deleted_at: string | null;
   created_at: string;
   updated_at: string;
 }

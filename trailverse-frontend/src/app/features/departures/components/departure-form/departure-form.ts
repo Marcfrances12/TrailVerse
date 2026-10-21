@@ -73,8 +73,8 @@ export class DepartureForm {
   }
 
   private cargarRutas(): void {
-    this.http.get<{ data: Ruta[] }>(`${environment.API_URL}/rutas`).subscribe({
-      next: (res) => this.rutas.set(res.data),
+    this.http.get<{ data: Ruta[] }>(`${environment.API_URL}/rutas?isActive=true`).subscribe({
+      next: (res) => this.rutas.set(res.data.filter((r) => r.isActive)),
       error: () => undefined
     });
   }

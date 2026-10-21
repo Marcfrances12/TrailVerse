@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import Swal from 'sweetalert2';
 import { UsersStore } from '../../../../core/stores/users.store';
@@ -6,6 +6,7 @@ import { User } from '../../../../core/models/user.model';
 import { SkeletonGrid } from '../../../../shared/components/skeleton-grid/skeleton-grid';
 import { EmptyState } from '../../../../shared/components/empty-state/empty-state';
 import { ErrorState } from '../../../../shared/components/error-state/error-state';
+import { formatFecha } from '../../../../shared/utils/formatos';
 
 @Component({
   selector: 'app-user-list',
@@ -15,6 +16,8 @@ import { ErrorState } from '../../../../shared/components/error-state/error-stat
 })
 export class UserList implements OnInit {
   readonly store = inject(UsersStore);
+  readonly modoPapelera = signal(false);
+  readonly formatFecha = formatFecha;
 
   ngOnInit(): void {
     this.store.cargar().catch(() => undefined);
@@ -22,6 +25,18 @@ export class UserList implements OnInit {
 
   reintentar(): void {
     this.store.cargar({ forzar: true }).catch(() => undefined);
+  }
+
+  reintentarPapelera(): void {
+    this.store.cargarEliminados().catch(() => undefined);
+  }
+
+  alternarPapelera(): void {
+    const activar = !this.modoPapelera();
+    this.modoPapelera.set(activar);
+    if (activar) {
+      this.store.cargarEliminados().catch(() => undefined);
+    }
   }
 
   async cambiarEstado(user: User): Promise<void> {
@@ -54,5 +69,37 @@ export class UserList implements OnInit {
     try {
       await this.store.eliminar(user);
     } catch {}
+  }
+
+  async restaurar(user: User): Promise<void> {
+    const resultado = await Swal.fire({
+      title: '¿Restaurar este usuario?',
+      text: `"${user.name}" volverá a estar activo en el listado.`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, restaurar',
+      confirmButtonColor: '#2d6a4f',
+      cancelButtonText: 'Cancelar'
+    });
+    if (!resultado.isConfirmed) return;
+    try {
+      await this.store.restaurar(user);
+    } catch { /* interceptor */ }
+  }
+
+  async borrarDefinitivo(user: User): Promise<void> {
+    const resultado = await Swal.fire({
+      title: '¿Eliminar definitivamente?',
+      text: `"${user.name}" se borrará de forma permanente. Esta acción no se puede deshacer.`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, eliminar para siempre',
+      confirmButtonColor: '#b91c1c',
+      cancelButtonText: 'Cancelar'
+    });
+    if (!resultado.isConfirmed) return;
+    try {
+      await this.store.borrarDefinitivo(user);
+    } catch { /* interceptor */ }
   }
 }

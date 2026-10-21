@@ -46,4 +46,16 @@ export class UsersApiService {
   eliminar(id: string): Observable<RecursoRespuesta<User>> {
     return this.api.delete<RecursoRespuesta<User>>(`/users/${id}`);
   }
+
+  eliminados(): Observable<ListaRespuesta<User>> {
+    return this.api.get<ListaRespuesta<User>>('/users/deleted');
+  }
+
+  restaurar(id: string): Observable<RecursoRespuesta<User>> {
+    return this.api.patch<RecursoRespuesta<User>, object>(`/users/${id}/restore`, {});
+  }
+
+  borrarDefinitivo(id: string): Observable<RecursoRespuesta<User>> {
+    return this.api.delete<RecursoRespuesta<User>>(`/users/${id}/permanent`);
+  }
 }

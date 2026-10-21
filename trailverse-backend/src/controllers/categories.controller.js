@@ -56,4 +56,18 @@ const remove = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
-module.exports = { getAll, getDeleted, getById, create, update, activate, deactivate, remove };
+const restore = async (req, res, next) => {
+  try {
+    const category = await categoriesService.restoreCategory(req.params.id);
+    res.status(200).json({ ok: true, message: "Categoría restaurada correctamente", data: category });
+  } catch (error) { next(error); }
+};
+
+const hardDelete = async (req, res, next) => {
+  try {
+    await categoriesService.hardDeleteCategory(req.params.id);
+    res.status(200).json({ ok: true, message: "Categoría eliminada definitivamente" });
+  } catch (error) { next(error); }
+};
+
+module.exports = { getAll, getDeleted, getById, create, update, activate, deactivate, remove, restore, hardDelete };

@@ -53,6 +53,18 @@ const softDelete = async (id) => {
   );
 };
 
+const restore = async (id) => {
+  return Departure.findOneAndUpdate(
+    { _id: id, deleted_at: { $ne: null } },
+    { deleted_at: null, isActive: true },
+    { new: true }
+  ).populate("rutaId", "nombre slug");
+};
+
+const hardDelete = async (id) => {
+  return Departure.findByIdAndDelete(id);
+};
+
 module.exports = {
   getAll,
   getDeleted,
@@ -62,5 +74,7 @@ module.exports = {
   create,
   update,
   setActive,
-  softDelete
+  softDelete,
+  restore,
+  hardDelete
 };

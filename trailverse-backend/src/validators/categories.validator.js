@@ -6,8 +6,8 @@ const idParamSchema = z.object({
 
 const createCategorySchema = z.strictObject({
   name: z.string().trim().min(2, "El nombre debe tener al menos 2 caracteres").max(80),
-  type: z.enum(["ruta", "producto", "evento"], {
-    errorMap: () => ({ message: "El tipo debe ser ruta, producto o evento" })
+  type: z.enum(["ruta"], {
+    error: "El tipo debe ser ruta"
   }),
   parentId: z
     .string()
@@ -22,7 +22,11 @@ const updateCategorySchema = createCategorySchema.partial().refine(
 );
 
 const listCategoriesQuerySchema = z.object({
-  type: z.enum(["ruta", "producto", "evento"]).optional()
+  type: z.enum(["ruta"]).optional(),
+  isActive: z
+    .enum(["true", "false"], { error: "Debe ser true o false" })
+    .transform((valor) => valor === "true")
+    .optional()
 });
 
 module.exports = {

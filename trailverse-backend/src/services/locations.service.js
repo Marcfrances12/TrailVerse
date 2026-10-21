@@ -2,7 +2,7 @@ const locationsRepo = require("../repos/locations.repo");
 const AppError = require("../utils/AppError");
 const { generateSlug } = require("../utils/slug");
 const { validarConZod } = require("../utils/validar");
-const { escapeRegex } = require("../utils/escapeRegex");
+const escapeRegex = require("../utils/escapeRegex");
 const { idParamSchema } = require("../validators/rutas.validator");
 
 async function validarId(id) {
@@ -23,6 +23,7 @@ async function construirSlugUnico(nombre) {
 async function getLocations(query = {}) {
   const filtros = {};
   if (query.provincia) filtros.provincia = new RegExp(escapeRegex(query.provincia), "i");
+  if (query.isActive !== undefined) filtros.isActive = query.isActive;
   return locationsRepo.getAll(filtros);
 }
 
@@ -73,6 +74,20 @@ async function deleteLocation(id) {
   return location;
 }
 
+async function restoreLocation(id) {
+  const idValido = await validarId(id);
+  const location = await locationsRepo.restore(idValido);
+  if (!location) throw AppError.notFound("Ubicación no encontrada en la papelera");
+  return location;
+}
+
+async function hardDeleteLocation(id) {
+  const idValido = await validarId(id);
+  const location = await locationsRepo.hardDelete(idValido);
+  if (!location) throw AppError.notFound("Ubicación no encontrada");
+  return location;
+}
+
 module.exports = {
   getLocations,
   getLocationsEliminadas,
@@ -81,5 +96,7 @@ module.exports = {
   updateLocation,
   activateLocation,
   deactivateLocation,
-  deleteLocation
+  deleteLocation,
+  restoreLocation,
+  hardDeleteLocation
 };

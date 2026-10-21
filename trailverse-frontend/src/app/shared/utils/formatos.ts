@@ -17,12 +17,18 @@ export const formatDuracion = (horas: number): string => {
 
 export const formatHoras = (horas: number): string => `${fmtHoras.format(horas)} h`;
 
-export const formatFecha = (iso: string): string =>
-  new Date(iso).toLocaleDateString('es-ES', {
+export const formatFecha = (iso: string | null | undefined): string => {
+  if (!iso) return '—';
+
+  const fecha = new Date(iso);
+  if (isNaN(fecha.getTime())) return '—';
+
+  return fecha.toLocaleDateString('es-ES', {
     day: '2-digit',
     month: 'long',
     year: 'numeric'
   });
+};
 
 export const capitalizar = (texto: string): string =>
   texto.length === 0 ? texto : texto.charAt(0).toUpperCase() + texto.slice(1);

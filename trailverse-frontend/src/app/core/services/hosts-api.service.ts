@@ -46,4 +46,16 @@ export class HostsApiService {
   eliminar(id: string): Observable<RecursoRespuesta<Host>> {
     return this.api.delete<RecursoRespuesta<Host>>(`/hosts/${id}`);
   }
+
+  eliminados(): Observable<ListaRespuesta<Host>> {
+    return this.api.get<ListaRespuesta<Host>>('/hosts/deleted');
+  }
+
+  restaurar(id: string): Observable<RecursoRespuesta<Host>> {
+    return this.api.patch<RecursoRespuesta<Host>, object>(`/hosts/${id}/restore`, {});
+  }
+
+  borrarDefinitivo(id: string): Observable<RecursoRespuesta<Host>> {
+    return this.api.delete<RecursoRespuesta<Host>>(`/hosts/${id}/permanent`);
+  }
 }

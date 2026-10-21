@@ -13,6 +13,9 @@ export class CategoriesStore {
   private readonly _error = signal<string | null>(null);
   private readonly _cargada = signal(false);
   private readonly _filtros = signal<CategoriesFiltros>({});
+  private readonly _eliminados = signal<Category[]>([]);
+  private readonly _cargandoEliminados = signal(false);
+  private readonly _errorEliminados = signal<string | null>(null);
   private ultimaClave = '';
 
   readonly categories = this._categories.asReadonly();
@@ -20,9 +23,13 @@ export class CategoriesStore {
   readonly error = this._error.asReadonly();
   readonly cargada = this._cargada.asReadonly();
   readonly filtros = this._filtros.asReadonly();
+  readonly eliminados = this._eliminados.asReadonly();
+  readonly cargandoEliminados = this._cargandoEliminados.asReadonly();
+  readonly errorEliminados = this._errorEliminados.asReadonly();
 
   readonly total = computed(() => this._categories().length);
   readonly activas = computed(() => this._categories().filter((c) => c.isActive).length);
+  readonly totalEliminados = computed(() => this._eliminados().length);
 
   private claveDe(filtros: CategoriesFiltros): string {
     return JSON.stringify(Object.entries(filtros).sort());
@@ -89,5 +96,32 @@ export class CategoriesStore {
     await firstValueFrom(this.api.eliminar(category._id));
     this.avisar('Categoría eliminada');
     await this.cargar({ forzar: true });
+  }
+
+  async cargarEliminados(): Promise<void> {
+    this._cargandoEliminados.set(true);
+    this._errorEliminados.set(null);
+    try {
+      const respuesta = await firstValueFrom(this.api.eliminados());
+      this._eliminados.set(respuesta.data);
+    } catch (error) {
+      this._errorEliminados.set(this.mensajeDeError(error));
+      throw error;
+    } finally {
+      this._cargandoEliminados.set(false);
+    }
+  }
+
+  async restaurar(category: Category): Promise<void> {
+    await firstValueFrom(this.api.restaurar(category._id));
+    this._eliminados.update((lista) => lista.filter((item) => item._id !== category._id));
+    await this.cargar({ forzar: true });
+    this.avisar('Categoría restaurada');
+  }
+
+  async borrarDefinitivo(category: Category): Promise<void> {
+    await firstValueFrom(this.api.borrarDefinitivo(category._id));
+    this._eliminados.update((lista) => lista.filter((item) => item._id !== category._id));
+    this.avisar('Categoría eliminada definitivamente');
   }
 }
