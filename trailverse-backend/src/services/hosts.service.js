@@ -79,17 +79,17 @@ async function activateHost(id) {
 
 async function deactivateHost(id) {
   const idValido = await validarId(id);
+  await integrity.comprobarSinReferencias("host", idValido, "desactivar");
   const host = await hostsRepo.setActive(idValido, false);
   if (!host) throw AppError.notFound("Host no encontrado");
-  await integrity.inactivarDependientes("host", idValido);
   return host;
 }
 
 async function deleteHost(id) {
   const idValido = await validarId(id);
+  await integrity.comprobarSinReferencias("host", idValido, "eliminar lógicamente");
   const host = await hostsRepo.softDelete(idValido);
   if (!host) throw AppError.notFound("Host no encontrado");
-  await integrity.inactivarDependientes("host", idValido);
   return host;
 }
 

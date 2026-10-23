@@ -1,54 +1,20 @@
-<div class="space-y-6">
-  <div class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-    <div>
-      <h1 class="text-2xl font-bold text-bosque-900 sm:text-3xl">
-        {{ modoPapelera() ? 'Departures eliminados' : 'Departures' }}
-      </h1>
-      <p class="text-tinta-suave">
-        @if (modoPapelera()) {
-          @if (store.totalEliminados() > 0) {
-            {{ store.totalEliminados() }} {{ store.totalEliminados() === 1 ? 'salida eliminada' : 'salidas eliminadas' }}
-          } @else {
-            No hay salidas eliminadas
-          }
-        } @else {
-          @if (store.total() > 0) {
-            {{ store.total() }} {{ store.total() === 1 ? 'salida' : 'salidas' }} disponibles
-            (@if (store.activos() !== store.total()) { {{ store.activos() }} activas })
-          } @else {
-            Gestiona las salidas programadas
-          }
-        }
-      </p>
-    </div>
-    <div class="flex items-center gap-2">
-      <button type="button" (click)="alternarPapelera()"
-        class="inline-flex items-center gap-1.5 rounded-lg border px-4 py-2.5 text-sm font-semibold transition-colors"
-        [class.bg-bosque-700]="modoPapelera()" [class.text-white]="modoPapelera()" [class.border-bosque-700]="modoPapelera()"
-        [class.border-crema-300]="!modoPapelera()" [class.text-tinta]="!modoPapelera()" [class.hover:bg-crema-100]="!modoPapelera()">
-        <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-          <path d="M3 6h18 M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
-          <path d="M10 11v6 M14 11v6" />
-        </svg>
-        {{ modoPapelera() ? 'Ver activas' : 'Papelera' }}
-      </button>
-      @if (!modoPapelera()) {
-        <a routerLink="/admin/departures/new" class="rounded-lg bg-bosque-700 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-bosque-600">
-          + Nueva salida
-        </a>
-      }
-    </div>
-  </div>
-
-  @if (modoPapelera()) {
-    @if (store.cargandoEliminados()) {
-      <app-skeleton-grid />
-    } @else if (store.errorEliminados()) {
-      <app-error-state [mensaje]="store.errorEliminados()!" (reintentar)="reintentarPapelera()" />
-    } @else if (store.eliminados().length === 0) {
-      <app-empty-state [titulo]="'Papelera vacía'" [mensaje]="'No hay salidas eliminadas.'" />
-    } @else {
+<app-admin-list-shell
+  [title]="modoPapelera() ? 'Departures eliminados' : 'Departures'"
+  [summary]="modoPapelera()
+    ? (store.totalEliminados() > 0 ? store.totalEliminados() + (store.totalEliminados() === 1 ? ' salida eliminada' : ' salidas eliminadas') : 'No hay salidas eliminadas')
+    : (store.total() > 0 ? store.total() + (store.total() === 1 ? ' salida' : ' salidas') + ' disponibles' + (store.activos() !== store.total() ? ' (' + store.activos() + ' activas)' : '') : 'Gestiona las salidas programadas')"
+  [isTrash]="modoPapelera()"
+  [activeLabel]="'Ver activas'"
+  [loading]="modoPapelera() ? store.cargandoEliminados() : store.cargando()"
+  [error]="modoPapelera() ? store.errorEliminados() : store.error()"
+  [empty]="modoPapelera() ? store.eliminados().length === 0 : store.departures().length === 0"
+  [emptyTitle]="modoPapelera() ? 'Papelera vacía' : 'Sin resultados'"
+  [emptyMessage]="modoPapelera() ? 'No hay salidas eliminadas.' : 'Aún no hay salidas registradas.'"
+  [createRoute]="'/admin/departures/new'"
+  [createLabel]="'+ Nueva salida'"
+  (toggleTrash)="alternarPapelera()"
+  (retry)="modoPapelera() ? reintentarPapelera() : reintentar()">
+  <ng-template #trashContent>
       <div class="overflow-x-auto rounded-2xl border border-crema-200 bg-white shadow-sm">
         <table class="w-full min-w-[800px] text-left text-sm">
           <thead>
@@ -82,15 +48,8 @@
           </tbody>
         </table>
       </div>
-    }
-  } @else {
-    @if (store.cargando()) {
-      <app-skeleton-grid />
-    } @else if (store.error()) {
-      <app-error-state [mensaje]="store.error()!" (reintentar)="reintentar()" />
-    } @else if (store.departures().length === 0) {
-      <app-empty-state [titulo]="'Sin resultados'" [mensaje]="'Aún no hay salidas registradas.'" />
-    } @else {
+  </ng-template>
+  <ng-template #activeContent>
       <div class="overflow-x-auto rounded-2xl border border-crema-200 bg-white shadow-sm">
         <table class="w-full min-w-[1000px] text-left text-sm">
           <thead>
@@ -147,6 +106,5 @@
           </tbody>
         </table>
       </div>
-    }
-  }
-</div>
+  </ng-template>
+</app-admin-list-shell>

@@ -3,14 +3,12 @@ import { RouterLink } from '@angular/router';
 import Swal from 'sweetalert2';
 import { UsersStore } from '../../../../core/stores/users.store';
 import { User } from '../../../../core/models/user.model';
-import { SkeletonGrid } from '../../../../shared/components/skeleton-grid/skeleton-grid';
-import { EmptyState } from '../../../../shared/components/empty-state/empty-state';
-import { ErrorState } from '../../../../shared/components/error-state/error-state';
+import { AdminListShell } from '../../../../shared/components/admin-list-shell/admin-list-shell';
 import { formatFecha } from '../../../../shared/utils/formatos';
 
 @Component({
   selector: 'app-user-list',
-  imports: [RouterLink, SkeletonGrid, EmptyState, ErrorState],
+  imports: [RouterLink, AdminListShell],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './user-list.html'
 })

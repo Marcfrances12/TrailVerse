@@ -5,6 +5,7 @@ const { validarConZod } = require("../utils/validar");
 const escapeRegex = require("../utils/escapeRegex");
 const { idParamSchema, createLocationSchema, updateLocationSchema } = require("../validators/locations.validator");
 const integrity = require("./integrity.service");
+const departuresService = require("./departures.service");
 
 async function validarId(id) {
   return validarConZod(idParamSchema, { id }, "params").id;
@@ -51,12 +52,18 @@ async function updateLocation(id, datos) {
   const actual = await locationsRepo.getById(idValido);
   if (!actual) throw AppError.notFound("Ubicación no encontrada");
 
+  const atributosSkuCambiados =
+    (datosValidos.nombre !== undefined && datosValidos.nombre !== actual.nombre) ||
+    (datosValidos.provincia !== undefined && datosValidos.provincia !== actual.provincia);
   const updateData = { ...datosValidos };
   if (datosValidos.nombre && datosValidos.nombre !== actual.nombre) {
     updateData.slug = await construirSlugUnico(datosValidos.nombre, idValido);
   }
   const location = await locationsRepo.update(idValido, updateData);
   if (!location) throw AppError.notFound("Ubicación no encontrada");
+  if (atributosSkuCambiados) {
+    await departuresService.regenerarSkusLocalizacion(idValido);
+  }
   return location;
 }
 
@@ -69,17 +76,17 @@ async function activateLocation(id) {
 
 async function deactivateLocation(id) {
   const idValido = await validarId(id);
+  await integrity.comprobarSinReferencias("location", idValido, "desactivar");
   const location = await locationsRepo.setActive(idValido, false);
   if (!location) throw AppError.notFound("Ubicación no encontrada");
-  await integrity.inactivarDependientes("location", idValido);
   return location;
 }
 
 async function deleteLocation(id) {
   const idValido = await validarId(id);
+  await integrity.comprobarSinReferencias("location", idValido, "eliminar lógicamente");
   const location = await locationsRepo.softDelete(idValido);
   if (!location) throw AppError.notFound("Ubicación no encontrada");
-  await integrity.inactivarDependientes("location", idValido);
   return location;
 }
 

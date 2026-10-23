@@ -10,7 +10,7 @@ const departureSchema = new mongoose.Schema(
     sku: {
       type: String,
       required: [true, "El SKU de la salida es obligatorio"],
-      match: [/^DEP-[a-z0-9]+(?:-[a-z0-9]+)*-\d{3,}$/, "El SKU de la salida no tiene un formato válido"],
+      match: [/^[A-Z0-9]{2,6}-[A-Z]{3}-\d+(?:,\d+)?(?:-\d{3,})?$/, "El SKU de la salida no tiene un formato válido"],
       unique: true,
       trim: true
     },

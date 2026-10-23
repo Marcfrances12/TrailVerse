@@ -73,17 +73,17 @@ async function activateCategory(id) {
 
 async function deactivateCategory(id) {
   const idValido = await validarId(id);
+  await integrity.comprobarSinReferencias("category", idValido, "desactivar");
   const category = await categoriesRepo.setActive(idValido, false);
   if (!category) throw AppError.notFound("Categoría no encontrada");
-  await integrity.inactivarDependientes("category", idValido);
   return category;
 }
 
 async function deleteCategory(id) {
   const idValido = await validarId(id);
+  await integrity.comprobarSinReferencias("category", idValido, "eliminar lógicamente");
   const category = await categoriesRepo.softDelete(idValido);
   if (!category) throw AppError.notFound("Categoría no encontrada");
-  await integrity.inactivarDependientes("category", idValido);
   return category;
 }
 

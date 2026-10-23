@@ -42,7 +42,7 @@ const priceUpdateSchema = z
   .refine((price) => Object.keys(price).length > 0, "Debes indicar amount o currency");
 
 const skuSchema = z.string().regex(
-  /^DEP-[a-z0-9]+(?:-[a-z0-9]+)*-\d{3,}$/,
+  /^[A-Z0-9]{2,6}-[A-Z]{3}-\d+(?:,\d+)?(?:-\d{3,})?$/,
   "El SKU de la salida no tiene un formato válido"
 );
 

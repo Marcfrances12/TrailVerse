@@ -53,17 +53,17 @@ async function activateRole(id) {
 
 async function deactivateRole(id) {
   const idValido = await validarId(id);
+  await integrity.comprobarSinReferencias("role", idValido, "desactivar");
   const role = await rolesRepo.setActive(idValido, false);
   if (!role) throw AppError.notFound("Rol no encontrado");
-  await integrity.inactivarDependientes("role", idValido);
   return role;
 }
 
 async function deleteRole(id) {
   const idValido = await validarId(id);
+  await integrity.comprobarSinReferencias("role", idValido, "eliminar lógicamente");
   const role = await rolesRepo.softDelete(idValido);
   if (!role) throw AppError.notFound("Rol no encontrado");
-  await integrity.inactivarDependientes("role", idValido);
   return role;
 }
 

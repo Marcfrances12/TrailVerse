@@ -169,8 +169,12 @@ async function updateRuta(id, datos) {
   await integrity.validarRelacionesRuta(relacionesActualizadas);
 
   const { images, ...resto } = datosValidos;
-  const rutaActualObj = rutaActual.toObject();
   const nombreCambiado = datosValidos.nombre && datosValidos.nombre !== rutaActual.nombre;
+  const locationActualId = String(rutaActual.locationId?._id ?? rutaActual.locationId);
+  const skuAtributosCambiados =
+    (datosValidos.dificultad !== undefined && datosValidos.dificultad !== rutaActual.dificultad) ||
+    (datosValidos.distanciaKm !== undefined && datosValidos.distanciaKm !== rutaActual.distanciaKm) ||
+    (datosValidos.locationId !== undefined && String(datosValidos.locationId) !== locationActualId);
   if (nombreCambiado) {
     resto.slug = await construirSlugUnico(datosValidos.nombre, idValido);
   }
@@ -186,8 +190,8 @@ async function updateRuta(id, datos) {
     throw AppError.notFound("Ruta no encontrada");
   }
 
-  if (nombreCambiado && ruta.slug !== rutaActualObj.slug) {
-    await departuresService.regenerarSkusRuta(idValido, ruta.slug);
+  if (skuAtributosCambiados) {
+    await departuresService.regenerarSkusRuta(idValido);
   }
 
   if (Array.isArray(images)) {
@@ -214,6 +218,7 @@ async function activateRuta(id) {
 
 async function deactivateRuta(id) {
   const idValido = await validarId(id);
+  await integrity.comprobarSinReferencias("ruta", idValido, "desactivar");
 
   const ruta = await rutasRepo.setActive(idValido, false);
 
@@ -221,21 +226,18 @@ async function deactivateRuta(id) {
     throw AppError.notFound("Ruta no encontrada");
   }
 
-  await integrity.inactivarDependientes("ruta", idValido);
-
   return conAvisos(ruta);
 }
 
 async function deleteRuta(id) {
   const idValido = await validarId(id);
+  await integrity.comprobarSinReferencias("ruta", idValido, "eliminar lógicamente");
 
   const ruta = await rutasRepo.softDelete(idValido);
 
   if (!ruta) {
     throw AppError.notFound("Ruta no encontrada");
   }
-
-  await integrity.inactivarDependientes("ruta", idValido);
 
   return conAvisos(ruta);
 }

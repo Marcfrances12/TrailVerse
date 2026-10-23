@@ -3,7 +3,7 @@ require("dotenv").config();
 const mongoose = require("mongoose");
 const connectDB = require("./src/config/database");
 const { generateSlug } = require("./src/utils/slug");
-const { generateSku } = require("./src/utils/sku");
+const { generateSku, generateSkuWithSequence } = require("./src/utils/sku");
 
 const Role = require("./src/models/role.model");
 const User = require("./src/models/user.model");
@@ -111,14 +111,30 @@ const seed = async () => {
       }
     ]);
 
+    const skusAsignados = new Map();
+    const skuDeRuta = (ruta) => {
+      const location = locations.find((item) => String(item._id) === String(ruta.locationId));
+      if (!location) throw new Error("No se encontró la localización de la ruta al generar el SKU");
+
+      const base = generateSku({
+        nombreLocalizacion: location.nombre,
+        provincia: location.provincia,
+        dificultad: ruta.dificultad,
+        distanciaKm: ruta.distanciaKm
+      });
+      const numero = skusAsignados.get(base) ?? 0;
+      skusAsignados.set(base, numero + 1);
+      return numero === 0 ? base : generateSkuWithSequence(base, numero);
+    };
+
     const now = new Date();
     await Departure.insertMany([
-      { rutaId: rutas[0]._id, sku: generateSku(rutas[0].slug, 1), startDate: new Date(now.getFullYear(), now.getMonth() + 1, 15, 9, 0), meetingPoint: "Parking Peñón de Ifach", price: { amount: 15, currency: "EUR" }, capacity: 15, stock: 15, status: "open" },
-      { rutaId: rutas[0]._id, sku: generateSku(rutas[0].slug, 2), startDate: new Date(now.getFullYear(), now.getMonth() + 1, 22, 9, 0), meetingPoint: "Parking Peñón de Ifach", price: { amount: 15, currency: "EUR" }, capacity: 15, stock: 0, status: "full" },
-      { rutaId: rutas[1]._id, sku: generateSku(rutas[1].slug, 1), startDate: new Date(now.getFullYear(), now.getMonth() + 1, 20, 7, 30), meetingPoint: "Puerto de Dénia", price: { amount: 20, currency: "EUR" }, capacity: 10, stock: 8, status: "open" },
-      { rutaId: rutas[2]._id, sku: generateSku(rutas[2].slug, 1), startDate: new Date(now.getFullYear(), now.getMonth() + 1, 10, 10, 0), meetingPoint: "Área recreativa Pou Clar", price: { amount: 5, currency: "EUR" }, capacity: 25, stock: 25, status: "open" },
-      { rutaId: rutas[3]._id, sku: generateSku(rutas[3].slug, 1), startDate: new Date(now.getFullYear(), now.getMonth() + 1, 25, 8, 0), meetingPoint: "Font Roja, zona de parking", price: { amount: 12, currency: "EUR" }, capacity: 20, stock: 18, status: "open" },
-      { rutaId: rutas[4]._id, sku: generateSku(rutas[4].slug, 1), startDate: new Date(now.getFullYear(), now.getMonth() + 1, 18, 7, 0), meetingPoint: "Serra, plaza del pueblo", price: { amount: 10, currency: "EUR" }, capacity: 20, stock: 20, status: "open" }
+      { rutaId: rutas[0]._id, sku: skuDeRuta(rutas[0]), startDate: new Date(now.getFullYear(), now.getMonth() + 1, 15, 9, 0), meetingPoint: "Parking Peñón de Ifach", price: { amount: 15, currency: "EUR" }, capacity: 15, stock: 15, status: "open" },
+      { rutaId: rutas[0]._id, sku: skuDeRuta(rutas[0]), startDate: new Date(now.getFullYear(), now.getMonth() + 1, 22, 9, 0), meetingPoint: "Parking Peñón de Ifach", price: { amount: 15, currency: "EUR" }, capacity: 15, stock: 0, status: "full" },
+      { rutaId: rutas[1]._id, sku: skuDeRuta(rutas[1]), startDate: new Date(now.getFullYear(), now.getMonth() + 1, 20, 7, 30), meetingPoint: "Puerto de Dénia", price: { amount: 20, currency: "EUR" }, capacity: 10, stock: 8, status: "open" },
+      { rutaId: rutas[2]._id, sku: skuDeRuta(rutas[2]), startDate: new Date(now.getFullYear(), now.getMonth() + 1, 10, 10, 0), meetingPoint: "Área recreativa Pou Clar", price: { amount: 5, currency: "EUR" }, capacity: 25, stock: 25, status: "open" },
+      { rutaId: rutas[3]._id, sku: skuDeRuta(rutas[3]), startDate: new Date(now.getFullYear(), now.getMonth() + 1, 25, 8, 0), meetingPoint: "Font Roja, zona de parking", price: { amount: 12, currency: "EUR" }, capacity: 20, stock: 18, status: "open" },
+      { rutaId: rutas[4]._id, sku: skuDeRuta(rutas[4]), startDate: new Date(now.getFullYear(), now.getMonth() + 1, 18, 7, 0), meetingPoint: "Serra, plaza del pueblo", price: { amount: 10, currency: "EUR" }, capacity: 20, stock: 20, status: "open" }
     ]);
 
     await Image.insertMany([

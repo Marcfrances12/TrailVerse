@@ -35,15 +35,20 @@ const setSku = async (id, sku) => {
   return Departure.updateOne({ _id: id }, { $set: { sku } });
 };
 
-const skuExists = async (sku, excludeId) => {
+const skuExists = async (sku, excludeIds) => {
   const filtro = { sku };
-  if (excludeId) filtro._id = { $ne: excludeId };
+  const ids = (Array.isArray(excludeIds) ? excludeIds : [excludeIds]).filter(Boolean);
+  if (ids.length === 1) filtro._id = { $ne: ids[0] };
+  if (ids.length > 1) filtro._id = { $nin: ids };
   return Boolean(await Departure.exists(filtro));
 };
 
-const countByBase = async (base) => {
-  const regex = new RegExp(`^${escapeRegex(base)}-\\d{3,}$`);
-  return Departure.countDocuments({ sku: regex });
+const skuBaseExists = async (base, excludeIds) => {
+  const filtro = { sku: new RegExp(`^${escapeRegex(base)}(?:-\\d{3,})?$`) };
+  const ids = (Array.isArray(excludeIds) ? excludeIds : [excludeIds]).filter(Boolean);
+  if (ids.length === 1) filtro._id = { $ne: ids[0] };
+  if (ids.length > 1) filtro._id = { $nin: ids };
+  return Boolean(await Departure.exists(filtro));
 };
 
 const create = async (datos) => {
@@ -90,7 +95,7 @@ module.exports = {
   getByRuta,
   setSku,
   skuExists,
-  countByBase,
+  skuBaseExists,
   create,
   update,
   setActive,

@@ -3,14 +3,12 @@ import { RouterLink } from '@angular/router';
 import Swal from 'sweetalert2';
 import { RolesStore } from '../../../../core/stores/roles.store';
 import { Role, PERMISOS } from '../../../../core/models/role.model';
-import { SkeletonGrid } from '../../../../shared/components/skeleton-grid/skeleton-grid';
-import { EmptyState } from '../../../../shared/components/empty-state/empty-state';
-import { ErrorState } from '../../../../shared/components/error-state/error-state';
+import { AdminListShell } from '../../../../shared/components/admin-list-shell/admin-list-shell';
 import { formatFecha } from '../../../../shared/utils/formatos';
 
 @Component({
   selector: 'app-role-list',
-  imports: [RouterLink, SkeletonGrid, EmptyState, ErrorState],
+  imports: [RouterLink, AdminListShell],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './role-list.html'
 })

@@ -1,7 +1,7 @@
 const departuresRepo = require("../repos/departures.repo");
 const Ruta = require("../models/ruta.model");
 const AppError = require("../utils/AppError");
-const { generateSku } = require("../utils/sku");
+const { generateSku, generateSkuWithSequence } = require("../utils/sku");
 const { validarConZod } = require("../utils/validar");
 const {
   idParamSchema,
@@ -15,15 +15,71 @@ async function validarId(id) {
   return validarConZod(idParamSchema, { id }, "params").id;
 }
 
-async function construirSkuUnico(rutaSlug) {
-  const base = `DEP-${rutaSlug}`;
-  let numero = (await departuresRepo.countByBase(base)) + 1;
-  let sku = generateSku(rutaSlug, numero);
-  while (await departuresRepo.skuExists(sku)) {
-    numero += 1;
-    sku = generateSku(rutaSlug, numero);
+async function baseSkuParaRuta(rutaId) {
+  const ruta = await Ruta.findById(rutaId)
+    .select("dificultad distanciaKm locationId")
+    .populate("locationId", "nombre provincia");
+
+  if (!ruta) throw AppError.notFound("No se puede generar el SKU: ruta no encontrada");
+  if (!ruta.locationId || typeof ruta.locationId !== "object") {
+    throw AppError.badRequest("No se puede generar el SKU: la ruta no tiene una localización disponible");
   }
-  return validarConZod(skuSchema, sku, "body");
+
+  try {
+    return generateSku({
+      nombreLocalizacion: ruta.locationId.nombre,
+      provincia: ruta.locationId.provincia,
+      dificultad: ruta.dificultad,
+      distanciaKm: ruta.distanciaKm
+    });
+  } catch (error) {
+    throw AppError.badRequest(error.message);
+  }
+}
+
+async function skuUnicoDesdeBase(base, { excludeIds = [], reservados = new Set() } = {}) {
+  if (!reservados.has(base) && !(await departuresRepo.skuBaseExists(base, excludeIds))) {
+    return validarConZod(skuSchema, base, "body");
+  }
+
+  let numero = 1;
+  while (true) {
+    const candidato = generateSkuWithSequence(base, numero);
+    if (!reservados.has(candidato) && !(await departuresRepo.skuExists(candidato, excludeIds))) {
+      return validarConZod(skuSchema, candidato, "body");
+    }
+    numero += 1;
+  }
+}
+
+async function generarSkuUnicoParaRuta(rutaId, excludeId) {
+  const base = await baseSkuParaRuta(rutaId);
+  return skuUnicoDesdeBase(base, { excludeIds: excludeId ? [excludeId] : [] });
+}
+
+async function regenerarSkusRuta(rutaId) {
+  const departures = await departuresRepo.getByRuta(rutaId);
+  if (departures.length === 0) return 0;
+
+  const base = await baseSkuParaRuta(rutaId);
+  const baseActualDe = (sku) => typeof sku === "string" ? sku.replace(/-\d{3,}$/, "") : "";
+  const yaAlineadas = departures.filter((departure) => baseActualDe(departure.sku) === base);
+  const porActualizar = departures.filter((departure) => !yaAlineadas.includes(departure));
+  if (porActualizar.length === 0) return 0;
+
+  const idsPorActualizar = porActualizar.map((departure) => departure._id);
+  const reservados = new Set(yaAlineadas.map((departure) => departure.sku));
+  for (const departure of porActualizar) {
+    const sku = await skuUnicoDesdeBase(base, { excludeIds: idsPorActualizar, reservados });
+    await departuresRepo.setSku(departure._id, sku);
+    reservados.add(sku);
+  }
+  return porActualizar.length;
+}
+
+async function regenerarSkusLocalizacion(locationId) {
+  const rutas = await Ruta.find({ locationId }).select("_id").lean();
+  for (const ruta of rutas) await regenerarSkusRuta(ruta._id);
 }
 
 function validarInvariantes(datos) {
@@ -61,15 +117,7 @@ async function getDepartureById(id) {
 async function createDeparture(datos) {
   const datosValidos = validarConZod(createDepartureSchema, datos, "body");
   await integrity.validarRelacionesDeparture(datosValidos);
-
-  const ruta = await Ruta.findOne({
-    _id: datosValidos.rutaId,
-    isActive: true,
-    deleted_at: null
-  }).select("nombre slug");
-  if (!ruta) throw AppError.badRequest("La ruta indicada no existe, está inactiva o se encuentra eliminada");
-
-  const sku = await construirSkuUnico(ruta.slug);
+  const sku = await generarSkuUnicoParaRuta(datosValidos.rutaId);
   return departuresRepo.create({ ...datosValidos, sku });
 }
 
@@ -77,12 +125,13 @@ async function updateDeparture(id, datos) {
   const idValido = await validarId(id);
   const datosValidos = validarConZod(updateDepartureSchema, datos, "body");
   const actual = await departuresRepo.getById(idValido);
+
   if (!actual) throw AppError.notFound("Salida no encontrada");
 
   const datosActuales = actual.toObject();
   const price = datosValidos.price
     ? { ...datosActuales.price, ...datosValidos.price }
-    : datosActuales.price;
+    : datosActuales.price; i
   const endDate = Object.hasOwn(datosValidos, "endDate") ? datosValidos.endDate : datosActuales.endDate;
   validarInvariantes({
     startDate: datosValidos.startDate ?? datosActuales.startDate,
@@ -92,26 +141,17 @@ async function updateDeparture(id, datos) {
   });
 
   const updateData = { ...datosValidos };
+
   if (datosValidos.price) updateData.price = price;
   const rutaActualId = String(datosActuales.rutaId?._id ?? datosActuales.rutaId);
   if (datosValidos.rutaId && String(datosValidos.rutaId) !== rutaActualId) {
     await integrity.validarRelacionesDeparture({ rutaId: datosValidos.rutaId });
-    const ruta = await Ruta.findOne({ _id: datosValidos.rutaId, isActive: true, deleted_at: null }).select("slug");
-    if (!ruta) throw AppError.badRequest("La ruta indicada no existe, está inactiva o se encuentra eliminada");
-    updateData.sku = await construirSkuUnico(ruta.slug);
+    updateData.sku = await generarSkuUnicoParaRuta(datosValidos.rutaId, idValido);
   }
 
   const departure = await departuresRepo.update(idValido, updateData);
   if (!departure) throw AppError.notFound("Salida no encontrada");
   return departure;
-}
-
-async function regenerarSkusRuta(rutaId, rutaSlug) {
-  const departures = await departuresRepo.getByRuta(rutaId);
-  for (const departure of departures) {
-    const sku = await construirSkuUnico(rutaSlug);
-    await departuresRepo.setSku(departure._id, sku);
-  }
 }
 
 async function activateDeparture(id) {
@@ -166,5 +206,6 @@ module.exports = {
   deleteDeparture,
   restoreDeparture,
   hardDeleteDeparture,
-  regenerarSkusRuta
+  regenerarSkusRuta,
+  regenerarSkusLocalizacion
 };

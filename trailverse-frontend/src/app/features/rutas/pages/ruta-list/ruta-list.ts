@@ -1,17 +1,14 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
 import Swal from 'sweetalert2';
 import { RutasStore } from '../../../../core/stores/rutas.store';
 import { AdminTable } from '../../../../shared/components/admin-table/admin-table';
-import { SkeletonGrid } from '../../../../shared/components/skeleton-grid/skeleton-grid';
-import { EmptyState } from '../../../../shared/components/empty-state/empty-state';
-import { ErrorState } from '../../../../shared/components/error-state/error-state';
+import { AdminListShell } from '../../../../shared/components/admin-list-shell/admin-list-shell';
 import { Ruta } from '../../../../core/models/ruta.model';
 import { formatFecha } from '../../../../shared/utils/formatos';
 
 @Component({
   selector: 'app-ruta-list',
-  imports: [RouterLink, AdminTable, SkeletonGrid, EmptyState, ErrorState],
+  imports: [AdminListShell, AdminTable],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './ruta-list.html'
 })

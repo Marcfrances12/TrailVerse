@@ -3,14 +3,12 @@ import { RouterLink } from '@angular/router';
 import Swal from 'sweetalert2';
 import { HostsStore } from '../../../../core/stores/hosts.store';
 import { Host } from '../../../../core/models/host.model';
-import { SkeletonGrid } from '../../../../shared/components/skeleton-grid/skeleton-grid';
-import { EmptyState } from '../../../../shared/components/empty-state/empty-state';
-import { ErrorState } from '../../../../shared/components/error-state/error-state';
+import { AdminListShell } from '../../../../shared/components/admin-list-shell/admin-list-shell';
 import { formatFecha } from '../../../../shared/utils/formatos';
 
 @Component({
   selector: 'app-host-list',
-  imports: [RouterLink, SkeletonGrid, EmptyState, ErrorState],
+  imports: [RouterLink, AdminListShell],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './host-list.html'
 })

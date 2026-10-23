@@ -119,56 +119,6 @@ async function validarRelacionesDeparture(datos) {
   }
 }
 
-async function inactivarDependientes(tipo, id, visitados = new Set()) {
-  const clave = `${tipo}:${String(id)}`;
-  if (visitados.has(clave)) return;
-  visitados.add(clave);
-
-  let dependientes = [];
-
-  switch (tipo) {
-    case "role": {
-      dependientes = await User.find({ roleId: id }).select("_id").lean();
-      await User.updateMany({ roleId: id, isActive: true, ...noBorrados }, { $set: { isActive: false } });
-      for (const user of dependientes) await inactivarDependientes("user", user._id, visitados);
-      break;
-    }
-    case "user": {
-      dependientes = await Host.find({ userId: id }).select("_id").lean();
-      await Host.updateMany({ userId: id, isActive: true, ...noBorrados }, { $set: { isActive: false } });
-      for (const host of dependientes) await inactivarDependientes("host", host._id, visitados);
-      break;
-    }
-    case "host": {
-      dependientes = await Ruta.find({ hostId: id }).select("_id").lean();
-      await Ruta.updateMany({ hostId: id, isActive: true, ...noBorrados }, { $set: { isActive: false } });
-      for (const ruta of dependientes) await inactivarDependientes("ruta", ruta._id, visitados);
-      break;
-    }
-    case "location": {
-      dependientes = await Ruta.find({ locationId: id }).select("_id").lean();
-      await Ruta.updateMany({ locationId: id, isActive: true, ...noBorrados }, { $set: { isActive: false } });
-      for (const ruta of dependientes) await inactivarDependientes("ruta", ruta._id, visitados);
-      break;
-    }
-    case "category": {
-      dependientes = await Category.find({ parentId: id }).select("_id").lean();
-      await Category.updateMany({ parentId: id, isActive: true, ...noBorrados }, { $set: { isActive: false } });
-      for (const category of dependientes) await inactivarDependientes("category", category._id, visitados);
-
-      const rutas = await Ruta.find({ categoryIds: id }).select("_id").lean();
-      await Ruta.updateMany({ categoryIds: id, isActive: true, ...noBorrados }, { $set: { isActive: false } });
-      for (const ruta of rutas) await inactivarDependientes("ruta", ruta._id, visitados);
-      break;
-    }
-    case "ruta": {
-      dependientes = await Departure.find({ rutaId: id }).select("_id").lean();
-      await Departure.updateMany({ rutaId: id, isActive: true, ...noBorrados }, { $set: { isActive: false } });
-      break;
-    }
-  }
-}
-
 function estadoNoDisponible(documento) {
   if (!documento) return null;
   if (documento.deleted_at) return "eliminado";
@@ -215,34 +165,42 @@ function avisosIntegridadRuta(ruta) {
   return avisos;
 }
 
-async function exigirSinReferencias(Model, filtro, nombre) {
-  if (await Model.exists(filtro)) {
-    throw AppError.conflict(`No se puede eliminar definitivamente ${nombre} porque todavía está referenciado`);
+async function exigirSinDependientes(Model, filtro, accion, nombre, dependientes) {
+  const filtroEfectivo = accion === "desactivar"
+    ? { ...filtro, isActive: true, deleted_at: null }
+    : filtro;
+
+  if (await Model.exists(filtroEfectivo)) {
+    throw AppError.conflict(`No se puede ${accion} ${nombre}: ${dependientes}`);
+  }
+}
+
+async function comprobarSinReferencias(tipo, id, accion) {
+  switch (tipo) {
+    case "role":
+      await exigirSinDependientes(User, { roleId: id }, accion, "el rol", "hay usuarios asignados a ese rol");
+      break;
+    case "user":
+      await exigirSinDependientes(Host, { userId: id }, accion, "el usuario", "hay hosts asociados a ese usuario");
+      break;
+    case "host":
+      await exigirSinDependientes(Ruta, { hostId: id }, accion, "el host", "hay rutas que lo utilizan");
+      break;
+    case "location":
+      await exigirSinDependientes(Ruta, { locationId: id }, accion, "la localización", "hay rutas que la utilizan");
+      break;
+    case "category":
+      await exigirSinDependientes(Ruta, { categoryIds: id }, accion, "la categoría", "hay rutas que la utilizan");
+      await exigirSinDependientes(Category, { parentId: id }, accion, "la categoría", "hay categorías hijas que dependen de ella");
+      break;
+    case "ruta":
+      await exigirSinDependientes(Departure, { rutaId: id }, accion, "la ruta", "hay salidas asociadas a ella");
+      break;
   }
 }
 
 async function comprobarBorradoDefinitivo(tipo, id) {
-  switch (tipo) {
-    case "role":
-      await exigirSinReferencias(User, { roleId: id }, "el rol");
-      break;
-    case "user":
-      await exigirSinReferencias(Host, { userId: id }, "el usuario");
-      break;
-    case "host":
-      await exigirSinReferencias(Ruta, { hostId: id }, "el host");
-      break;
-    case "location":
-      await exigirSinReferencias(Ruta, { locationId: id }, "la localización");
-      break;
-    case "category":
-      await exigirSinReferencias(Ruta, { categoryIds: id }, "la categoría");
-      await exigirSinReferencias(Category, { parentId: id }, "la categoría");
-      break;
-    case "ruta":
-      await exigirSinReferencias(Departure, { rutaId: id }, "la ruta");
-      break;
-  }
+  return comprobarSinReferencias(tipo, id, "eliminar definitivamente");
 }
 
 module.exports = {
@@ -251,7 +209,7 @@ module.exports = {
   validarRelacionesCategoria,
   validarRelacionesRuta,
   validarRelacionesDeparture,
-  inactivarDependientes,
   avisosIntegridadRuta,
+  comprobarSinReferencias,
   comprobarBorradoDefinitivo
 };

@@ -83,9 +83,9 @@ async function activateUser(id) {
 
 async function deactivateUser(id) {
   const idValido = await validarId(id);
+  await integrity.comprobarSinReferencias("user", idValido, "desactivar");
   const user = await usersRepo.setActive(idValido, false);
   if (!user) throw AppError.notFound("Usuario no encontrado");
-  await integrity.inactivarDependientes("user", idValido);
   const userObj = user.toObject ? user.toObject() : user;
   delete userObj.passwordHash;
   return userObj;
@@ -93,9 +93,9 @@ async function deactivateUser(id) {
 
 async function deleteUser(id) {
   const idValido = await validarId(id);
+  await integrity.comprobarSinReferencias("user", idValido, "eliminar lógicamente");
   const user = await usersRepo.softDelete(idValido);
   if (!user) throw AppError.notFound("Usuario no encontrado");
-  await integrity.inactivarDependientes("user", idValido);
   return user;
 }
 
