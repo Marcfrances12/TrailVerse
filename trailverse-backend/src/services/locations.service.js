@@ -3,17 +3,18 @@ const AppError = require("../utils/AppError");
 const { generateSlug } = require("../utils/slug");
 const { validarConZod } = require("../utils/validar");
 const escapeRegex = require("../utils/escapeRegex");
-const { idParamSchema } = require("../validators/rutas.validator");
+const { idParamSchema, createLocationSchema, updateLocationSchema } = require("../validators/locations.validator");
+const integrity = require("./integrity.service");
 
 async function validarId(id) {
   return validarConZod(idParamSchema, { id }, "params").id;
 }
 
-async function construirSlugUnico(nombre) {
+async function construirSlugUnico(nombre, excludeId) {
   const base = generateSlug(nombre);
   let candidato = base;
   let contador = 2;
-  while (await locationsRepo.slugExists(candidato)) {
+  while (await locationsRepo.slugExists(candidato, excludeId)) {
     candidato = `${base}-${contador}`;
     contador += 1;
   }
@@ -39,16 +40,22 @@ async function getLocationById(id) {
 }
 
 async function createLocation(datos) {
-  const slug = await construirSlugUnico(datos.nombre);
-  return locationsRepo.create({ ...datos, slug });
+  const datosValidos = validarConZod(createLocationSchema, datos, "body");
+  const slug = await construirSlugUnico(datosValidos.nombre);
+  return locationsRepo.create({ ...datosValidos, slug });
 }
 
 async function updateLocation(id, datos) {
   const idValido = await validarId(id);
-  if (datos.nombre) {
-    datos.slug = await construirSlugUnico(datos.nombre);
+  const datosValidos = validarConZod(updateLocationSchema, datos, "body");
+  const actual = await locationsRepo.getById(idValido);
+  if (!actual) throw AppError.notFound("Ubicación no encontrada");
+
+  const updateData = { ...datosValidos };
+  if (datosValidos.nombre && datosValidos.nombre !== actual.nombre) {
+    updateData.slug = await construirSlugUnico(datosValidos.nombre, idValido);
   }
-  const location = await locationsRepo.update(idValido, datos);
+  const location = await locationsRepo.update(idValido, updateData);
   if (!location) throw AppError.notFound("Ubicación no encontrada");
   return location;
 }
@@ -64,6 +71,7 @@ async function deactivateLocation(id) {
   const idValido = await validarId(id);
   const location = await locationsRepo.setActive(idValido, false);
   if (!location) throw AppError.notFound("Ubicación no encontrada");
+  await integrity.inactivarDependientes("location", idValido);
   return location;
 }
 
@@ -71,6 +79,7 @@ async function deleteLocation(id) {
   const idValido = await validarId(id);
   const location = await locationsRepo.softDelete(idValido);
   if (!location) throw AppError.notFound("Ubicación no encontrada");
+  await integrity.inactivarDependientes("location", idValido);
   return location;
 }
 
@@ -83,6 +92,7 @@ async function restoreLocation(id) {
 
 async function hardDeleteLocation(id) {
   const idValido = await validarId(id);
+  await integrity.comprobarBorradoDefinitivo("location", idValido);
   const location = await locationsRepo.hardDelete(idValido);
   if (!location) throw AppError.notFound("Ubicación no encontrada");
   return location;

@@ -106,11 +106,7 @@
             @for (loc of store.locations(); track loc._id) {
               <tr class="border-b border-crema-100 transition-colors hover:bg-crema-50/50"
                   [class.grayscale]="!loc.isActive" [class.opacity-60]="!loc.isActive">
-                <td class="px-4 py-3">
-                  <a [routerLink]="['/admin/localizaciones', loc._id]" class="font-semibold text-bosque-700 hover:text-bosque-500">
-                    {{ loc.nombre }}
-                  </a>
-                </td>
+                <td class="px-4 py-3 font-semibold text-bosque-700">{{ loc.nombre }}</td>
                 <td class="px-4 py-3 text-tinta-suave">{{ loc.provincia }}</td>
                 <td class="px-4 py-3 text-tinta-suave">{{ loc.comunidad }}</td>
                 <td class="px-4 py-3">

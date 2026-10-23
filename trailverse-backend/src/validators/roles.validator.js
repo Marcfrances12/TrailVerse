@@ -29,7 +29,7 @@ const createRoleSchema = z.strictObject({
 });
 
 const updateRoleSchema = z
-  .object({
+  .strictObject({
     name: z
       .string()
       .trim()

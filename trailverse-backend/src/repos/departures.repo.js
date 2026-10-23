@@ -19,6 +19,22 @@ const getById = async (id) => {
   return Departure.findOne({ _id: id, ...noBorrados }).populate("rutaId", "nombre slug");
 };
 
+const getAnyById = async (id) => {
+  return Departure.findById(id);
+};
+
+const getRelationsById = async (id) => {
+  return Departure.findOne({ _id: id, ...noBorrados }).select("rutaId");
+};
+
+const getByRuta = async (rutaId) => {
+  return Departure.find({ rutaId }).sort({ created_at: 1, _id: 1 });
+};
+
+const setSku = async (id, sku) => {
+  return Departure.updateOne({ _id: id }, { $set: { sku } });
+};
+
 const skuExists = async (sku, excludeId) => {
   const filtro = { sku };
   if (excludeId) filtro._id = { $ne: excludeId };
@@ -69,6 +85,10 @@ module.exports = {
   getAll,
   getDeleted,
   getById,
+  getAnyById,
+  getRelationsById,
+  getByRuta,
+  setSku,
   skuExists,
   countByBase,
   create,

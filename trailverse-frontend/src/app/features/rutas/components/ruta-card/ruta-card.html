@@ -43,6 +43,13 @@
       <h3 class="line-clamp-2 text-base font-bold leading-snug text-tinta group-hover:text-bosque-700">
         {{ ruta().nombre }}
       </h3>
+      @if (ruta().dependencyWarnings?.length) {
+        <ul class="mt-2 space-y-0.5 text-xs font-medium text-red-700" role="alert">
+          @for (aviso of ruta().dependencyWarnings; track aviso) {
+            <li>{{ aviso }}</li>
+          }
+        </ul>
+      }
 
       <p class="mt-1 flex items-center gap-1 text-sm text-tinta-suave">
         <svg viewBox="0 0 24 24" class="h-4 w-4 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">

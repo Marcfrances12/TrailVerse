@@ -18,7 +18,6 @@ export class UserList implements OnInit {
   readonly store = inject(UsersStore);
   readonly modoPapelera = signal(false);
   readonly formatFecha = formatFecha;
-
   ngOnInit(): void {
     this.store.cargar().catch(() => undefined);
   }

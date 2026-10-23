@@ -19,7 +19,6 @@ export class RoleList implements OnInit {
   readonly modoPapelera = signal(false);
   readonly permisos = PERMISOS;
   readonly formatFecha = formatFecha;
-
   ngOnInit(): void {
     this.store.cargar().catch(() => undefined);
   }

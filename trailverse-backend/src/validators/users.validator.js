@@ -19,7 +19,7 @@ const createUserSchema = z.strictObject({
 });
 
 const updateUserSchema = z
-  .object({
+  .strictObject({
     name: z.string().trim().min(2).max(100).optional(),
     email: z
       .string()

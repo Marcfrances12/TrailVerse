@@ -9,6 +9,8 @@ const departureSchema = new mongoose.Schema(
     },
     sku: {
       type: String,
+      required: [true, "El SKU de la salida es obligatorio"],
+      match: [/^DEP-[a-z0-9]+(?:-[a-z0-9]+)*-\d{3,}$/, "El SKU de la salida no tiene un formato válido"],
       unique: true,
       trim: true
     },
@@ -34,6 +36,7 @@ const departureSchema = new mongoose.Schema(
       currency: {
         type: String,
         default: "EUR",
+        enum: ["EUR", "USD", "GBP"],
         uppercase: true,
         trim: true
       }
@@ -71,5 +74,14 @@ const departureSchema = new mongoose.Schema(
 );
 
 departureSchema.index({ rutaId: 1, startDate: 1 });
+
+departureSchema.pre("validate", function () {
+  if (this.stock > this.capacity) {
+    this.invalidate("stock", "El stock no puede superar la capacidad");
+  }
+  if (this.endDate && this.startDate && this.endDate < this.startDate) {
+    this.invalidate("endDate", "La fecha de fin debe ser posterior a la de inicio");
+  }
+});
 
 module.exports = mongoose.model("Departure", departureSchema);

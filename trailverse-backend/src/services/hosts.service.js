@@ -2,17 +2,18 @@ const hostsRepo = require("../repos/hosts.repo");
 const AppError = require("../utils/AppError");
 const { generateSlug } = require("../utils/slug");
 const { validarConZod } = require("../utils/validar");
-const { idParamSchema } = require("../validators/rutas.validator");
+const { idParamSchema, slugParamSchema, createHostSchema, updateHostSchema } = require("../validators/hosts.validator");
+const integrity = require("./integrity.service");
 
 async function validarId(id) {
   return validarConZod(idParamSchema, { id }, "params").id;
 }
 
-async function construirSlugUnico(name) {
+async function construirSlugUnico(name, excludeId) {
   const base = generateSlug(name);
   let candidato = base;
   let contador = 2;
-  while (await hostsRepo.slugExists(candidato)) {
+  while (await hostsRepo.slugExists(candidato, excludeId)) {
     candidato = `${base}-${contador}`;
     contador += 1;
   }
@@ -37,28 +38,40 @@ async function getHostById(id) {
 }
 
 async function getHostBySlug(slug) {
-  const host = await hostsRepo.getBySlug(slug);
+  const slugValido = validarConZod(slugParamSchema, { slug }, "params").slug;
+  const host = await hostsRepo.getBySlug(slugValido);
   if (!host) throw AppError.notFound("Host no encontrado");
   return host;
 }
 
 async function createHost(datos) {
-  const slug = await construirSlugUnico(datos.name);
-  return hostsRepo.create({ ...datos, slug });
+  const datosValidos = validarConZod(createHostSchema, datos, "body");
+  await integrity.validarRelacionesHost(datosValidos);
+  const slug = await construirSlugUnico(datosValidos.name);
+  return hostsRepo.create({ ...datosValidos, slug });
 }
 
 async function updateHost(id, datos) {
   const idValido = await validarId(id);
-  if (datos.name) {
-    datos.slug = await construirSlugUnico(datos.name);
+  const datosValidos = validarConZod(updateHostSchema, datos, "body");
+  const actual = await hostsRepo.getById(idValido);
+  if (!actual) throw AppError.notFound("Host no encontrado");
+  await integrity.validarRelacionesHost(datosValidos);
+
+  const updateData = { ...datosValidos };
+  if (datosValidos.name && datosValidos.name !== actual.name) {
+    updateData.slug = await construirSlugUnico(datosValidos.name, idValido);
   }
-  const host = await hostsRepo.update(idValido, datos);
+  const host = await hostsRepo.update(idValido, updateData);
   if (!host) throw AppError.notFound("Host no encontrado");
   return host;
 }
 
 async function activateHost(id) {
   const idValido = await validarId(id);
+  const actual = await hostsRepo.getRelationsById(idValido);
+  if (!actual) throw AppError.notFound("Host no encontrado");
+  await integrity.validarRelacionesHost({ userId: actual.userId });
   const host = await hostsRepo.setActive(idValido, true);
   if (!host) throw AppError.notFound("Host no encontrado");
   return host;
@@ -68,6 +81,7 @@ async function deactivateHost(id) {
   const idValido = await validarId(id);
   const host = await hostsRepo.setActive(idValido, false);
   if (!host) throw AppError.notFound("Host no encontrado");
+  await integrity.inactivarDependientes("host", idValido);
   return host;
 }
 
@@ -75,11 +89,15 @@ async function deleteHost(id) {
   const idValido = await validarId(id);
   const host = await hostsRepo.softDelete(idValido);
   if (!host) throw AppError.notFound("Host no encontrado");
+  await integrity.inactivarDependientes("host", idValido);
   return host;
 }
 
 async function restoreHost(id) {
   const idValido = await validarId(id);
+  const actual = await hostsRepo.getAnyById(idValido);
+  if (!actual || actual.deleted_at == null) throw AppError.notFound("Host no encontrado en la papelera");
+  await integrity.validarRelacionesHost({ userId: actual.userId });
   const host = await hostsRepo.restore(idValido);
   if (!host) throw AppError.notFound("Host no encontrado en la papelera");
   return host;
@@ -87,6 +105,7 @@ async function restoreHost(id) {
 
 async function hardDeleteHost(id) {
   const idValido = await validarId(id);
+  await integrity.comprobarBorradoDefinitivo("host", idValido);
   const host = await hostsRepo.hardDelete(idValido);
   if (!host) throw AppError.notFound("Host no encontrado");
   return host;

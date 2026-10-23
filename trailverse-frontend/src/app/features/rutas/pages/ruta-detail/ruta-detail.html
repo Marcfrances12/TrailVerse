@@ -66,6 +66,17 @@
               </svg>
               {{ nombreUbicacion(rutaActual) }}
             </p>
+            @if (rutaActual.dependencyWarnings?.length) {
+              <div class="mt-4 rounded-xl border border-red-300 bg-red-50 p-4 text-sm text-red-800" role="alert">
+                <p class="font-semibold">Esta ruta tiene relaciones no disponibles:</p>
+                <ul class="mt-1 list-inside list-disc space-y-0.5">
+                  @for (aviso of rutaActual.dependencyWarnings; track aviso) {
+                    <li>{{ aviso }}</li>
+                  }
+                </ul>
+                <p class="mt-2 font-medium">La ruta se ha desactivado. Reactiva las relaciones necesarias y después activa la ruta manualmente.</p>
+              </div>
+            }
           </div>
 
           <dl class="grid grid-cols-2 gap-4 sm:grid-cols-4">

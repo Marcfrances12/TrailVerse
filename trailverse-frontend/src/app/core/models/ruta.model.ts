@@ -14,6 +14,7 @@ export interface Location {
     coordinates: number[];
   };
   isActive: boolean;
+  deleted_at?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -26,6 +27,19 @@ export interface Host {
   contactEmail: string;
   phone: string;
   isActive: boolean;
+  deleted_at?: string | null;
+  userId?: string | {
+    _id: string;
+    name: string;
+    isActive: boolean;
+    deleted_at?: string | null;
+    roleId?: string | {
+      _id: string;
+      name: string;
+      isActive: boolean;
+      deleted_at?: string | null;
+    };
+  } | null;
   created_at: string;
   updated_at: string;
 }
@@ -37,6 +51,7 @@ export interface Category {
   type: 'ruta';
   parentId: string | null;
   isActive: boolean;
+  deleted_at?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -77,6 +92,7 @@ export interface Ruta {
   isActive: boolean;
   status: EstadoRuta;
   deleted_at: string | null;
+  dependencyWarnings?: string[];
   created_at: string;
   updated_at: string;
 }

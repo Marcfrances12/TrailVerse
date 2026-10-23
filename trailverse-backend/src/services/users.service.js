@@ -2,7 +2,8 @@ const crypto = require("crypto");
 const usersRepo = require("../repos/users.repo");
 const AppError = require("../utils/AppError");
 const { validarConZod } = require("../utils/validar");
-const { idParamSchema } = require("../validators/rutas.validator");
+const { idParamSchema, createUserSchema, updateUserSchema } = require("../validators/users.validator");
+const integrity = require("./integrity.service");
 
 async function validarId(id) {
   return validarConZod(idParamSchema, { id }, "params").id;
@@ -34,10 +35,12 @@ async function getUserById(id) {
 }
 
 async function createUser(datos) {
-  const existe = await usersRepo.emailExists(datos.email);
+  const datosValidos = validarConZod(createUserSchema, datos, "body");
+  await integrity.validarRelacionesUsuario(datosValidos);
+  const existe = await usersRepo.emailExists(datosValidos.email);
   if (existe) throw AppError.conflict("Ya existe un usuario con ese email");
-  const passwordHash = hashPassword(datos.password);
-  const { password, ...resto } = datos;
+  const passwordHash = hashPassword(datosValidos.password);
+  const { password, ...resto } = datosValidos;
   const user = await usersRepo.create({ ...resto, passwordHash });
   const userObj = user.toObject ? user.toObject() : user;
   delete userObj.passwordHash;
@@ -46,11 +49,15 @@ async function createUser(datos) {
 
 async function updateUser(id, datos) {
   const idValido = await validarId(id);
-  if (datos.email) {
-    const existe = await usersRepo.emailExists(datos.email, idValido);
+  const datosValidos = validarConZod(updateUserSchema, datos, "body");
+  const actual = await usersRepo.getById(idValido);
+  if (!actual) throw AppError.notFound("Usuario no encontrado");
+  await integrity.validarRelacionesUsuario(datosValidos);
+  if (datosValidos.email) {
+    const existe = await usersRepo.emailExists(datosValidos.email, idValido);
     if (existe) throw AppError.conflict("Ya existe un usuario con ese email");
   }
-  const { password, ...resto } = datos;
+  const { password, ...resto } = datosValidos;
   const updateData = { ...resto };
   if (password) {
     updateData.passwordHash = hashPassword(password);
@@ -64,6 +71,9 @@ async function updateUser(id, datos) {
 
 async function activateUser(id) {
   const idValido = await validarId(id);
+  const actual = await usersRepo.getRelationsById(idValido);
+  if (!actual) throw AppError.notFound("Usuario no encontrado");
+  await integrity.validarRelacionesUsuario({ roleId: actual.roleId });
   const user = await usersRepo.setActive(idValido, true);
   if (!user) throw AppError.notFound("Usuario no encontrado");
   const userObj = user.toObject ? user.toObject() : user;
@@ -75,6 +85,7 @@ async function deactivateUser(id) {
   const idValido = await validarId(id);
   const user = await usersRepo.setActive(idValido, false);
   if (!user) throw AppError.notFound("Usuario no encontrado");
+  await integrity.inactivarDependientes("user", idValido);
   const userObj = user.toObject ? user.toObject() : user;
   delete userObj.passwordHash;
   return userObj;
@@ -84,11 +95,15 @@ async function deleteUser(id) {
   const idValido = await validarId(id);
   const user = await usersRepo.softDelete(idValido);
   if (!user) throw AppError.notFound("Usuario no encontrado");
+  await integrity.inactivarDependientes("user", idValido);
   return user;
 }
 
 async function restoreUser(id) {
   const idValido = await validarId(id);
+  const actual = await usersRepo.getAnyById(idValido);
+  if (!actual || actual.deleted_at == null) throw AppError.notFound("Usuario no encontrado en la papelera");
+  await integrity.validarRelacionesUsuario({ roleId: actual.roleId });
   const user = await usersRepo.restore(idValido);
   if (!user) throw AppError.notFound("Usuario no encontrado en la papelera");
   const userObj = user.toObject ? user.toObject() : user;
@@ -98,6 +113,7 @@ async function restoreUser(id) {
 
 async function hardDeleteUser(id) {
   const idValido = await validarId(id);
+  await integrity.comprobarBorradoDefinitivo("user", idValido);
   const user = await usersRepo.hardDelete(idValido);
   if (!user) throw AppError.notFound("Usuario no encontrado");
   return user;

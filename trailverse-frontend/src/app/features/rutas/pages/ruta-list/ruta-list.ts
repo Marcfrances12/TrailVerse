@@ -21,7 +21,7 @@ export class RutaList implements OnInit {
   readonly formatFecha = formatFecha;
 
   ngOnInit(): void {
-    this.store.cargar().catch(() => undefined);
+    this.store.cargar({ forzar: true }).catch(() => undefined);
   }
 
   reintentar(): void {

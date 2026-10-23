@@ -18,7 +18,6 @@ export class LocationList implements OnInit {
   readonly store = inject(LocationsStore);
   readonly modoPapelera = signal(false);
   readonly formatFecha = formatFecha;
-
   ngOnInit(): void {
     this.store.cargar().catch(() => undefined);
   }

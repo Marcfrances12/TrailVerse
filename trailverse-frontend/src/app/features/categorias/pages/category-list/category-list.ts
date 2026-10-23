@@ -18,7 +18,6 @@ export class CategoryList implements OnInit {
   readonly store = inject(CategoriesStore);
   readonly modoPapelera = signal(false);
   readonly formatFecha = formatFecha;
-
   ngOnInit(): void {
     this.store.cargar().catch(() => undefined);
   }

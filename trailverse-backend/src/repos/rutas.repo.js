@@ -9,9 +9,17 @@ const noBorradas = { deleted_at: null };
 
 const getAll = async (filtros = {}) => {
   return Ruta.find({ ...filtros, ...noBorradas })
-    .populate('locationId', 'nombre provincia comunidad pais')
-    .populate('hostId', 'name slug')
-    .populate('categoryIds', 'name slug type')
+    .populate('locationId', 'nombre provincia comunidad pais isActive deleted_at')
+    .populate({
+      path: 'hostId',
+      select: 'name slug isActive deleted_at userId',
+      populate: {
+        path: 'userId',
+        select: 'name isActive deleted_at roleId',
+        populate: { path: 'roleId', select: 'name isActive deleted_at' }
+      }
+    })
+    .populate('categoryIds', 'name slug type isActive deleted_at parentId')
     .sort({ created_at: -1 });
 };
 
@@ -22,16 +30,40 @@ const getDeleted = async () => {
 
 const getById = async (id) => {
   return Ruta.findOne({ _id: id, ...noBorradas })
-    .populate('locationId', 'nombre provincia comunidad pais')
-    .populate('hostId', 'name slug')
-    .populate('categoryIds', 'name slug type');
+    .populate('locationId', 'nombre provincia comunidad pais isActive deleted_at')
+    .populate({
+      path: 'hostId',
+      select: 'name slug isActive deleted_at userId',
+      populate: {
+        path: 'userId',
+        select: 'name isActive deleted_at roleId',
+        populate: { path: 'roleId', select: 'name isActive deleted_at' }
+      }
+    })
+    .populate('categoryIds', 'name slug type isActive deleted_at parentId');
+};
+
+const getAnyById = async (id) => {
+  return Ruta.findById(id);
+};
+
+const getRelationsById = async (id) => {
+  return Ruta.findOne({ _id: id, ...noBorradas }).select("locationId hostId categoryIds");
 };
 
 const getBySlug = async (slug) => {
   return Ruta.findOne({ slug, ...noBorradas })
-    .populate('locationId', 'nombre provincia comunidad pais')
-    .populate('hostId', 'name slug')
-    .populate('categoryIds', 'name slug type');
+    .populate('locationId', 'nombre provincia comunidad pais isActive deleted_at')
+    .populate({
+      path: 'hostId',
+      select: 'name slug isActive deleted_at userId',
+      populate: {
+        path: 'userId',
+        select: 'name isActive deleted_at roleId',
+        populate: { path: 'roleId', select: 'name isActive deleted_at' }
+      }
+    })
+    .populate('categoryIds', 'name slug type isActive deleted_at parentId');
 };
 
 // Incluye las borradas a propósito: el slug sigue ocupado por el índice único
@@ -55,9 +87,17 @@ const update = async (id, datos) => {
     new: true,
     runValidators: true
   })
-    .populate('locationId', 'nombre provincia comunidad pais')
-    .populate('hostId', 'name slug')
-    .populate('categoryIds', 'name slug type');
+    .populate('locationId', 'nombre provincia comunidad pais isActive deleted_at')
+    .populate({
+      path: 'hostId',
+      select: 'name slug isActive deleted_at userId',
+      populate: {
+        path: 'userId',
+        select: 'name isActive deleted_at roleId',
+        populate: { path: 'roleId', select: 'name isActive deleted_at' }
+      }
+    })
+    .populate('categoryIds', 'name slug type isActive deleted_at parentId');
 };
 
 const setActive = async (id, isActive) => {
@@ -66,9 +106,17 @@ const setActive = async (id, isActive) => {
     { isActive },
     { new: true }
   )
-    .populate('locationId', 'nombre provincia comunidad pais')
-    .populate('hostId', 'name slug')
-    .populate('categoryIds', 'name slug type');
+    .populate('locationId', 'nombre provincia comunidad pais isActive deleted_at')
+    .populate({
+      path: 'hostId',
+      select: 'name slug isActive deleted_at userId',
+      populate: {
+        path: 'userId',
+        select: 'name isActive deleted_at roleId',
+        populate: { path: 'roleId', select: 'name isActive deleted_at' }
+      }
+    })
+    .populate('categoryIds', 'name slug type isActive deleted_at parentId');
 };
 
 // Soft delete: no se borra el documento, solo se marca con la fecha
@@ -78,9 +126,17 @@ const softDelete = async (id) => {
     { deleted_at: new Date(), isActive: false },
     { new: true }
   )
-    .populate('locationId', 'nombre provincia comunidad pais')
-    .populate('hostId', 'name slug')
-    .populate('categoryIds', 'name slug type');
+    .populate('locationId', 'nombre provincia comunidad pais isActive deleted_at')
+    .populate({
+      path: 'hostId',
+      select: 'name slug isActive deleted_at userId',
+      populate: {
+        path: 'userId',
+        select: 'name isActive deleted_at roleId',
+        populate: { path: 'roleId', select: 'name isActive deleted_at' }
+      }
+    })
+    .populate('categoryIds', 'name slug type isActive deleted_at parentId');
 };
 
 // Restaura una ruta marcada como borrada (quita el soft delete)
@@ -90,9 +146,17 @@ const restore = async (id) => {
     { deleted_at: null, isActive: true },
     { new: true }
   )
-    .populate('locationId', 'nombre provincia comunidad pais')
-    .populate('hostId', 'name slug')
-    .populate('categoryIds', 'name slug type');
+    .populate('locationId', 'nombre provincia comunidad pais isActive deleted_at')
+    .populate({
+      path: 'hostId',
+      select: 'name slug isActive deleted_at userId',
+      populate: {
+        path: 'userId',
+        select: 'name isActive deleted_at roleId',
+        populate: { path: 'roleId', select: 'name isActive deleted_at' }
+      }
+    })
+    .populate('categoryIds', 'name slug type isActive deleted_at parentId');
 };
 
 // Borrado definitivo: elimina el documento de la base de datos
@@ -104,6 +168,8 @@ module.exports = {
   getAll,
   getDeleted,
   getById,
+  getAnyById,
+  getRelationsById,
   getBySlug,
   slugExists,
   create,

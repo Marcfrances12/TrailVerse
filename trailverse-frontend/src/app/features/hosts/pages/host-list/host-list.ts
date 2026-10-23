@@ -18,7 +18,6 @@ export class HostList implements OnInit {
   readonly store = inject(HostsStore);
   readonly modoPapelera = signal(false);
   readonly formatFecha = formatFecha;
-
   ngOnInit(): void {
     this.store.cargar().catch(() => undefined);
   }

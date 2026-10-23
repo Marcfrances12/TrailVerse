@@ -14,6 +14,14 @@ const getById = async (id) => {
   return Host.findOne({ _id: id, ...noBorrados }).populate("userId", "name email");
 };
 
+const getAnyById = async (id) => {
+  return Host.findById(id);
+};
+
+const getRelationsById = async (id) => {
+  return Host.findOne({ _id: id, ...noBorrados }).select("userId");
+};
+
 const getBySlug = async (slug) => {
   return Host.findOne({ slug, ...noBorrados }).populate("userId", "name email");
 };
@@ -60,4 +68,4 @@ const hardDelete = async (id) => {
   return Host.findByIdAndDelete(id);
 };
 
-module.exports = { getAll, getDeleted, getById, getBySlug, slugExists, create, update, setActive, softDelete, restore, hardDelete };
+module.exports = { getAll, getDeleted, getById, getAnyById, getRelationsById, getBySlug, slugExists, create, update, setActive, softDelete, restore, hardDelete };

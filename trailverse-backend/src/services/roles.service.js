@@ -1,7 +1,8 @@
 const rolesRepo = require("../repos/roles.repo");
 const AppError = require("../utils/AppError");
 const { validarConZod } = require("../utils/validar");
-const { idParamSchema } = require("../validators/rutas.validator");
+const { idParamSchema, createRoleSchema, updateRoleSchema } = require("../validators/roles.validator");
+const integrity = require("./integrity.service");
 
 async function validarId(id) {
   return validarConZod(idParamSchema, { id }, "params").id;
@@ -25,18 +26,20 @@ async function getRoleById(id) {
 }
 
 async function createRole(datos) {
-  const existe = await rolesRepo.nameExists(datos.name);
+  const datosValidos = validarConZod(createRoleSchema, datos, "body");
+  const existe = await rolesRepo.nameExists(datosValidos.name);
   if (existe) throw AppError.conflict("Ya existe un rol con ese nombre");
-  return rolesRepo.create(datos);
+  return rolesRepo.create(datosValidos);
 }
 
 async function updateRole(id, datos) {
   const idValido = await validarId(id);
-  if (datos.name) {
-    const existe = await rolesRepo.nameExists(datos.name, idValido);
+  const datosValidos = validarConZod(updateRoleSchema, datos, "body");
+  if (datosValidos.name) {
+    const existe = await rolesRepo.nameExists(datosValidos.name, idValido);
     if (existe) throw AppError.conflict("Ya existe un rol con ese nombre");
   }
-  const role = await rolesRepo.update(idValido, datos);
+  const role = await rolesRepo.update(idValido, datosValidos);
   if (!role) throw AppError.notFound("Rol no encontrado");
   return role;
 }
@@ -52,6 +55,7 @@ async function deactivateRole(id) {
   const idValido = await validarId(id);
   const role = await rolesRepo.setActive(idValido, false);
   if (!role) throw AppError.notFound("Rol no encontrado");
+  await integrity.inactivarDependientes("role", idValido);
   return role;
 }
 
@@ -59,6 +63,7 @@ async function deleteRole(id) {
   const idValido = await validarId(id);
   const role = await rolesRepo.softDelete(idValido);
   if (!role) throw AppError.notFound("Rol no encontrado");
+  await integrity.inactivarDependientes("role", idValido);
   return role;
 }
 
@@ -71,6 +76,7 @@ async function restoreRole(id) {
 
 async function hardDeleteRole(id) {
   const idValido = await validarId(id);
+  await integrity.comprobarBorradoDefinitivo("role", idValido);
   const role = await rolesRepo.hardDelete(idValido);
   if (!role) throw AppError.notFound("Rol no encontrado");
   return role;

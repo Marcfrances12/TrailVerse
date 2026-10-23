@@ -43,7 +43,7 @@ const objectIdString = (campo) =>
 
 // GeoJSON Point: { type: "Point", coordinates: [lng, lat] }
 const startPointSchema = z
-  .object({
+  .strictObject({
     type: z.literal("Point", { error: "startPoint.type debe ser 'Point'" }),
     coordinates: z
       .array(z.number({ error: "coordinates debe ser [lng, lat]" }), {
@@ -62,13 +62,15 @@ const startPointSchema = z
   .optional();
 
 // Una imagen: URL obligatoria (puede ir vacía) y texto alternativo opcional.
-const imagenSchema = z.object({
+const imagenSchema = z.strictObject({
   url: z.union([
     z.literal(""),
     z.url({ error: "La URL de la imagen no es válida" })
   ], { error: "La URL de la imagen es obligatoria" }),
   alt: z.string({ error: "alt debe ser texto" }).optional()
 });
+
+const imagenesSchema = z.array(imagenSchema, { error: "images debe ser un array de imágenes" });
 
 const createRutaSchema = z.strictObject({
   nombre: textoObligatorio("El nombre", 3),
@@ -83,11 +85,11 @@ const createRutaSchema = z.strictObject({
   hostId: objectIdString("El host").nullable().optional(),
   categoryIds: z.array(objectIdString("La categoría")).optional(),
   circular: z.boolean({ error: "circular debe ser true o false" }).optional(),
-  coverImage: z.object({
+  coverImage: z.strictObject({
     url: z.union([z.literal(""), z.url({ error: "La URL de la imagen no es válida" })]).optional(),
     alt: z.string().optional()
   }).optional(),
-  images: z.array(imagenSchema, { error: "images debe ser un array de imágenes" }).optional(),
+  images: imagenesSchema.optional(),
   startPoint: startPointSchema,
   status: z.enum(STATUS, { error: `status debe ser: ${STATUS.join(", ")}` }).optional()
 });
@@ -112,5 +114,6 @@ module.exports = {
   slugParamSchema,
   createRutaSchema,
   updateRutaSchema,
+  imagenesSchema,
   listRutasQuerySchema
 };

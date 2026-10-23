@@ -4,6 +4,8 @@ const AppError = require("../utils/AppError");
 const escapeRegex = require("../utils/escapeRegex");
 const { generateSlug } = require("../utils/slug");
 const { validarConZod } = require("../utils/validar");
+const integrity = require("./integrity.service");
+const departuresService = require("./departures.service");
 const {
   idParamSchema,
   slugParamSchema,
@@ -19,7 +21,29 @@ async function conImagenes(ruta) {
 
   const imagenes = await imagenesService.obtenerImagenes(ruta._id);
 
-  return { ...ruta.toObject(), images: imagenes };
+  const rutaObj = ruta.toObject ? ruta.toObject() : ruta;
+  return {
+    ...rutaObj,
+    images: imagenes,
+    dependencyWarnings: integrity.avisosIntegridadRuta(rutaObj)
+  };
+}
+
+function relacionesDe(ruta) {
+  const datos = ruta.toObject ? ruta.toObject() : ruta;
+  const id = (referencia) => referencia && typeof referencia === "object"
+    ? referencia._id ?? referencia
+    : referencia;
+  return {
+    locationId: id(datos.locationId),
+    hostId: id(datos.hostId),
+    categoryIds: Array.isArray(datos.categoryIds) ? datos.categoryIds.map(id) : []
+  };
+}
+
+function conAvisos(ruta) {
+  const datos = ruta.toObject ? ruta.toObject() : ruta;
+  return { ...datos, dependencyWarnings: integrity.avisosIntegridadRuta(datos) };
 }
 
 // coverImage = primera imagen (para listados rápidos).
@@ -39,12 +63,12 @@ async function validarSlug(slug) {
   return validarConZod(slugParamSchema, { slug }, "params").slug;
 }
 
-async function construirSlugUnico(nombre) {
+async function construirSlugUnico(nombre, excludeId) {
   const base = generateSlug(nombre);
   let candidato = base;
   let contador = 2;
 
-  while (await rutasRepo.slugExists(candidato)) {
+  while (await rutasRepo.slugExists(candidato, excludeId)) {
     candidato = `${base}-${contador}`;
     contador += 1;
   }
@@ -75,7 +99,8 @@ async function getRutas(query = {}) {
     filtros.status = query.status;
   }
 
-  return rutasRepo.getAll(filtros);
+  const rutas = await rutasRepo.getAll(filtros);
+  return rutas.map(conAvisos);
 }
 
 async function getRutasEliminadas() {
@@ -108,6 +133,7 @@ async function getRutaBySlug(slug) {
 
 async function createRuta(datos) {
   const datosValidos = validarConZod(createRutaSchema, datos, "body");
+  await integrity.validarRelacionesRuta(datosValidos);
   const { images, ...resto } = datosValidos;
 
   const slug = await construirSlugUnico(datosValidos.nombre);
@@ -136,13 +162,18 @@ async function updateRuta(id, datos) {
     throw AppError.notFound("Ruta no encontrada");
   }
 
-
-  // construirSlugUnico
-
-  //validate relations
-
+  const relacionesActualizadas = {};
+  for (const campo of ["locationId", "hostId", "categoryIds"]) {
+    if (Object.hasOwn(datosValidos, campo)) relacionesActualizadas[campo] = datosValidos[campo];
+  }
+  await integrity.validarRelacionesRuta(relacionesActualizadas);
 
   const { images, ...resto } = datosValidos;
+  const rutaActualObj = rutaActual.toObject();
+  const nombreCambiado = datosValidos.nombre && datosValidos.nombre !== rutaActual.nombre;
+  if (nombreCambiado) {
+    resto.slug = await construirSlugUnico(datosValidos.nombre, idValido);
+  }
 
   // Si se envían imágenes, la primera pasa a ser la portada.
   if (Array.isArray(images)) {
@@ -155,6 +186,10 @@ async function updateRuta(id, datos) {
     throw AppError.notFound("Ruta no encontrada");
   }
 
+  if (nombreCambiado && ruta.slug !== rutaActualObj.slug) {
+    await departuresService.regenerarSkusRuta(idValido, ruta.slug);
+  }
+
   if (Array.isArray(images)) {
     await imagenesService.guardarImagenes(idValido, images);
   }
@@ -164,6 +199,9 @@ async function updateRuta(id, datos) {
 
 async function activateRuta(id) {
   const idValido = await validarId(id);
+  const actual = await rutasRepo.getRelationsById(idValido);
+  if (!actual) throw AppError.notFound("Ruta no encontrada");
+  await integrity.validarRelacionesRuta(relacionesDe(actual));
 
   const ruta = await rutasRepo.setActive(idValido, true);
 
@@ -171,7 +209,7 @@ async function activateRuta(id) {
     throw AppError.notFound("Ruta no encontrada");
   }
 
-  return ruta;
+  return conAvisos(ruta);
 }
 
 async function deactivateRuta(id) {
@@ -183,7 +221,9 @@ async function deactivateRuta(id) {
     throw AppError.notFound("Ruta no encontrada");
   }
 
-  return ruta;
+  await integrity.inactivarDependientes("ruta", idValido);
+
+  return conAvisos(ruta);
 }
 
 async function deleteRuta(id) {
@@ -195,11 +235,16 @@ async function deleteRuta(id) {
     throw AppError.notFound("Ruta no encontrada");
   }
 
-  return ruta;
+  await integrity.inactivarDependientes("ruta", idValido);
+
+  return conAvisos(ruta);
 }
 
 async function restoreRuta(id) {
   const idValido = await validarId(id);
+  const actual = await rutasRepo.getAnyById(idValido);
+  if (!actual || actual.deleted_at == null) throw AppError.notFound("Ruta no encontrada en la papelera");
+  await integrity.validarRelacionesRuta(relacionesDe(actual));
 
   const ruta = await rutasRepo.restore(idValido);
 
@@ -207,17 +252,20 @@ async function restoreRuta(id) {
     throw AppError.notFound("Ruta no encontrada en la papelera");
   }
 
-  return ruta;
+  return conAvisos(ruta);
 }
 
 async function hardDeleteRuta(id) {
   const idValido = await validarId(id);
+  await integrity.comprobarBorradoDefinitivo("ruta", idValido);
 
   const ruta = await rutasRepo.hardDelete(idValido);
 
   if (!ruta) {
     throw AppError.notFound("Ruta no encontrada");
   }
+
+  await imagenesService.eliminarImagenes(idValido);
 
   return ruta;
 }

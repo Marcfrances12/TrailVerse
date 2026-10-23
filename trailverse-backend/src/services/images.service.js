@@ -1,5 +1,6 @@
 const imagesRepo = require("../repos/images.repo");
-const AppError = require("../utils/AppError");
+const { validarConZod } = require("../utils/validar");
+const { imagenesSchema } = require("../validators/rutas.validator");
 
 // Entidad principal que usa el catálogo de imágenes ahora mismo.
 const ENTIDAD = "ruta";
@@ -13,13 +14,11 @@ async function guardarImagenes(entidadId, imagenes) {
     return obtenerImagenes(entidadId);
   }
 
-  if (!Array.isArray(imagenes)) {
-    throw AppError.badRequest("images debe ser un array de imágenes");
-  }
+  const imagenesValidas = validarConZod(imagenesSchema, imagenes, "body");
 
   await imagesRepo.deleteByEntity(ENTIDAD, entidadId);
 
-  const creadas = await imagesRepo.createMany(ENTIDAD, entidadId, imagenes);
+  const creadas = await imagesRepo.createMany(ENTIDAD, entidadId, imagenesValidas);
 
   return creadas;
 }

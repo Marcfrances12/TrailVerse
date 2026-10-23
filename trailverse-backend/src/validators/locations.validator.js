@@ -4,7 +4,7 @@ const idParamSchema = z.object({
   id: z.string().regex(/^[a-f\d]{24}$/i, "ID de MongoDB no válido")
 });
 
-const geoSchema = z.object({
+const geoSchema = z.strictObject({
   type: z.literal("Point").default("Point"),
   coordinates: z
     .array(z.number())
@@ -28,7 +28,7 @@ const createLocationSchema = z.strictObject({
 });
 
 const updateLocationSchema = z
-  .object({
+  .strictObject({
     nombre: z.string().trim().min(3).max(100).optional(),
     provincia: z.string().trim().min(2).max(100).optional(),
     comunidad: z.string().trim().min(2).max(100).optional(),

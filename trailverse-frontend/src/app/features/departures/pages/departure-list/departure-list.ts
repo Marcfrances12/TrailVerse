@@ -19,7 +19,6 @@ export class DepartureList implements OnInit {
   readonly modoPapelera = signal(false);
   readonly statuses = ESTATUSES;
   readonly formatFecha = formatFecha;
-
   ngOnInit(): void {
     this.store.cargar().catch(() => undefined);
   }

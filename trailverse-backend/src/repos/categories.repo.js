@@ -14,6 +14,10 @@ const getById = async (id) => {
   return Category.findOne({ _id: id, ...noBorradas });
 };
 
+const getAnyById = async (id) => {
+  return Category.findById(id);
+};
+
 const getBySlug = async (slug) => {
   return Category.findOne({ slug, ...noBorradas });
 };
@@ -60,4 +64,4 @@ const hardDelete = async (id) => {
   return Category.findByIdAndDelete(id);
 };
 
-module.exports = { getAll, getDeleted, getById, getBySlug, slugExists, create, update, setActive, softDelete, restore, hardDelete };
+module.exports = { getAll, getDeleted, getById, getAnyById, getBySlug, slugExists, create, update, setActive, softDelete, restore, hardDelete };

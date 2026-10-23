@@ -33,6 +33,13 @@
             <a [routerLink]="['/rutas', ruta.slug]" class="font-semibold text-bosque-700 hover:text-bosque-500">
               {{ ruta.nombre }}
             </a>
+            @if (ruta.dependencyWarnings?.length) {
+              <ul class="mt-1 space-y-0.5 text-xs font-medium text-red-700" role="alert">
+                @for (aviso of ruta.dependencyWarnings; track aviso) {
+                  <li>{{ aviso }}</li>
+                }
+              </ul>
+            }
           </td>
           <td class="px-4 py-3 text-tinta-suave">{{ nombreUbicacion(ruta) }}</td>
           <td class="px-4 py-3">

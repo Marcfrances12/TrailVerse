@@ -2,6 +2,7 @@ const express = require("express");
 const controller = require("../controllers/hosts.controller");
 const {
   idParamSchema,
+  slugParamSchema,
   createHostSchema,
   updateHostSchema,
   listHostsQuerySchema
@@ -12,7 +13,7 @@ const router = express.Router();
 
 router.get("/", validate({ query: listHostsQuerySchema }), controller.getAll);
 router.get("/deleted", controller.getDeleted);
-router.get("/slug/:slug", controller.getBySlug);
+router.get("/slug/:slug", validate({ params: slugParamSchema }), controller.getBySlug);
 router.get("/:id", validate({ params: idParamSchema }), controller.getById);
 router.post("/", validate({ body: createHostSchema }), controller.create);
 router.put("/:id", validate({ params: idParamSchema, body: updateHostSchema }), controller.update);

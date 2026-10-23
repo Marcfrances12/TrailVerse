@@ -16,6 +16,14 @@ const getById = async (id) => {
   return User.findOne({ _id: id, ...noBorrados }).populate("roleId", "name permissions");
 };
 
+const getAnyById = async (id) => {
+  return User.findById(id);
+};
+
+const getRelationsById = async (id) => {
+  return User.findOne({ _id: id, ...noBorrados }).select("roleId");
+};
+
 const getByEmail = async (email) => {
   return User.findOne({ email, ...noBorrados });
 };
@@ -62,4 +70,4 @@ const hardDelete = async (id) => {
   return User.findByIdAndDelete(id);
 };
 
-module.exports = { getAll, getDeleted, getById, getByEmail, emailExists, create, update, setActive, softDelete, restore, hardDelete };
+module.exports = { getAll, getDeleted, getById, getAnyById, getRelationsById, getByEmail, emailExists, create, update, setActive, softDelete, restore, hardDelete };
