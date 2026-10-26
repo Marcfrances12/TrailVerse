@@ -3,7 +3,7 @@ const AppError = require("../utils/AppError");
 const { generateSlug } = require("../utils/slug");
 const { validarConZod } = require("../utils/validar");
 const escapeRegex = require("../utils/escapeRegex");
-const { idParamSchema, createLocationSchema, updateLocationSchema } = require("../validators/locations.validator");
+const { idParamSchema, slugParamSchema, createLocationSchema, updateLocationSchema } = require("../validators/locations.validator");
 const integrity = require("./integrity.service");
 const departuresService = require("./departures.service");
 
@@ -36,6 +36,13 @@ async function getLocationsEliminadas() {
 async function getLocationById(id) {
   const idValido = await validarId(id);
   const location = await locationsRepo.getById(idValido);
+  if (!location) throw AppError.notFound("Ubicación no encontrada");
+  return location;
+}
+
+async function getLocationBySlug(slug) {
+  const slugValido = validarConZod(slugParamSchema, { slug }, "params").slug;
+  const location = await locationsRepo.getBySlug(slugValido);
   if (!location) throw AppError.notFound("Ubicación no encontrada");
   return location;
 }
@@ -109,6 +116,7 @@ module.exports = {
   getLocations,
   getLocationsEliminadas,
   getLocationById,
+  getLocationBySlug,
   createLocation,
   updateLocation,
   activateLocation,

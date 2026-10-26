@@ -5,6 +5,7 @@ const { generateSku, generateSkuWithSequence } = require("../utils/sku");
 const { validarConZod } = require("../utils/validar");
 const {
   idParamSchema,
+  skuParamSchema,
   createDepartureSchema,
   updateDepartureSchema,
   skuSchema
@@ -114,6 +115,13 @@ async function getDepartureById(id) {
   return departure;
 }
 
+async function getDepartureBySku(sku) {
+  const skuValido = validarConZod(skuParamSchema, { sku }, "params").sku;
+  const departure = await departuresRepo.getBySku(skuValido);
+  if (!departure) throw AppError.notFound("Salida no encontrada");
+  return departure;
+}
+
 async function createDeparture(datos) {
   const datosValidos = validarConZod(createDepartureSchema, datos, "body");
   await integrity.validarRelacionesDeparture(datosValidos);
@@ -199,6 +207,7 @@ module.exports = {
   getDepartures,
   getDeparturesEliminados,
   getDepartureById,
+  getDepartureBySku,
   createDeparture,
   updateDeparture,
   activateDeparture,

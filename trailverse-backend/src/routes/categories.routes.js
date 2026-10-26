@@ -2,6 +2,7 @@ const express = require("express");
 const controller = require("../controllers/categories.controller");
 const {
   idParamSchema,
+  slugParamSchema,
   createCategorySchema,
   updateCategorySchema,
   listCategoriesQuerySchema
@@ -12,6 +13,7 @@ const router = express.Router();
 
 router.get("/", validate({ query: listCategoriesQuerySchema }), controller.getAll);
 router.get("/deleted", controller.getDeleted);
+router.get("/slug/:slug", validate({ params: slugParamSchema }), controller.getBySlug);
 router.get("/:id", validate({ params: idParamSchema }), controller.getById);
 router.post("/", validate({ body: createCategorySchema }), controller.create);
 router.put("/:id", validate({ params: idParamSchema, body: updateCategorySchema }), controller.update);

@@ -21,6 +21,13 @@ const getById = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
+const getBySlug = async (req, res, next) => {
+  try {
+    const location = await locationsService.getLocationBySlug(req.params.slug);
+    res.status(200).json({ ok: true, data: location });
+  } catch (error) { next(error); }
+};
+
 const create = async (req, res, next) => {
   try {
     const location = await locationsService.createLocation(req.body);
@@ -70,4 +77,4 @@ const hardDelete = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
-module.exports = { getAll, getDeleted, getById, create, update, activate, deactivate, remove, restore, hardDelete };
+module.exports = { getAll, getDeleted, getById, getBySlug, create, update, activate, deactivate, remove, restore, hardDelete };

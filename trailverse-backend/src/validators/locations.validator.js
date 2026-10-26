@@ -4,6 +4,10 @@ const idParamSchema = z.object({
   id: z.string().regex(/^[a-f\d]{24}$/i, "ID de MongoDB no válido")
 });
 
+const slugParamSchema = z.object({
+  slug: z.string().trim().toLowerCase().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Slug no válido")
+});
+
 const geoSchema = z.strictObject({
   type: z.literal("Point").default("Point"),
   coordinates: z
@@ -50,6 +54,7 @@ const listLocationsQuerySchema = z.object({
 
 module.exports = {
   idParamSchema,
+  slugParamSchema,
   createLocationSchema,
   updateLocationSchema,
   listLocationsQuerySchema

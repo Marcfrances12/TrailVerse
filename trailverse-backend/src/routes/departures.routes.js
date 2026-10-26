@@ -2,6 +2,7 @@ const express = require("express");
 const controller = require("../controllers/departures.controller");
 const {
   idParamSchema,
+  skuParamSchema,
   createDepartureSchema,
   updateDepartureSchema,
   listDeparturesQuerySchema
@@ -12,6 +13,7 @@ const router = express.Router();
 
 router.get("/", validate({ query: listDeparturesQuerySchema }), controller.getAll);
 router.get("/deleted", controller.getDeleted);
+router.get("/sku/:sku", validate({ params: skuParamSchema }), controller.getBySku);
 router.get("/:id", validate({ params: idParamSchema }), controller.getById);
 router.post("/", validate({ body: createDepartureSchema }), controller.create);
 router.put("/:id", validate({ params: idParamSchema, body: updateDepartureSchema }), controller.update);

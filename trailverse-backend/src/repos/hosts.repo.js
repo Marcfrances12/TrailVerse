@@ -3,7 +3,9 @@ const Host = require("../models/host.model");
 const noBorrados = { deleted_at: null };
 
 const getAll = async (filtros = {}) => {
-  return Host.find({ ...filtros, ...noBorrados }).sort({ name: 1 });
+  return Host.find({ ...filtros, ...noBorrados })
+    .populate("userId", "name")
+    .sort({ name: 1 });
 };
 
 const getDeleted = async () => {

@@ -2,7 +2,7 @@ const categoriesRepo = require("../repos/categories.repo");
 const AppError = require("../utils/AppError");
 const { generateSlug } = require("../utils/slug");
 const { validarConZod } = require("../utils/validar");
-const { idParamSchema, createCategorySchema, updateCategorySchema } = require("../validators/categories.validator");
+const { idParamSchema, slugParamSchema, createCategorySchema, updateCategorySchema } = require("../validators/categories.validator");
 const integrity = require("./integrity.service");
 
 async function validarId(id) {
@@ -34,6 +34,13 @@ async function getCategoriesEliminadas() {
 async function getCategoryById(id) {
   const idValido = await validarId(id);
   const category = await categoriesRepo.getById(idValido);
+  if (!category) throw AppError.notFound("Categoría no encontrada");
+  return category;
+}
+
+async function getCategoryBySlug(slug) {
+  const slugValido = validarConZod(slugParamSchema, { slug }, "params").slug;
+  const category = await categoriesRepo.getBySlug(slugValido);
   if (!category) throw AppError.notFound("Categoría no encontrada");
   return category;
 }
@@ -109,6 +116,7 @@ module.exports = {
   getCategories,
   getCategoriesEliminadas,
   getCategoryById,
+  getCategoryBySlug,
   createCategory,
   updateCategory,
   activateCategory,

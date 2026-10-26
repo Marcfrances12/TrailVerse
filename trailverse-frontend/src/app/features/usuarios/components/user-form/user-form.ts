@@ -61,7 +61,7 @@ export class UserForm {
   }
 
   private cargarRoles(): void {
-    this.http.get<{ data: Role[] }>(`${environment.API_URL}/roles`).subscribe({
+    this.http.get<{ data: Role[] }>(`${environment.API_URL}/roles?isActive=true`).subscribe({
       next: (res) => this.roles.set(res.data),
       error: () => undefined
     });

@@ -19,6 +19,10 @@ const getById = async (id) => {
   return Departure.findOne({ _id: id, ...noBorrados }).populate("rutaId", "nombre slug");
 };
 
+const getBySku = async (sku) => {
+  return Departure.findOne({ sku, ...noBorrados }).populate("rutaId", "nombre slug");
+};
+
 const getAnyById = async (id) => {
   return Departure.findById(id);
 };
@@ -90,6 +94,7 @@ module.exports = {
   getAll,
   getDeleted,
   getById,
+  getBySku,
   getAnyById,
   getRelationsById,
   getByRuta,

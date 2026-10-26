@@ -14,6 +14,10 @@ const getById = async (id) => {
   return Location.findOne({ _id: id, ...noBorradas });
 };
 
+const getBySlug = async (slug) => {
+  return Location.findOne({ slug, ...noBorradas });
+};
+
 const slugExists = async (slug, excludeId) => {
   const filtro = { slug };
   if (excludeId) filtro._id = { $ne: excludeId };
@@ -56,4 +60,4 @@ const hardDelete = async (id) => {
   return Location.findByIdAndDelete(id);
 };
 
-module.exports = { getAll, getDeleted, getById, slugExists, create, update, setActive, softDelete, restore, hardDelete };
+module.exports = { getAll, getDeleted, getById, getBySlug, slugExists, create, update, setActive, softDelete, restore, hardDelete };

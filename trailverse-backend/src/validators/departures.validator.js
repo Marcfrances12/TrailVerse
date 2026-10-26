@@ -46,6 +46,8 @@ const skuSchema = z.string().regex(
   "El SKU de la salida no tiene un formato válido"
 );
 
+const skuParamSchema = z.object({ sku: skuSchema });
+
 const createDepartureSchema = z
   .strictObject({
     rutaId: objectId,
@@ -106,6 +108,7 @@ const listDeparturesQuerySchema = z.object({
 module.exports = {
   idParamSchema,
   skuSchema,
+  skuParamSchema,
   createDepartureSchema,
   updateDepartureSchema,
   listDeparturesQuerySchema

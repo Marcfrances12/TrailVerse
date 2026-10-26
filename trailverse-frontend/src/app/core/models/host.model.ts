@@ -5,7 +5,7 @@ export interface Host {
   bio: string;
   contactEmail: string;
   phone: string;
-  userId: string | { _id: string; name: string; email: string };
+  userId: string | { _id: string; name: string; email: string } | null;
   isActive: boolean;
   deleted_at: string | null;
   created_at: string;

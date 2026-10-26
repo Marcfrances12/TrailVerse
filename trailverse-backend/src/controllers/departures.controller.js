@@ -21,6 +21,13 @@ const getById = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
+const getBySku = async (req, res, next) => {
+  try {
+    const departure = await departuresService.getDepartureBySku(req.params.sku);
+    res.status(200).json({ ok: true, data: departure });
+  } catch (error) { next(error); }
+};
+
 const create = async (req, res, next) => {
   try {
     const departure = await departuresService.createDeparture(req.body);
@@ -70,4 +77,4 @@ const hardDelete = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
-module.exports = { getAll, getDeleted, getById, create, update, activate, deactivate, remove, restore, hardDelete };
+module.exports = { getAll, getDeleted, getById, getBySku, create, update, activate, deactivate, remove, restore, hardDelete };

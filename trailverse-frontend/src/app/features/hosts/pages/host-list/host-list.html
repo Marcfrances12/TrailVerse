@@ -50,12 +50,13 @@
   </ng-template>
   <ng-template #activeContent>
       <div class="overflow-x-auto rounded-2xl border border-crema-200 bg-white shadow-sm">
-        <table class="w-full min-w-[700px] text-left text-sm">
+        <table class="w-full min-w-[850px] text-left text-sm">
           <thead>
             <tr class="border-b border-crema-200 bg-crema-50 text-xs uppercase tracking-wide text-tinta-suave">
               <th class="px-4 py-3 font-semibold">Nombre</th>
               <th class="px-4 py-3 font-semibold">Email</th>
               <th class="px-4 py-3 font-semibold">Teléfono</th>
+              <th class="px-4 py-3 font-semibold">Usuario asociado</th>
               <th class="px-4 py-3 font-semibold">Estado</th>
               <th class="px-4 py-3 text-right font-semibold">Acciones</th>
             </tr>
@@ -66,6 +67,7 @@
                 <td class="px-4 py-3 font-semibold text-bosque-700">{{ host.name }}</td>
                 <td class="px-4 py-3 text-tinta-suave">{{ host.contactEmail }}</td>
                 <td class="px-4 py-3 text-tinta-suave">{{ host.phone || '—' }}</td>
+                <td class="px-4 py-3 text-tinta-suave">{{ nombreUsuarioAsociado(host) }}</td>
                 <td class="px-4 py-3">
                   <span class="rounded-full px-2.5 py-1 text-xs font-semibold" [class.bg-bosque-100]="host.isActive" [class.text-bosque-800]="host.isActive" [class.bg-red-100]="!host.isActive" [class.text-red-700]="!host.isActive">
                     {{ host.isActive ? 'Activo' : 'Inactivo' }}

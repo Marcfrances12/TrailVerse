@@ -4,6 +4,10 @@ const idParamSchema = z.object({
   id: z.string().regex(/^[a-f\d]{24}$/i, "ID de MongoDB no válido")
 });
 
+const slugParamSchema = z.object({
+  slug: z.string().trim().toLowerCase().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Slug no válido")
+});
+
 const createCategorySchema = z.strictObject({
   name: z.string().trim().min(2, "El nombre debe tener al menos 2 caracteres").max(80),
   type: z.enum(["ruta"], {
@@ -31,6 +35,7 @@ const listCategoriesQuerySchema = z.object({
 
 module.exports = {
   idParamSchema,
+  slugParamSchema,
   createCategorySchema,
   updateCategorySchema,
   listCategoriesQuerySchema
