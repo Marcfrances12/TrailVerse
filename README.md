@@ -1,103 +1,67 @@
 # TrailVerse
 
-Plataforma de gestión de rutas de senderismo. Aplicación full-stack con frontend en Angular 20 y API REST en Express + MongoDB.
+Plataforma full-stack para explorar y administrar rutas de senderismo, sus localizaciones, categorías, anfitriones, salidas y usuarios.
 
-## Requisitos
-
-- **Node.js** 18+
-- **MongoDB** 6+ (local o Atlas)
-- **Angular CLI** 20+
-
-## Tecnologías
+## Tecnologías y requisitos
 
 | Capa | Tecnologías |
-|------|-------------|
-| Frontend | Angular 20, TypeScript, Tailwind CSS, RxJS, Signals, Reactive Forms, SweetAlert2 |
-| Backend | Node.js, Express 5, Mongoose 8, Zod, Morgan, Helmet |
-| Base de datos | MongoDB |
+|---|---|
+| Frontend | Angular 20, TypeScript, Tailwind CSS, RxJS, Signals, formularios reactivos y SweetAlert2 |
+| Backend | Node.js, Express 5, Mongoose 8, Zod, Helmet y Morgan |
+| Base de datos | MongoDB 6+ (local o Atlas) |
 
-## Estructura
+Se recomienda Node.js 20.19+ (o una versión compatible con Angular 20) y npm.
 
-```
+## Funcionalidades
+
+- Consulta de rutas con filtros por dificultad, provincia, circularidad, estado y disponibilidad.
+- Ficha de ruta por slug, con anfitrión, localización, categorías, punto geográfico y galería de imágenes por URL.
+- Administración de rutas, categorías, localizaciones, hosts, salidas, usuarios y roles.
+- Activación/desactivación, papelera, restauración y borrado permanente para los recursos compatibles.
+- Salidas con SKU único, fecha, precio, aforo, stock y estado.
+- Validación de datos en formularios y API, además de tratamiento centralizado de errores.
+
+> Hay pantallas de administración y gestión de permisos de roles, pero actualmente no hay inicio de sesión ni protección de rutas/API mediante autenticación.
+
+## Estructura del repositorio
+
+```text
 TrailVerse/
-├── trailverse-frontend/          # SPA Angular 20
-│   ├── src/app/
-│   │   ├── core/                 # Servicios, store, interceptores, modelos
-│   │   ├── features/rutas/       # Módulo de rutas (pages)
-│   │   ├── layouts/              # Layout principal
-│   │   ├── shared/               # Componentes y utilidades compartidas
-│   │   └── environments/          # Configuración por entorno
-│   └── angular.json
-├── trailverse-backend/           # API REST Express
-│   ├── src/
-│   │   ├── config/               # Conexión a MongoDB
-│   │   ├── controllers/          # Controladores HTTP
-│   │   ├── middlewares/          # Validación y manejo de errores
-│   │   ├── models/               # Modelos Mongoose
-│   │   ├── repos/                # Capa de acceso a datos
-│   │   ├── routes/               # Definición de rutas
-│   │   ├── services/             # Lógica de negocio
-│   │   ├── utils/                # Utilidades (slug, validación, errores)
-│   │   └── validators/           # Esquemas Zod
-│   └── seed.js                   # Datos de ejemplo
+├── trailverse-frontend/                 # SPA Angular
+│   ├── environments/                    # URL de API y timeout por configuración
+│   └── src/app/
+│       ├── core/                        # Modelos, servicios, stores e interceptores
+│       ├── features/                    # Rutas, localizaciones, categorías, hosts,
+│       │                                 # usuarios, salidas y roles
+│       ├── layouts/                     # Navegación y layout
+│       └── shared/                      # Componentes y utilidades reutilizables
+├── trailverse-backend/                  # API REST Express/Mongoose
+│   ├── src/                             # Rutas, controladores, servicios, repos y modelos
+│   └── seed.js                          # Reinicializa la base de datos con datos demo
 └── README.md
 ```
 
-## Endpoints
-
-| Método | Ruta | Descripción |
-|--------|------|-------------|
-| GET | `/api/rutas` | Listar rutas (con filtros: `dificultad`, `provincia`, `circular`, `isActive`, `status`) |
-| GET | `/api/rutas/deleted` | Listar rutas eliminadas (soft delete) |
-| GET | `/api/rutas/slug/:slug` | Obtener ruta por slug |
-| GET | `/api/rutas/:id` | Obtener ruta por ID |
-| POST | `/api/rutas` | Crear nueva ruta |
-| PUT | `/api/rutas/:id` | Actualizar ruta |
-| PATCH | `/api/rutas/:id/activate` | Activar ruta |
-| PATCH | `/api/rutas/:id/deactivate` | Desactivar ruta |
-| DELETE | `/api/rutas/:id` | Eliminar ruta (soft delete) |
-| GET | `/api/health` | Estado de la API |
-
-## Arquitectura
-
-### Frontend (Angular 20)
-
-```
-Componente → RutasStore (Signals) → RutasApiService → ApiService → HTTP
-                                                      ↓
-                                        Interceptores (error + loading)
-```
-
-- **Standalone Components** sin módulos
-- **Signals** para estado reactivo global (Store con caché)
-- **Lazy Loading** del módulo de rutas
-- **Interceptores funcionales** para errores y loading global
-
-### Backend (Express 5)
-
-```
-Route → Middleware (validate) → Controller → Service → Repo → Model (Mongoose)
-```
-
-- **Arquitectura en capas** con separación de responsabilidades
-- **Validación** con Zod en body, params y query
-- **Soft delete** con campo `deleted_at`
-- **Slug único** generado automáticamente desde el nombre
-- **Manejo centralizado de errores** con AppError
-
-## Instalación y ejecución
+## Puesta en marcha
 
 ### Backend
+
+Se necesita una instancia de MongoDB. En `trailverse-backend`, instala dependencias y crea manualmente un archivo `.env` (no se incluye `.env.example`):
+
+```env
+PORT=3000
+MONGODB_URI=mongodb://127.0.0.1:27017/rutas_senderismo
+NODE_ENV=development
+```
 
 ```bash
 cd trailverse-backend
 npm install
-cp .env.example .env    # Configura MONGODB_URI si es necesario
-npm run dev             # Desarrollo (nodemon)
-npm run seed            # Cargar datos de ejemplo
+npm run dev
 ```
 
-La API estará disponible en `http://localhost:3000/api`.
+La API queda en `http://localhost:3000`, con prefijo `/api`. El endpoint de salud es `GET /api/health`.
+
+**Cuidado:** `npm run seed` borra primero los documentos existentes de las colecciones de TrailVerse y después carga datos de ejemplo. No lo ejecutes contra una base de datos con datos que quieras conservar.
 
 ### Frontend
 
@@ -107,9 +71,21 @@ npm install
 npm start
 ```
 
-La aplicación estará disponible en `http://localhost:4200`.
+La aplicación queda en `http://localhost:4200`. La URL base y el timeout de la API se configuran en `trailverse-frontend/environments/environment.development.ts` y `environment.ts` (por defecto, `http://localhost:3000/api` y 10 segundos).
 
-## Documentación específica
+## Módulos de la API
 
-- [Frontend README](./trailverse-frontend/README.md)
-- [Backend README](./trailverse-backend/README.md)
+Los recursos son `/api/rutas`, `/api/categories`, `/api/locations`, `/api/hosts`, `/api/departures`, `/api/users` y `/api/roles`. Todos ofrecen listado y operaciones de gestión, filtros por `isActive` y gestión de elementos eliminados. Rutas, hosts, categorías y localizaciones se consultan por slug; las salidas, por SKU.
+
+Consulta la referencia completa en el [README del backend](./trailverse-backend/README.md) y las secciones de la SPA en el [README del frontend](./trailverse-frontend/README.md).
+
+## Comandos útiles
+
+| Proyecto | Comando | Uso |
+|---|---|---|
+| Backend | `npm run dev` | Servidor de desarrollo |
+| Backend | `npm start` | Inicia el servidor |
+| Backend | `npm run seed` | Reinicializa y carga datos demo (**destructivo**) |
+| Frontend | `npm start` | Servidor Angular de desarrollo |
+| Frontend | `npm run build` | Compilación de producción |
+| Frontend | `npm test` | Tests unitarios con Karma |
