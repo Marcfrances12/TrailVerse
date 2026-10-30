@@ -26,7 +26,17 @@ async function exigirActivo(Model, id, nombre, campo) {
 }
 
 async function validarRolDeUsuario(roleId, campo = "roleId") {
-  return exigirActivo(Role, roleId, "El rol", campo);
+  const role = await Role.findOne({
+    _id: roleId,
+    name: { $in: Role.schema.path("name").enumValues },
+    isActive: true,
+    ...noBorrados
+  }).select("_id");
+
+  if (!role) {
+    throw errorRelacion(campo, "El rol no existe, no es un rol permitido o está inactivo");
+  }
+  return role;
 }
 
 async function validarRelacionesUsuario(datos) {
@@ -144,7 +154,7 @@ function avisosIntegridadRuta(ruta) {
     const user = host.userId;
     if (user && typeof user === "object") {
       const estadoUsuario = estadoNoDisponible(user);
-      if (estadoUsuario) avisos.push(`El usuario «${user.name}» asociado al host está ${estadoUsuario}.`);
+      if (estadoUsuario) avisos.push(`El usuario «${user.email}» asociado al host está ${estadoUsuario}.`);
 
       const role = user.roleId;
       if (role && typeof role === "object") {

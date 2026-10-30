@@ -14,6 +14,8 @@ const hostsRoutes = require("./routes/hosts.routes");
 const usersRoutes = require("./routes/users.routes");
 const departuresRoutes = require("./routes/departures.routes");
 const rolesRoutes = require("./routes/roles.routes");
+const authRoutes = require("./routes/auth.routes");
+const profilesRoutes = require("./routes/profiles.routes");
 const { notFound, errorHandler } = require("./middlewares/error.middleware");
 
 const app = express();
@@ -51,6 +53,8 @@ app.get("/", (req, res) => {
       users: "/api/users",
       departures: "/api/departures",
       roles: "/api/roles",
+      auth: "/api/auth",
+      profiles: "/api/profiles",
       health: "/api/health"
     }
   });
@@ -70,6 +74,8 @@ app.use("/api/hosts", hostsRoutes);
 app.use("/api/users", usersRoutes);
 app.use("/api/departures", departuresRoutes);
 app.use("/api/roles", rolesRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/profiles", profilesRoutes);
 
 app.use(notFound);
 app.use(errorHandler);
@@ -86,4 +92,3 @@ connectDB()
   });
 
   
-

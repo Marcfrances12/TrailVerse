@@ -7,7 +7,8 @@ const roleSchema = new mongoose.Schema(
       required: [true, "El nombre del rol es obligatorio"],
       unique: true,
       trim: true,
-      lowercase: true
+      uppercase: true,
+      enum: ["ADMIN", "USER"]
     },
     permissions: {
       type: [String],

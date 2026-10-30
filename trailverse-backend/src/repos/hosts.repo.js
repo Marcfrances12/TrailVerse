@@ -2,9 +2,15 @@ const Host = require("../models/host.model");
 
 const noBorrados = { deleted_at: null };
 
+const usuarioPopulado = {
+  path: "userId",
+  select: "email",
+  populate: { path: "profile", select: "name" }
+};
+
 const getAll = async (filtros = {}) => {
   return Host.find({ ...filtros, ...noBorrados })
-    .populate("userId", "name")
+    .populate(usuarioPopulado)
     .sort({ name: 1 });
 };
 
@@ -13,7 +19,7 @@ const getDeleted = async () => {
 };
 
 const getById = async (id) => {
-  return Host.findOne({ _id: id, ...noBorrados }).populate("userId", "name email");
+  return Host.findOne({ _id: id, ...noBorrados }).populate(usuarioPopulado);
 };
 
 const getAnyById = async (id) => {
@@ -25,7 +31,7 @@ const getRelationsById = async (id) => {
 };
 
 const getBySlug = async (slug) => {
-  return Host.findOne({ slug, ...noBorrados }).populate("userId", "name email");
+  return Host.findOne({ slug, ...noBorrados }).populate(usuarioPopulado);
 };
 
 const slugExists = async (slug, excludeId) => {
@@ -43,7 +49,7 @@ const update = async (id, datos) => {
   return Host.findOneAndUpdate({ _id: id, ...noBorrados }, datos, {
     new: true,
     runValidators: true
-  }).populate("userId", "name email");
+  }).populate(usuarioPopulado);
 };
 
 const setActive = async (id, isActive) => {
@@ -63,7 +69,7 @@ const restore = async (id) => {
     { _id: id, deleted_at: { $ne: null } },
     { deleted_at: null, isActive: true },
     { new: true }
-  ).populate("userId", "name email");
+  ).populate(usuarioPopulado);
 };
 
 const hardDelete = async (id) => {

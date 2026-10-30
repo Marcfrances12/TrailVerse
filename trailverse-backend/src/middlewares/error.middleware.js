@@ -51,6 +51,10 @@ const errorHandler = (error, req, res, next) => {
     message = error.isOperational ? message : "Error interno del servidor";
   }
 
+  if (statusCode === 401 || statusCode === 403) {
+    return res.status(statusCode).json({ message });
+  }
+
   res.status(statusCode).json({
     ok: false,
     error: message,

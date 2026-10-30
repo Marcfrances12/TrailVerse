@@ -18,7 +18,14 @@ Crea manualmente `trailverse-backend/.env` (el repositorio no incluye `.env.exam
 PORT=3000
 MONGODB_URI=mongodb://127.0.0.1:27017/rutas_senderismo
 NODE_ENV=development
+JWT_SECRET=REPLACE_ME_WITH_A_RANDOM_SECRET
+JWT_EXPIRES_IN=1h
+JWT_ISSUER=trailverse-api
+JWT_AUDIENCE=trailverse-client
+SEED_PASSWORD=una-clave-local-de-al-menos-12-caracteres
 ```
+
+Genera `JWT_SECRET` con al menos 32 bytes aleatorios y guárdalo solo en `.env`; `.env` está excluido por `.gitignore`. El archivo `.env.example` contiene únicamente placeholders y no sirve como secreto de ejecución.
 
 ```bash
 npm run dev
@@ -26,13 +33,28 @@ npm run dev
 
 La API usa `http://localhost:3000` como origen y `/api` como prefijo de recursos. `GET /` devuelve un resumen de rutas disponibles y `GET /api/health` comprueba el estado del servicio.
 
+### Autenticación
+
+| Método | Ruta | Descripción |
+|---|---|---|
+| `POST` | `/api/auth/login` | Comprueba email y contraseña y devuelve un JWT |
+| `POST` | `/api/auth/logout` | Revoca el JWT actual; requiere `Authorization: Bearer <token>` |
+| `GET` | `/api/auth/me` | Devuelve la identidad actual; requiere `Authorization: Bearer <token>` |
+| `GET` | `/api/profiles/me` | Devuelve el perfil del usuario autenticado |
+| `PATCH` | `/api/profiles/me` | Actualiza el perfil propio |
+| `GET` | `/api/profiles` | Lista perfiles; solo `ADMIN` |
+| `GET` / `PATCH` | `/api/profiles/:userId` | Consulta o modifica un perfil; solo `ADMIN` |
+
+El JWT está firmado con HS256, incluye `sub`, `jti` y el claim `role` (`USER` o `ADMIN`), y expira según `JWT_EXPIRES_IN`. Logout guarda solo el `jti` en la colección `revokedtokens`, nunca el token completo; un índice TTL elimina las revocaciones al expirar el JWT. El middleware vuelve a consultar usuario, rol y revocación; si la cuenta se desactiva, el rol cambia o se cierra la sesión, el token deja de servir.
+
 | Comando | Descripción |
 |---|---|
 | `npm run dev` | Desarrollo con nodemon |
 | `npm start` | Inicia el servidor |
 | `npm run seed` | Borra y vuelve a cargar los datos de ejemplo |
+| `npm test` | Ejecuta las pruebas automatizadas |
 
-> **Importante:** `seed.js` ejecuta `deleteMany({})` sobre roles, usuarios, hosts, localizaciones, categorías, imágenes, rutas y salidas. Ejecutarlo elimina los datos actuales de esas colecciones. No hay script de tests definido en el backend.
+> **Importante:** `seed.js` ejecuta `deleteMany({})` sobre roles, usuarios, hosts, localizaciones, categorías, imágenes, rutas y salidas. Ejecutarlo elimina los datos actuales de esas colecciones y ahora requiere `SEED_PASSWORD`; está bloqueado cuando `NODE_ENV=production`.
 
 ## Arquitectura
 
@@ -54,11 +76,12 @@ Los módulos están separados en `src/routes`, `controllers`, `services`, `repos
 | Hosts | `/api/hosts` | `GET /slug/:slug` |
 | Salidas (departures) | `/api/departures` | `GET /sku/:sku` |
 | Usuarios | `/api/users` | Por ID |
-| Roles | `/api/roles` | Por ID |
+| Perfiles | `/api/profiles` | `GET /me` propio; `GET /:userId` ADMIN |
+| Roles | `/api/roles` | Catálogo fijo `ADMIN`/`USER`, por ID |
 
 ### Endpoints CRUD y ciclo de vida
 
-Todos los recursos anteriores ofrecen estas rutas, donde `:id` es un ObjectId de MongoDB:
+Los recursos CRUD tradicionales ofrecen estas rutas, donde `:id` es un ObjectId de MongoDB. Roles es una excepción: solo permite `GET /api/roles` y `GET /api/roles/:id`; sus documentos son roles internos predefinidos y no se pueden modificar por la API. Perfiles tiene los endpoints específicos indicados arriba. Los listados públicos de catálogo son de solo lectura; sus escrituras y las operaciones de papelera requieren `ADMIN`. Todos los endpoints de `/api/users` requieren `ADMIN`.
 
 | Método | Ruta relativa al prefijo del recurso | Descripción |
 |---|---|---|
@@ -115,7 +138,11 @@ GET /api/departures/sku/CALALI-MED-4,8
 
 - `isActive` representa activación; `deleted_at` representa papelera. Desactivar no es lo mismo que eliminar.
 - El borrado normal es lógico. `/permanent` es irreversible y comprueba que no haya dependencias que lo impidan.
-- Los usuarios requieren un rol activo. Un rol no se puede desactivar mientras tenga usuarios activos asignados; los usuarios inactivos no bloquean esa operación.
+- Los usuarios requieren uno de los roles fijos `ADMIN` o `USER`; `organizer` ya no es un rol admitido por la aplicación.
+- `Profile` depende de `User` mediante `userId` único; `User` no almacena `profileId`. Los usuarios solo pueden consultar/modificar su propio perfil; ADMIN puede acceder a todos.
+- `Profile` almacena `name` (obligatorio), `avatarUrl`, `bio` y `phone`. `User` almacena email, rol y contraseña; no tiene campo `name`.
+- Crear un usuario (`POST /api/users`) crea también su perfil con el nombre; actualizar `name` (`PUT /api/users/:id`) modifica el perfil. Las respuestas de usuarios incluyen `name`, leído del perfil.
+- Cada usuario tiene un único perfil. Si no existe, las consultas de perfil devuelven 404.
 - Los hosts pueden asociarse opcionalmente a usuarios activos; el usuario asociado debe tener un rol activo.
 - Las rutas requieren una localización activa y solo admiten hosts y categorías activos en sus relaciones.
 - Las salidas requieren una ruta activa. El stock no puede superar el aforo y la fecha final no puede preceder a la inicial.
@@ -145,11 +172,11 @@ Los esquemas Zod validan body, parámetros y queries; los esquemas de escritura 
 npm run seed
 ```
 
-Carga roles `admin`, `organizer` y `user`, usuarios demo, cinco localizaciones, dos hosts, cinco categorías, cinco rutas, seis salidas e imágenes. **Antes de insertar, vacía las colecciones del proyecto.** Los hashes de contraseña del seed son placeholders y no son credenciales de acceso.
+Carga roles `ADMIN` y `USER`, usuarios demo, cinco localizaciones, dos hosts, cinco categorías, cinco rutas, seis salidas e imágenes. Los usuarios demo reciben hashes Argon2id derivados de `SEED_PASSWORD`; todos comparten esa clave, por lo que debe usarse únicamente en desarrollo. **Antes de insertar, vacía las colecciones del proyecto.**
 
 ## Seguridad y alcance
 
-El backend configura Helmet, CORS, validación de entradas y manejo centralizado de errores. Aunque hay CRUD de roles y permisos, el proyecto actualmente no implementa login, tokens ni middleware que aplique autorización por permisos; no debe considerarse protegido para exposición pública.
+El backend configura Helmet, CORS, validación de entradas y manejo centralizado de errores. `auth.service.js` gestiona el login, verifica hashes scrypt heredados y los actualiza tras un login válido. Las cuentas se crean mediante `POST /api/users`, exclusivo de ADMIN, o mediante el seed de desarrollo; no hay registro público. Las credenciales nuevas se hashean con Argon2id. La API aplica RBAC para ADMIN y ABAC para propiedad de perfiles. Las lecturas del catálogo son públicas; escritura de catálogo y administración de usuarios son exclusivas de ADMIN. No hay aún modelo ni endpoints de reservas o Experience; no se aplican permisos sobre recursos inexistentes.
 
 ## Documentación relacionada
 

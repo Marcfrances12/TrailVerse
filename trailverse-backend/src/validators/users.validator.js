@@ -4,6 +4,11 @@ const idParamSchema = z.object({
   id: z.string().regex(/^[a-f\d]{24}$/i, "ID de MongoDB no válido")
 });
 
+const passwordSchema = z
+  .string()
+  .min(8, "La contraseña debe tener al menos 8 caracteres")
+  .max(128, "La contraseña no puede superar los 128 caracteres");
+
 const createUserSchema = z.strictObject({
   name: z.string().trim().min(2, "El nombre debe tener al menos 2 caracteres").max(100),
   email: z
@@ -11,10 +16,7 @@ const createUserSchema = z.strictObject({
     .trim()
     .toLowerCase()
     .regex(/^\S+@\S+\.\S+$/, "El email no es válido"),
-  password: z
-    .string()
-    .min(8, "La contraseña debe tener al menos 8 caracteres")
-    .max(72, "La contraseña no puede superar los 72 caracteres"),
+  password: passwordSchema,
   roleId: z.string().regex(/^[a-f\d]{24}$/i, "ID de MongoDB no válido")
 });
 
@@ -27,7 +29,6 @@ const updateUserSchema = z
       .toLowerCase()
       .regex(/^\S+@\S+\.\S+$/, "El email no es válido")
       .optional(),
-    password: z.string().min(8).max(72).optional(),
     roleId: z.string().regex(/^[a-f\d]{24}$/i, "ID de MongoDB no válido").optional()
   })
   .partial()
@@ -45,6 +46,7 @@ const listUsersQuerySchema = z.object({
 
 module.exports = {
   idParamSchema,
+  passwordSchema,
   createUserSchema,
   updateUserSchema,
   listUsersQuerySchema

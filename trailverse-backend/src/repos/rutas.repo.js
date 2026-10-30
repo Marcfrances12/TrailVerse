@@ -15,7 +15,7 @@ const getAll = async (filtros = {}) => {
       select: 'name slug isActive deleted_at userId',
       populate: {
         path: 'userId',
-        select: 'name isActive deleted_at roleId',
+        select: 'email isActive deleted_at roleId',
         populate: { path: 'roleId', select: 'name isActive deleted_at' }
       }
     })
@@ -36,7 +36,7 @@ const getById = async (id) => {
       select: 'name slug isActive deleted_at userId',
       populate: {
         path: 'userId',
-        select: 'name isActive deleted_at roleId',
+        select: 'email isActive deleted_at roleId',
         populate: { path: 'roleId', select: 'name isActive deleted_at' }
       }
     })
@@ -59,7 +59,7 @@ const getBySlug = async (slug) => {
       select: 'name slug isActive deleted_at userId',
       populate: {
         path: 'userId',
-        select: 'name isActive deleted_at roleId',
+        select: 'email isActive deleted_at roleId',
         populate: { path: 'roleId', select: 'name isActive deleted_at' }
       }
     })
@@ -93,7 +93,7 @@ const update = async (id, datos) => {
       select: 'name slug isActive deleted_at userId',
       populate: {
         path: 'userId',
-        select: 'name isActive deleted_at roleId',
+        select: 'email isActive deleted_at roleId',
         populate: { path: 'roleId', select: 'name isActive deleted_at' }
       }
     })
@@ -112,7 +112,7 @@ const setActive = async (id, isActive) => {
       select: 'name slug isActive deleted_at userId',
       populate: {
         path: 'userId',
-        select: 'name isActive deleted_at roleId',
+        select: 'email isActive deleted_at roleId',
         populate: { path: 'roleId', select: 'name isActive deleted_at' }
       }
     })
@@ -132,7 +132,7 @@ const softDelete = async (id) => {
       select: 'name slug isActive deleted_at userId',
       populate: {
         path: 'userId',
-        select: 'name isActive deleted_at roleId',
+        select: 'email isActive deleted_at roleId',
         populate: { path: 'roleId', select: 'name isActive deleted_at' }
       }
     })
@@ -152,7 +152,7 @@ const restore = async (id) => {
       select: 'name slug isActive deleted_at userId',
       populate: {
         path: 'userId',
-        select: 'name isActive deleted_at roleId',
+        select: 'email isActive deleted_at roleId',
         populate: { path: 'roleId', select: 'name isActive deleted_at' }
       }
     })

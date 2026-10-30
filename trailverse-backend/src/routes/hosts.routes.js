@@ -8,13 +8,16 @@ const {
   listHostsQuerySchema
 } = require("../validators/hosts.validator");
 const validate = require("../middlewares/validate.middleware");
+const { authenticate } = require("../middlewares/auth.middleware");
+const { requireAdmin } = require("../middlewares/admin.middleware");
 
 const router = express.Router();
 
 router.get("/", validate({ query: listHostsQuerySchema }), controller.getAll);
-router.get("/deleted", controller.getDeleted);
+router.get("/deleted", authenticate, requireAdmin, controller.getDeleted);
 router.get("/slug/:slug", validate({ params: slugParamSchema }), controller.getBySlug);
 router.get("/:id", validate({ params: idParamSchema }), controller.getById);
+router.use(authenticate, requireAdmin);
 router.post("/", validate({ body: createHostSchema }), controller.create);
 router.put("/:id", validate({ params: idParamSchema, body: updateHostSchema }), controller.update);
 router.patch("/:id/activate", validate({ params: idParamSchema }), controller.activate);

@@ -15,6 +15,14 @@ class AppError extends Error {
     return new AppError(message, 404);
   }
 
+  static unauthorized(message = "Authentication required") {
+    return new AppError(message, 401);
+  }
+
+  static forbidden(message = "You do not have permission to access this resource") {
+    return new AppError(message, 403);
+  }
+
   static conflict(message = "Conflicto con el estado actual del recurso") {
     return new AppError(message, 409);
   }

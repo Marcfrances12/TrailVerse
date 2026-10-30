@@ -1,13 +1,8 @@
 const mongoose = require("mongoose");
+require("./profile.model");
 
 const userSchema = new mongoose.Schema(
   {
-    name: {
-      type: String,
-      required: [true, "El nombre es obligatorio"],
-      trim: true,
-      minlength: [2, "El nombre debe tener al menos 2 caracteres"]
-    },
     email: {
       type: String,
       required: [true, "El email es obligatorio"],
@@ -42,5 +37,12 @@ const userSchema = new mongoose.Schema(
     }
   }
 );
+
+userSchema.virtual("profile", {
+  ref: "Profile",
+  localField: "_id",
+  foreignField: "userId",
+  justOne: true
+});
 
 module.exports = mongoose.model("User", userSchema);

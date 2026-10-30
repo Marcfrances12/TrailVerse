@@ -7,8 +7,12 @@ const {
   listUsersQuerySchema
 } = require("../validators/users.validator");
 const validate = require("../middlewares/validate.middleware");
+const { authenticate } = require("../middlewares/auth.middleware");
+const { requireAdmin } = require("../middlewares/admin.middleware");
 
 const router = express.Router();
+
+router.use(authenticate, requireAdmin);
 
 router.get("/", validate({ query: listUsersQuerySchema }), controller.getAll);
 router.get("/deleted", controller.getDeleted);

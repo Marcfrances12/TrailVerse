@@ -2,11 +2,13 @@ require("dotenv").config();
 
 const mongoose = require("mongoose");
 const connectDB = require("./src/config/database");
+const password = require("./src/utils/password");
 const { generateSlug } = require("./src/utils/slug");
 const { generateSku, generateSkuWithSequence } = require("./src/utils/sku");
 
 const Role = require("./src/models/role.model");
 const User = require("./src/models/user.model");
+const Profile = require("./src/models/profile.model");
 const Host = require("./src/models/host.model");
 const Location = require("./src/models/location.model");
 const Category = require("./src/models/category.model");
@@ -16,11 +18,19 @@ const Departure = require("./src/models/departure.model");
 
 const seed = async () => {
   try {
+    if (process.env.NODE_ENV === "production") {
+      throw new Error("El seed no se puede ejecutar en producción");
+    }
+    if (!process.env.SEED_PASSWORD || process.env.SEED_PASSWORD.length < 12) {
+      throw new Error("Define SEED_PASSWORD con al menos 12 caracteres para crear los usuarios demo");
+    }
+
     await connectDB();
 
     await Promise.all([
       Role.deleteMany({}),
       User.deleteMany({}),
+      Profile.deleteMany({}),
       Host.deleteMany({}),
       Location.deleteMany({}),
       Category.deleteMany({}),
@@ -30,16 +40,23 @@ const seed = async () => {
     ]);
 
     const roles = await Role.insertMany([
-      { name: "admin", permissions: ["all"] },
-      { name: "organizer", permissions: ["manage_rutas", "manage_departures", "manage_hosts"] },
-      { name: "user", permissions: ["read"] }
+      { name: "ADMIN", permissions: ["all"] },
+      { name: "USER", permissions: ["read"] }
     ]);
 
+    const passwordHash = await password.hashPassword(process.env.SEED_PASSWORD);
     const users = await User.insertMany([
-      { name: "Admin User", email: "admin@trailverse.com", passwordHash: "$2b$12$placeholderhashplaceholderhashplaceholderhashpla", roleId: roles[0]._id },
-      { name: "María García", email: "maria@trailverse.com", passwordHash: "$2b$12$placeholderhashplaceholderhashplaceholderhashpla", roleId: roles[1]._id },
-      { name: "Carlos Ruiz", email: "carlos@trailverse.com", passwordHash: "$2b$12$placeholderhashplaceholderhashplaceholderhashpla", roleId: roles[1]._id },
-      { name: "Ana López", email: "ana@trailverse.com", passwordHash: "$2b$12$placeholderhashplaceholderhashplaceholderhashpla", roleId: roles[2]._id }
+      { email: "admin@trailverse.com", passwordHash, roleId: roles[0]._id },
+      { email: "maria@trailverse.com", passwordHash, roleId: roles[1]._id },
+      { email: "carlos@trailverse.com", passwordHash, roleId: roles[1]._id },
+      { email: "ana@trailverse.com", passwordHash, roleId: roles[1]._id }
+    ]);
+
+    await Profile.insertMany([
+      { userId: users[0]._id, name: "Admin User" },
+      { userId: users[1]._id, name: "María García" },
+      { userId: users[2]._id, name: "Carlos Ruiz" },
+      { userId: users[3]._id, name: "Ana López" }
     ]);
 
     const locations = await Location.insertMany([
@@ -148,6 +165,7 @@ const seed = async () => {
     await Promise.all([
       Role.syncIndexes(),
       User.syncIndexes(),
+      Profile.syncIndexes(),
       Host.syncIndexes(),
       Location.syncIndexes(),
       Category.syncIndexes(),
@@ -156,7 +174,7 @@ const seed = async () => {
       Departure.syncIndexes()
     ]);
 
-    console.log(`Seed completado: ${roles.length} roles, ${users.length} users, ${hosts.length} hosts, ${locations.length} locations, ${categories.length} categories, ${rutas.length} rutas, 6 departures.`);
+    console.log(`Seed completado: ${roles.length} roles, ${users.length} users/profiles, ${hosts.length} hosts, ${locations.length} locations, ${categories.length} categories, ${rutas.length} rutas, 6 departures.`);
   } catch (error) {
     console.error("Error ejecutando seed:", error.message);
     process.exitCode = 1;
