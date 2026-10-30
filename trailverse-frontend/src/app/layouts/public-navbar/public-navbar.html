@@ -1,0 +1,45 @@
+<header class="sticky top-0 z-40 border-b border-crema-200/80 bg-crema-50/85 backdrop-blur-md">
+  <nav class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6" aria-label="Navegación principal">
+    <a routerLink="/rutas" class="flex items-center gap-2.5">
+      <span class="grid h-9 w-9 place-items-center rounded-xl bg-bosque-700 shadow-inner">
+        <svg viewBox="0 0 24 24" class="h-5 w-5" aria-hidden="true">
+          <path d="M2 20 L8.5 7 L12 13 L15 9.5 L22 20 Z" fill="#d8f3dc" />
+          <path d="M15.2 7.2 a1.6 1.6 0 1 0 0.1 0 Z" fill="#1b4332" />
+          <circle cx="15.8" cy="7.4" r="1.4" fill="#f4f1e6" />
+        </svg>
+      </span>
+      <span class="font-display text-lg font-bold tracking-tight text-bosque-950">
+        Trail<span class="text-bosque-600">Verse</span>
+      </span>
+    </a>
+
+    <div class="flex items-center gap-1 sm:gap-2">
+      <a routerLink="/rutas" routerLinkActive="bg-bosque-100 text-bosque-800" [routerLinkActiveOptions]="{ exact: true }"
+         class="rounded-full px-3 py-2 text-sm font-semibold text-tinta-suave transition-colors hover:bg-crema-200 hover:text-bosque-800">
+        Rutas
+      </a>
+
+      @if (store.user(); as usuario) {
+        @if (store.isAdmin()) {
+          <a routerLink="/admin/rutas" class="rounded-full px-3 py-2 text-sm font-semibold text-tinta-suave transition-colors hover:bg-crema-200 hover:text-bosque-800">
+            Panel
+          </a>
+        }
+        <a routerLink="/perfil" routerLinkActive="bg-bosque-100 text-bosque-800"
+           class="flex max-w-[12rem] items-center gap-2 rounded-full py-1 pl-1 pr-3 text-sm font-semibold text-tinta-suave transition-colors hover:bg-crema-200 hover:text-bosque-800">
+          <app-user-avatar [nombre]="perfiles.miPerfil()?.name ?? usuario.name" [url]="perfiles.miPerfil()?.avatarUrl ?? ''" />
+          <span class="truncate">{{ usuario.name ?? usuario.email }}</span>
+        </a>
+        <button type="button" (click)="cerrarSesion()"
+          class="rounded-full border border-crema-300 px-4 py-2 text-sm font-semibold text-tinta transition-colors hover:bg-crema-200">
+          Salir
+        </button>
+      } @else {
+        <a routerLink="/login"
+           class="rounded-full bg-gradient-to-r from-bosque-700 to-bosque-600 px-5 py-2 text-sm font-semibold text-white shadow-md transition-transform hover:-translate-y-0.5 hover:shadow-lg">
+          Iniciar sesión
+        </a>
+      }
+    </div>
+  </nav>
+</header>

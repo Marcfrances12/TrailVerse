@@ -6,6 +6,7 @@ const { generateSlug } = require("../utils/slug");
 const { validarConZod } = require("../utils/validar");
 const integrity = require("./integrity.service");
 const departuresService = require("./departures.service");
+const { isAdmin } = require("../utils/authorization");
 const {
   idParamSchema,
   slugParamSchema,
@@ -27,6 +28,27 @@ async function conImagenes(ruta) {
     images: imagenes,
     dependencyWarnings: integrity.avisosIntegridadRuta(rutaObj)
   };
+}
+
+// Vista para visitantes y USER: sin avisos de integridad ni datos de contacto del host.
+function presentarPublica(datos) {
+  const publica = { ...datos };
+  delete publica.dependencyWarnings;
+
+  if (publica.hostId && typeof publica.hostId === "object" && Object.hasOwn(publica.hostId, "name")) {
+    publica.hostId = {
+      _id: publica.hostId._id,
+      name: publica.hostId.name,
+      slug: publica.hostId.slug
+    };
+  }
+
+  return publica;
+}
+
+async function presentarLectura(ruta, actor) {
+  const datos = await conImagenes(ruta);
+  return isAdmin(actor) ? datos : presentarPublica(datos);
 }
 
 function relacionesDe(ruta) {
@@ -76,7 +98,7 @@ async function construirSlugUnico(nombre, excludeId) {
   return candidato;
 }
 
-async function getRutas(query = {}) {
+async function getRutas(query = {}, actor) {
   const filtros = {};
 
   if (query.dificultad) {
@@ -91,12 +113,18 @@ async function getRutas(query = {}) {
     filtros.circular = query.circular;
   }
 
-  if (query.isActive !== undefined) {
+  if (query.isActive !== undefined && isAdmin(actor)) {
     filtros.isActive = query.isActive;
   }
 
   if (query.status) {
     filtros.status = query.status;
+  }
+
+  if (!isAdmin(actor)) {
+    filtros.isActive = true;
+    const rutas = await rutasRepo.getAll(filtros);
+    return rutas.map((ruta) => presentarPublica(ruta.toObject ? ruta.toObject() : ruta));
   }
 
   const rutas = await rutasRepo.getAll(filtros);
@@ -107,28 +135,28 @@ async function getRutasEliminadas() {
   return rutasRepo.getDeleted();
 }
 
-async function getRutaById(id) {
+async function getRutaById(id, actor) {
   const idValido = await validarId(id);
 
   const ruta = await rutasRepo.getById(idValido);
 
-  if (!ruta) {
+  if (!ruta || (!isAdmin(actor) && !ruta.isActive)) {
     throw AppError.notFound("Ruta no encontrada");
   }
 
-  return conImagenes(ruta);
+  return presentarLectura(ruta, actor);
 }
 
-async function getRutaBySlug(slug) {
+async function getRutaBySlug(slug, actor) {
   const slugValido = await validarSlug(slug);
 
   const ruta = await rutasRepo.getBySlug(slugValido);
 
-  if (!ruta) {
+  if (!ruta || (!isAdmin(actor) && !ruta.isActive)) {
     throw AppError.notFound("Ruta no encontrada");
   }
 
-  return conImagenes(ruta);
+  return presentarLectura(ruta, actor);
 }
 
 async function createRuta(datos) {
@@ -273,6 +301,7 @@ async function hardDeleteRuta(id) {
 }
 
 module.exports = {
+  presentarPublica,
   getRutas,
   getRutasEliminadas,
   getRutaById,

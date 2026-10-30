@@ -11,6 +11,14 @@ const userSchema = new mongoose.Schema(
       lowercase: true,
       match: [/^\S+@\S+\.\S+$/, "El email no es válido"]
     },
+    username: {
+      type: String,
+      trim: true,
+      lowercase: true,
+      unique: true,
+      sparse: true,
+      match: [/^[a-z0-9_.-]{3,30}$/, "El usuario debe tener entre 3 y 30 caracteres: letras, números, punto, guion o guion bajo"]
+    },
     passwordHash: {
       type: String,
       required: [true, "El hash de contraseña es obligatorio"],

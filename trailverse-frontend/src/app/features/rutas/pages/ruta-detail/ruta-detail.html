@@ -105,10 +105,11 @@
         </div>
 
         <aside class="space-y-4 rounded-2xl border border-crema-200 bg-crema-50 p-4">
+          @if (auth.isAdmin()) {
           <div>
             <h2 class="text-sm font-bold uppercase tracking-wide text-tinta-suave">Acciones</h2>
             <div class="mt-3 grid gap-2">
-              <a routerLink="/rutas/{{ rutaActual.slug }}/edit"
+              <a routerLink="/admin/rutas/{{ rutaActual.slug }}/edit"
                  class="rounded-lg bg-bosque-700 px-4 py-2.5 text-center text-sm font-semibold text-white transition-colors hover:bg-bosque-600">
                 Editar ruta
               </a>
@@ -137,6 +138,7 @@
               </button>
             </div>
           </div>
+          }
 
           <dl class="space-y-2 border-t border-crema-200 pt-4 text-sm">
             <div class="flex justify-between gap-2">

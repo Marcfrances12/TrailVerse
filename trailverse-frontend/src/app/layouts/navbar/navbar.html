@@ -1,11 +1,29 @@
 ﻿<header class="sticky top-0 z-30 border-b border-crema-200 bg-white/90 backdrop-blur-sm">
   <nav class="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6" aria-label="Navegación principal">
     <div class="flex items-center gap-2">
-      <a routerLink="/rutas" class="text-sm font-semibold text-bosque-700 hover:text-bosque-500">
+      <a routerLink="/admin/rutas" class="text-sm font-semibold text-bosque-700 hover:text-bosque-500">
         TrailVerse
       </a>
       <span class="text-crema-300">/</span>
       <span class="text-sm text-tinta-suave">Admin</span>
     </div>
+
+    @if (store.user(); as usuario) {
+      <div class="flex items-center gap-3">
+        <a routerLink="/perfil" class="flex max-w-[12rem] items-center gap-2 text-sm font-semibold text-bosque-700 hover:text-bosque-500">
+          <app-user-avatar [nombre]="perfiles.miPerfil()?.name ?? usuario.name" [url]="perfiles.miPerfil()?.avatarUrl ?? ''" />
+          <span class="truncate">{{ usuario.name ?? usuario.email }}</span>
+        </a>
+        <span class="rounded-full bg-crema-100 px-2 py-0.5 text-xs font-semibold text-tinta-suave">{{ usuario.role }}</span>
+        <button
+          type="button"
+          (click)="cerrarSesion()"
+          class="rounded-lg border border-crema-300 px-3 py-1.5 text-sm font-semibold text-tinta hover:bg-crema-100">
+          Cerrar sesión
+        </button>
+      </div>
+    } @else {
+      <a routerLink="/login" class="text-sm font-semibold text-bosque-700 hover:text-bosque-500">Iniciar sesión</a>
+    }
   </nav>
 </header>

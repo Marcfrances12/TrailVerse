@@ -10,7 +10,7 @@
   [empty]="modoPapelera() ? store.eliminados().length === 0 : store.rutas().length === 0"
   [emptyTitle]="modoPapelera() ? 'Papelera vacía' : 'Sin resultados'"
   [emptyMessage]="modoPapelera() ? 'No hay rutas eliminadas.' : 'Aún no hay rutas registradas.'"
-  [createRoute]="'/rutas/new'"
+  [createRoute]="'/admin/rutas/new'"
   [createLabel]="'+ Nueva ruta'"
   (toggleTrash)="alternarPapelera()"
   (retry)="modoPapelera() ? reintentarPapelera() : reintentar()">

@@ -1,5 +1,5 @@
 <div class="mx-auto max-w-3xl space-y-6">
-  <a routerLink="/rutas" class="inline-flex items-center gap-1.5 text-sm font-semibold text-bosque-700 transition-colors hover:text-bosque-500">
+  <a routerLink="/admin/rutas" class="inline-flex items-center gap-1.5 text-sm font-semibold text-bosque-700 transition-colors hover:text-bosque-500">
     <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
       <path d="M15 18 L9 12 L15 6" />
     </svg>
@@ -19,7 +19,7 @@
     </div>
   } @else if (esEdicion() && store.error() && !rutaOriginal()) {
     <app-error-state [mensaje]="store.error()!" />
-    <a routerLink="/rutas" class="inline-block rounded-lg bg-bosque-700 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-bosque-600">
+    <a routerLink="/admin/rutas" class="inline-block rounded-lg bg-bosque-700 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-bosque-600">
       Ver todas las rutas
     </a>
   } @else {
@@ -211,7 +211,7 @@
       </section>
 
       <div class="flex flex-col-reverse gap-3 border-t border-crema-200 pt-5 sm:flex-row sm:justify-end">
-        <a routerLink="/rutas"
+        <a routerLink="/admin/rutas"
           class="rounded-lg border border-crema-300 px-5 py-2.5 text-center text-sm font-semibold text-tinta transition-colors hover:bg-crema-100">
           Cancelar
         </a>

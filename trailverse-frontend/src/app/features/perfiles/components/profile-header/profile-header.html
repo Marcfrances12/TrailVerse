@@ -1,0 +1,29 @@
+<header class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-bosque-950 via-bosque-800 to-bosque-600 p-6 text-crema-100 shadow-lg sm:p-8">
+  <svg class="pointer-events-none absolute inset-0 h-full w-full opacity-25" viewBox="0 0 800 300" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <g fill="none" stroke="#95d5b2" stroke-width="1.2">
+      <path d="M-20 220 C 140 140, 260 260, 400 180 S 660 100, 820 180" />
+      <path d="M-20 160 C 160 80, 280 200, 420 120 S 680 40, 820 120" />
+      <path d="M-20 280 C 120 220, 280 320, 440 250 S 700 190, 820 250" />
+    </g>
+  </svg>
+
+  <div class="relative flex flex-col items-center gap-5 text-center sm:flex-row sm:text-left">
+    @if (avatarUrl()) {
+      <img [src]="avatarUrl()" alt="" class="h-24 w-24 shrink-0 rounded-full object-cover ring-4 ring-bosque-500/40" />
+    } @else {
+      <div class="grid h-24 w-24 shrink-0 place-items-center rounded-full bg-crema-50 font-display text-3xl font-bold text-bosque-800 ring-4 ring-bosque-500/40">
+        {{ iniciales() }}
+      </div>
+    }
+
+    <div class="min-w-0">
+      <h1 class="truncate font-display text-2xl font-bold sm:text-3xl">{{ nombre() || 'Sin nombre' }}</h1>
+      @if (email()) {
+        <p class="mt-1 truncate text-sm text-bosque-100/90">{{ email() }}</p>
+      }
+      @if (rol()) {
+        <span class="mt-3 inline-flex rounded-full bg-bosque-500/30 px-3 py-1 text-xs font-semibold tracking-wide">{{ rol() }}</span>
+      }
+    </div>
+  </div>
+</header>

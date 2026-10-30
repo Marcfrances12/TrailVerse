@@ -25,6 +25,10 @@ const getAnyById = async (id) => {
   return User.findById(id);
 };
 
+const getAllWithState = async () => {
+  return User.find().select("email isActive deleted_at").lean();
+};
+
 const getRelationsById = async (id) => {
   return User.findOne({ _id: id, ...noBorrados }).select("roleId");
 };
@@ -35,6 +39,12 @@ return User.findOne({ email, ...noBorrados });
 
 const getByEmailForAuthentication = async (email) => {
   return User.findOne({ email, ...noBorrados })
+    .select("+passwordHash")
+    .populate("roleId", "name isActive deleted_at");
+};
+
+const getByUsernameForAuthentication = async (username) => {
+  return User.findOne({ username, ...noBorrados })
     .select("+passwordHash")
     .populate("roleId", "name isActive deleted_at");
 };
@@ -88,4 +98,4 @@ const hardDelete = async (id) => {
   return User.findByIdAndDelete(id);
 };
 
-module.exports = { getAll, getDeleted, getById, getAnyById, getRelationsById, getByEmail, getByEmailForAuthentication, updatePasswordHashIfCurrent, emailExists, create, update, setActive, softDelete, restore, hardDelete };
+module.exports = { getAll, getAllWithState, getDeleted, getById, getAnyById, getRelationsById, getByEmail, getByEmailForAuthentication, getByUsernameForAuthentication, updatePasswordHashIfCurrent, emailExists, create, update, setActive, softDelete, restore, hardDelete };

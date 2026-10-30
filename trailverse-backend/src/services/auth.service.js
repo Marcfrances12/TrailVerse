@@ -28,9 +28,16 @@ function authResponse(user, role, name) {
   };
 }
 
-async function verifyCredentials(email, rawPassword) {
-  const normalizedEmail = typeof email === "string" ? email.trim().toLowerCase() : "";
-  const user = await usersRepo.getByEmailForAuthentication(normalizedEmail);
+// Primero busca por email y después por usuario. Ambos son únicos.
+async function buscarPorIdentificador(identificador) {
+  const normalizado = identificador.trim().toLowerCase();
+  const porEmail = await usersRepo.getByEmailForAuthentication(normalizado);
+  if (porEmail) return porEmail;
+  return usersRepo.getByUsernameForAuthentication(normalizado);
+}
+
+async function verifyCredentials(identificador, rawPassword) {
+  const user = typeof identificador === "string" ? await buscarPorIdentificador(identificador) : null;
   if (!user || !user.isActive) return null;
 
   const role = user.roleId;
@@ -56,8 +63,8 @@ async function verifyCredentials(email, rawPassword) {
 
 async function login(datos) {
   const datosValidos = validarConZod(loginSchema, datos, "body");
-  const credentials = await verifyCredentials(datosValidos.email, datosValidos.password);
-  if (!credentials) throw AppError.unauthorized("Invalid email or password");
+  const credentials = await verifyCredentials(datosValidos.identificador, datosValidos.password);
+  if (!credentials) throw AppError.unauthorized("Invalid credentials");
 
   const perfil = await profilesRepo.getByUserId(credentials.user._id);
   return authResponse(credentials.user, credentials.role, perfil?.name ?? null);

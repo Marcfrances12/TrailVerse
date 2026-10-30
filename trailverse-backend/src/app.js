@@ -6,6 +6,7 @@ const fs = require('fs');
 const path = require('path');
 const express = require("express");
 const cors = require("cors");
+const cookieParser = require("cookie-parser");
 const connectDB = require("./config/database");
 const rutasRoutes = require("./routes/rutas.routes");
 const categoriesRoutes = require("./routes/categories.routes");
@@ -21,8 +22,9 @@ const { notFound, errorHandler } = require("./middlewares/error.middleware");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(cors());
+app.use(cors({ origin: process.env.CORS_ORIGIN || "http://localhost:4200", credentials: true }));
 app.use(express.json());
+app.use(cookieParser());
 app.use(helmet());
 app.use(morgan('dev'));
 

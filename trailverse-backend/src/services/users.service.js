@@ -126,9 +126,9 @@ async function restoreUser(id) {
 async function hardDeleteUser(id) {
   const idValido = await validarId(id);
   await integrity.comprobarBorradoDefinitivo("user", idValido);
-  await profilesRepo.deleteForUser(idValido);
   const user = await usersRepo.hardDelete(idValido);
   if (!user) throw AppError.notFound("Usuario no encontrado");
+  await profilesRepo.deleteForUser(idValido);
   return user;
 }
 

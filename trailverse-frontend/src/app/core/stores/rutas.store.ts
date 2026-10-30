@@ -208,6 +208,16 @@ export class RutasStore {
     this._seleccionada.set(null);
   }
 
+  /** Descarta toda la caché. Se usa al cambiar de sesión: el backend devuelve datos distintos según el rol. */
+  limpiarCache(): void {
+    this._rutas.set([]);
+    this._seleccionada.set(null);
+    this._cargada.set(false);
+    this._filtros.set({});
+    this._eliminados.set([]);
+    this.ultimaClave = '';
+  }
+
   /** Mantiene coherente el caché del listado con la ruta modificada. */
   private sincronizar(ruta: Ruta): void {
     this._rutas.update((lista) => {

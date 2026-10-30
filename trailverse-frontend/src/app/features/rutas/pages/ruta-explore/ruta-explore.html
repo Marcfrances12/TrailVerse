@@ -1,0 +1,35 @@
+<div class="space-y-10">
+  <section class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-bosque-950 via-bosque-800 to-bosque-600 p-8 text-crema-100 shadow-xl sm:p-12">
+    <svg class="pointer-events-none absolute inset-0 h-full w-full opacity-25" viewBox="0 0 800 400" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <g fill="none" stroke="#95d5b2" stroke-width="1.2">
+        <path d="M-20 300 C 120 220, 240 340, 380 260 S 640 180, 820 260" />
+        <path d="M-20 240 C 140 160, 260 280, 400 200 S 660 120, 820 200" />
+        <path d="M-20 180 C 160 100, 280 220, 420 140 S 680 60, 820 140" />
+        <path d="M-20 360 C 100 300, 260 400, 420 330 S 680 270, 820 330" />
+      </g>
+    </svg>
+
+    <div class="relative max-w-2xl">
+      <p class="text-xs font-semibold uppercase tracking-[0.25em] text-bosque-300">Senderismo</p>
+      <h1 class="mt-3 font-display text-3xl font-bold leading-tight sm:text-5xl">Encuentra tu próxima ruta</h1>
+      <p class="mt-4 text-base text-bosque-100/90 sm:text-lg">
+        Explora rutas con su distancia, desnivel y duración, y elige la que mejor encaje contigo.
+      </p>
+      @if (!store.cargando() && store.total() > 0) {
+        <p class="mt-6 text-sm font-semibold text-bosque-300">
+          {{ store.total() }} {{ store.total() === 1 ? 'ruta disponible' : 'rutas disponibles' }}
+        </p>
+      }
+    </div>
+  </section>
+
+  @if (store.cargando()) {
+    <app-skeleton-grid />
+  } @else if (store.error(); as mensaje) {
+    <app-error-state [mensaje]="mensaje" (reintentar)="reintentar()" />
+  } @else if (store.rutas().length === 0) {
+    <app-empty-state titulo="Aún no hay rutas" mensaje="Vuelve pronto, estamos preparando nuevas sendas." />
+  } @else {
+    <app-ruta-grid [rutas]="store.rutas()" />
+  }
+</div>

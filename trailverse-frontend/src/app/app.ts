@@ -1,9 +1,10 @@
 import { Component } from '@angular/core';
-import { MainLayout } from './layouts/main-layout/main-layout';
+import { RouterOutlet } from '@angular/router';
+import { Loader } from './shared/components/loader/loader';
 
 @Component({
   selector: 'app-root',
-  imports: [MainLayout],
+  imports: [RouterOutlet, Loader],
   templateUrl: './app.html'
 })
 export class App {}

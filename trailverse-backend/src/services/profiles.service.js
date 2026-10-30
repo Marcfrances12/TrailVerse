@@ -5,9 +5,67 @@ const { validarConZod } = require("../utils/validar");
 const { userIdParamSchema, updateProfileSchema } = require("../validators/profiles.validator");
 const { canAccessUserResource } = require("../utils/authorization");
 
-async function getProfiles() {
-  const activeUsers = await usersRepo.getAll({ isActive: true });
-  return profilesRepo.getAll(activeUsers.map((user) => user._id));
+const ESTADOS_INCIDENCIA = ["usuario-no-existe", "sin-perfil"];
+
+function estadoDe(usuario) {
+  if (!usuario) return "usuario-no-existe";
+  if (!usuario.isActive) return "usuario-inactivo";
+  return "ok";
+}
+
+function filaDePerfil(perfil, usuario) {
+  return {
+    _id: String(perfil._id),
+    userId: String(perfil.userId),
+    email: usuario?.email ?? null,
+    usuarioActivo: usuario ? usuario.isActive : null,
+    name: perfil.name,
+    avatarUrl: perfil.avatarUrl,
+    bio: perfil.bio,
+    phone: perfil.phone,
+    estado: estadoDe(usuario),
+    created_at: perfil.created_at,
+    updated_at: perfil.updated_at
+  };
+}
+
+function filaSinPerfil(usuario) {
+  return {
+    _id: null,
+    userId: String(usuario._id),
+    email: usuario.email,
+    usuarioActivo: usuario.isActive,
+    name: null,
+    avatarUrl: "",
+    bio: "",
+    phone: "",
+    estado: "sin-perfil",
+    created_at: null,
+    updated_at: null
+  };
+}
+
+async function getProfiles(filtros = {}) {
+  const [perfiles, usuarios] = await Promise.all([
+    profilesRepo.getAllRaw(),
+    usersRepo.getAllWithState()
+  ]);
+
+  const usuariosPorId = new Map(usuarios.map((usuario) => [String(usuario._id), usuario]));
+  const usuariosConPerfil = new Set(perfiles.map((perfil) => String(perfil.userId)));
+
+  const filas = perfiles
+    .filter((perfil) => !usuariosPorId.get(String(perfil.userId))?.deleted_at)
+    .map((perfil) => filaDePerfil(perfil, usuariosPorId.get(String(perfil.userId))));
+
+  const sinPerfil = usuarios
+    .filter((usuario) => !usuario.deleted_at && !usuariosConPerfil.has(String(usuario._id)))
+    .map(filaSinPerfil);
+
+  const todas = [...filas, ...sinPerfil];
+  return filtros.soloIncidencias
+    ? todas.filter((fila) => ESTADOS_INCIDENCIA.includes(fila.estado))
+    : todas;
 }
 
 async function getProfileForUser(actor, userId) {

@@ -1,7 +1,7 @@
 const { z } = require("zod");
 
 const loginSchema = z.strictObject({
-  email: z.string().trim().toLowerCase().regex(/^\S+@\S+\.\S+$/, "El email no es válido"),
+  identificador: z.string().trim().min(1, "Introduce tu email o usuario").max(254),
   password: z.string().min(1).max(128)
 });
 

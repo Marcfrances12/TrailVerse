@@ -2,7 +2,7 @@ const rutasService = require("../services/rutas.service");
 
 const getAll = async (req, res, next) => {
   try {
-    const rutas = await rutasService.getRutas(req.query);
+    const rutas = await rutasService.getRutas(req.query, req.user);
 
     res.status(200).json({
       ok: true,
@@ -30,7 +30,7 @@ const getDeleted = async (req, res, next) => {
 
 const getById = async (req, res, next) => {
   try {
-    const ruta = await rutasService.getRutaById(req.params.id);
+    const ruta = await rutasService.getRutaById(req.params.id, req.user);
 
     res.status(200).json({
       ok: true,
@@ -43,7 +43,7 @@ const getById = async (req, res, next) => {
 
 const getBySlug = async (req, res, next) => {
   try {
-    const ruta = await rutasService.getRutaBySlug(req.params.slug);
+    const ruta = await rutasService.getRutaBySlug(req.params.slug, req.user);
 
     res.status(200).json({
       ok: true,

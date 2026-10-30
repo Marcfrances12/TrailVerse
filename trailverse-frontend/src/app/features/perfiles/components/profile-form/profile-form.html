@@ -1,0 +1,63 @@
+<form [formGroup]="formulario" (ngSubmit)="guardar()" novalidate class="space-y-8 rounded-3xl border border-crema-200 bg-white p-6 shadow-sm sm:p-8">
+  @if (erroresServidor().length) {
+    <div class="rounded-2xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900" role="alert">
+      <p class="font-semibold">No se ha podido guardar. Revisa estos errores:</p>
+      <ul class="mt-2 list-inside list-disc space-y-1">@for (mensaje of erroresServidor(); track mensaje) { <li>{{ mensaje }}</li> }</ul>
+    </div>
+  }
+
+  <section class="space-y-5">
+    <div>
+      <h2 class="font-display text-lg font-bold text-bosque-950">Información personal</h2>
+      <p class="text-sm text-tinta-suave">Así te verán los demás en TrailVerse.</p>
+    </div>
+
+    <div>
+      <label for="name" class="mb-1.5 block text-sm font-semibold text-tinta">Nombre *</label>
+      <input id="name" type="text" formControlName="name" placeholder="Juan García"
+        class="w-full rounded-xl border border-crema-300 bg-crema-50 px-4 py-3 text-sm text-tinta outline-none transition focus:border-bosque-500 focus:bg-white focus:ring-4 focus:ring-bosque-100"
+        [class.border-red-400]="formulario.get('name')?.touched && formulario.get('name')?.errors" />
+      @if (mostrarError('name'); as mensaje) { <p class="mt-1.5 text-sm text-red-600">{{ mensaje }}</p> }
+    </div>
+
+    <div>
+      <label for="bio" class="mb-1.5 block text-sm font-semibold text-tinta">Biografía</label>
+      <textarea id="bio" rows="4" formControlName="bio" placeholder="Cuéntanos qué te gusta recorrer"
+        class="w-full rounded-xl border border-crema-300 bg-crema-50 px-4 py-3 text-sm text-tinta outline-none transition focus:border-bosque-500 focus:bg-white focus:ring-4 focus:ring-bosque-100"
+        [class.border-red-400]="formulario.get('bio')?.touched && formulario.get('bio')?.errors"></textarea>
+      @if (mostrarError('bio'); as mensaje) { <p class="mt-1.5 text-sm text-red-600">{{ mensaje }}</p> }
+    </div>
+  </section>
+
+  <section class="space-y-5 border-t border-crema-200 pt-8">
+    <div>
+      <h2 class="font-display text-lg font-bold text-bosque-950">Contacto e imagen</h2>
+      <p class="text-sm text-tinta-suave">Todo es opcional. Para el avatar usa una URL pública de imagen.</p>
+    </div>
+
+    <div class="grid gap-5 sm:grid-cols-2">
+      <div>
+        <label for="phone" class="mb-1.5 block text-sm font-semibold text-tinta">Teléfono</label>
+        <input id="phone" type="tel" formControlName="phone" placeholder="+34 600 000 000"
+          class="w-full rounded-xl border border-crema-300 bg-crema-50 px-4 py-3 text-sm text-tinta outline-none transition focus:border-bosque-500 focus:bg-white focus:ring-4 focus:ring-bosque-100"
+          [class.border-red-400]="formulario.get('phone')?.touched && formulario.get('phone')?.errors" />
+        @if (mostrarError('phone'); as mensaje) { <p class="mt-1.5 text-sm text-red-600">{{ mensaje }}</p> }
+      </div>
+
+      <div>
+        <label for="avatarUrl" class="mb-1.5 block text-sm font-semibold text-tinta">Avatar (URL)</label>
+        <input id="avatarUrl" type="url" formControlName="avatarUrl" placeholder="https://…"
+          class="w-full rounded-xl border border-crema-300 bg-crema-50 px-4 py-3 text-sm text-tinta outline-none transition focus:border-bosque-500 focus:bg-white focus:ring-4 focus:ring-bosque-100"
+          [class.border-red-400]="formulario.get('avatarUrl')?.touched && formulario.get('avatarUrl')?.errors" />
+        @if (mostrarError('avatarUrl'); as mensaje) { <p class="mt-1.5 text-sm text-red-600">{{ mensaje }}</p> }
+      </div>
+    </div>
+  </section>
+
+  <div class="flex justify-end border-t border-crema-200 pt-6">
+    <button type="submit" [disabled]="enviando()"
+      class="rounded-xl bg-gradient-to-r from-bosque-700 to-bosque-600 px-7 py-3 text-sm font-semibold text-white shadow-lg shadow-bosque-700/20 transition-all hover:-translate-y-0.5 hover:shadow-xl disabled:translate-y-0 disabled:opacity-60">
+      {{ enviando() ? 'Guardando…' : 'Guardar cambios' }}
+    </button>
+  </div>
+</form>

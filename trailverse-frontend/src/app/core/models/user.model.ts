@@ -27,8 +27,3 @@ export interface UsersFiltros {
   isActive?: boolean;
 }
 
-export interface Role {
-  _id: string;
-  name: string;
-  permissions: string[];
-}

@@ -1,4 +1,5 @@
 const { verifyAccessToken } = require("../utils/jwt");
+const { AUTH_COOKIE } = require("../utils/auth-cookie");
 const usersRepo = require("../repos/users.repo");
 const revokedTokensRepo = require("../repos/revoked-tokens.repo");
 const AppError = require("../utils/AppError");
@@ -6,14 +7,21 @@ const Role = require("../models/role.model");
 
 const unauthorized = () => AppError.unauthorized("Authentication required");
 
-async function authenticate(req, res, next) {
+// Prioriza la cabecera Bearer (API y pruebas) y usa la cookie de sesión como alternativa.
+function tokenDeRequest(req) {
   const authorization = req.get("authorization") || "";
   const match = authorization.match(/^Bearer\s+([^\s]+)$/i);
-  if (!match) return next(unauthorized());
+  if (match) return match[1];
+  return req.cookies?.[AUTH_COOKIE] ?? null;
+}
+
+async function authenticate(req, res, next) {
+  const token = tokenDeRequest(req);
+  if (!token) return next(unauthorized());
 
   let payload;
   try {
-    payload = verifyAccessToken(match[1]);
+    payload = verifyAccessToken(token);
   } catch {
     return next(unauthorized());
   }
@@ -65,4 +73,14 @@ async function authenticate(req, res, next) {
   }
 }
 
-module.exports = { authenticate };
+// Para rutas públicas: sin token o con token inválido se continúa como visitante.
+function optionalAuthenticate(req, res, next) {
+  if (!tokenDeRequest(req)) return next();
+
+  return authenticate(req, res, (error) => {
+    if (error && !(error instanceof AppError && error.statusCode === 401)) return next(error);
+    return next();
+  });
+}
+
+module.exports = { authenticate, optionalAuthenticate, tokenDeRequest };

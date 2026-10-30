@@ -1,0 +1,15 @@
+<div class="mx-auto max-w-5xl space-y-8">
+  <a routerLink="/admin/perfiles" class="inline-flex items-center gap-1.5 text-sm font-semibold text-bosque-700 hover:text-bosque-500">
+    <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M15 18 L9 12 L15 6" /></svg>
+    Volver a perfiles
+  </a>
+
+  @if (cargando()) {
+    <p class="text-sm text-tinta-suave">Cargando perfil…</p>
+  } @else if (error(); as mensaje) {
+    <div class="rounded-2xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900" role="alert">{{ mensaje }}</div>
+  } @else if (perfil(); as perfilActual) {
+    <app-profile-header [nombre]="perfilActual.name" [avatarUrl]="perfilActual.avatarUrl" />
+    <app-profile-form [perfil]="perfilActual" [userId]="userId()" (guardado)="onGuardado($event)" />
+  }
+</div>

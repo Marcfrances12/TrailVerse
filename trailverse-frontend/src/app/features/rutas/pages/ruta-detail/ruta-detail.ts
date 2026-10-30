@@ -3,6 +3,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import Swal from 'sweetalert2';
 import { RutasStore } from '../../../../core/stores/rutas.store';
+import { AuthStore } from '../../../../core/stores/auth.store';
 import { ETIQUETAS_DIFICULTAD, ETIQUETAS_ESTADO, Ruta } from '../../../../core/models/ruta.model';
 import { capitalizar, formatDuracion, formatFecha, formatKm, formatMetros } from '../../../../shared/utils/formatos';
 import { ErrorState } from '../../../../shared/components/error-state/error-state';
@@ -14,6 +15,7 @@ import { ErrorState } from '../../../../shared/components/error-state/error-stat
 })
 export class RutaDetail {
   readonly store = inject(RutasStore);
+  readonly auth = inject(AuthStore);
   readonly ruta = this.store.seleccionada;
 
   private readonly route = inject(ActivatedRoute);

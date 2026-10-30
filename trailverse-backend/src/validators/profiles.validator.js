@@ -11,4 +11,11 @@ const updateProfileSchema = z.strictObject({
   phone: z.string().trim().max(30).optional()
 }).refine((data) => Object.keys(data).length > 0, "Debes enviar al menos un campo para actualizar");
 
-module.exports = { userIdParamSchema, updateProfileSchema };
+const listProfilesQuerySchema = z.object({
+  soloIncidencias: z
+    .enum(["true", "false"])
+    .optional()
+    .transform((val) => val === "true")
+});
+
+module.exports = { userIdParamSchema, updateProfileSchema, listProfilesQuerySchema };

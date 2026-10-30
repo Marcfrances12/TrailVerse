@@ -2,7 +2,7 @@ const profilesService = require("../services/profiles.service");
 
 const getAll = async (req, res, next) => {
   try {
-    const profiles = await profilesService.getProfiles();
+    const profiles = await profilesService.getProfiles(req.query);
     res.status(200).json({ ok: true, total: profiles.length, data: profiles });
   } catch (error) { next(error); }
 };

@@ -1,0 +1,8 @@
+@if (mostrarImagen()) {
+  <img [src]="url()" alt="" (error)="marcarFallida()"
+       class="h-8 w-8 shrink-0 rounded-full object-cover ring-2 ring-bosque-200" />
+} @else {
+  <span class="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-bosque-700 text-xs font-bold text-white ring-2 ring-bosque-200" aria-hidden="true">
+    {{ iniciales() }}
+  </span>
+}

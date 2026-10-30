@@ -11,7 +11,7 @@
 
   <!-- Logo -->
   <div class="flex items-center gap-2.5 border-b border-bosque-700 px-5 py-4">
-    <a routerLink="/rutas" class="flex items-center gap-2.5" (click)="cerrar()">
+    <a routerLink="/admin/rutas" class="flex items-center gap-2.5" (click)="cerrar()">
       <span class="grid h-9 w-9 place-items-center rounded-xl bg-bosque-600 shadow-inner">
         <svg viewBox="0 0 24 24" class="h-5 w-5" aria-hidden="true">
           <path d="M2 20 L8.5 7 L12 13 L15 9.5 L22 20 Z" fill="#d8f3dc" />
@@ -41,7 +41,7 @@
         Rutas
       </p>
 
-      <a routerLink="/rutas"
+      <a routerLink="/admin/rutas"
          routerLinkActive="bg-bosque-700 text-white"
          class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors hover:bg-bosque-800"
          (click)="cerrar()">
@@ -52,6 +52,7 @@
       </a>
     </div>
 
+    @if (store.isAdmin()) {
     <div class="space-y-1">
       <p class="px-3 pb-2 text-xs font-semibold uppercase tracking-wider text-bosque-400">
         Admin
@@ -93,6 +94,17 @@
         Usuarios
       </a>
 
+      <a routerLink="/admin/perfiles"
+         routerLinkActive="bg-bosque-700 text-white"
+         class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors hover:bg-bosque-800"
+         (click)="cerrar()">
+        <svg viewBox="0 0 24 24" class="h-5 w-5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+          <circle cx="12" cy="8" r="4" />
+          <path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1" />
+        </svg>
+        Perfiles
+      </a>
+
       <a routerLink="/admin/localizaciones"
          routerLinkActive="bg-bosque-700 text-white"
          class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors hover:bg-bosque-800"
@@ -126,10 +138,20 @@
         Roles
       </a>
     </div>
+    }
   </nav>
 
   <!-- Footer -->
-  <div class="border-t border-bosque-700 px-4 py-3">
-    <p class="text-xs text-bosque-400">TrailVerse Admin v1.0</p>
+  <div class="space-y-2 border-t border-bosque-700 px-4 py-3">
+    <a routerLink="/rutas" (click)="cerrar()"
+       class="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-bosque-300 transition-colors hover:bg-bosque-800 hover:text-white">
+      <svg viewBox="0 0 24 24" class="h-4 w-4 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+        <path d="M14 3h7v7" />
+        <path d="M10 14 21 3" />
+        <path d="M21 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5" />
+      </svg>
+      Ver sitio
+    </a>
+    <p class="px-3 text-xs text-bosque-400">TrailVerse Admin v1.0</p>
   </div>
 </aside>
