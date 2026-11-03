@@ -5,53 +5,60 @@ const usersRepo = require("../src/repos/users.repo");
 const profilesRepo = require("../src/repos/profiles.repo");
 const usersService = require("../src/services/users.service");
 
-test("el borrado definitivo elimina primero el usuario y después su perfil", async () => {
-  const llamadas = [];
+function simularBorrado({ alBorrarUsuario, alBorrarPerfil, despuesDeComprobar }) {
   const originals = {
     comprobar: integrity.comprobarBorradoDefinitivo,
+    adminRestante: integrity.exigirOtroAdminActivo,
     hardDelete: usersRepo.hardDelete,
     deleteForUser: profilesRepo.deleteForUser
   };
 
   integrity.comprobarBorradoDefinitivo = async () => {};
-  usersRepo.hardDelete = async (id) => {
-    llamadas.push("usuario");
-    return { _id: id };
+  integrity.exigirOtroAdminActivo = async () => {};
+  usersRepo.hardDelete = alBorrarUsuario;
+  profilesRepo.deleteForUser = alBorrarPerfil;
+
+  return () => {
+    integrity.comprobarBorradoDefinitivo = originals.comprobar;
+    integrity.exigirOtroAdminActivo = originals.adminRestante;
+    usersRepo.hardDelete = originals.hardDelete;
+    profilesRepo.deleteForUser = originals.deleteForUser;
   };
-  profilesRepo.deleteForUser = async () => {
-    llamadas.push("perfil");
-  };
+}
+
+test("el borrado definitivo elimina primero el usuario y después su perfil", async () => {
+  const llamadas = [];
+  const restaurar = simularBorrado({
+    alBorrarUsuario: async (id) => {
+      llamadas.push("usuario");
+      return { _id: id };
+    },
+    alBorrarPerfil: async () => {
+      llamadas.push("perfil");
+    }
+  });
 
   try {
     await usersService.hardDeleteUser("65a000000000000000000001");
     assert.deepEqual(llamadas, ["usuario", "perfil"]);
   } finally {
-    integrity.comprobarBorradoDefinitivo = originals.comprobar;
-    usersRepo.hardDelete = originals.hardDelete;
-    profilesRepo.deleteForUser = originals.deleteForUser;
+    restaurar();
   }
 });
 
 test("si el usuario no existe no se toca su perfil", async () => {
   let perfilBorrado = false;
-  const originals = {
-    comprobar: integrity.comprobarBorradoDefinitivo,
-    hardDelete: usersRepo.hardDelete,
-    deleteForUser: profilesRepo.deleteForUser
-  };
-
-  integrity.comprobarBorradoDefinitivo = async () => {};
-  usersRepo.hardDelete = async () => null;
-  profilesRepo.deleteForUser = async () => {
-    perfilBorrado = true;
-  };
+  const restaurar = simularBorrado({
+    alBorrarUsuario: async () => null,
+    alBorrarPerfil: async () => {
+      perfilBorrado = true;
+    }
+  });
 
   try {
     await assert.rejects(usersService.hardDeleteUser("65a000000000000000000001"));
     assert.equal(perfilBorrado, false);
   } finally {
-    integrity.comprobarBorradoDefinitivo = originals.comprobar;
-    usersRepo.hardDelete = originals.hardDelete;
-    profilesRepo.deleteForUser = originals.deleteForUser;
+    restaurar();
   }
 });

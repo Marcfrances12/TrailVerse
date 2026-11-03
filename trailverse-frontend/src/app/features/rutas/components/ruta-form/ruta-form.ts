@@ -1,21 +1,17 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject, input, signal } from '@angular/core';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { ChangeDetectionStrategy, Component, effect, inject, input, output, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { HttpClient } from '@angular/common/http';
-import { RutasStore } from '../../../../core/stores/rutas.store';
 import {
   DIFICULTADES,
   ESTADOS,
   Dificultad,
   EstadoRuta,
   Ruta,
-  RutaInput,
-  Location,
-  Category,
-  Host
+  RutaInput
 } from '../../../../core/models/ruta.model';
-import { environment } from '@environments/environment';
+import { Location } from '../../../../core/models/location.model';
+import { Category } from '../../../../core/models/category.model';
+import { Host } from '../../../../core/models/host.model';
 import { urlValidator } from '../../../../shared/utils/validators';
 import { detallesDeError } from '../../../../shared/utils/errores';
 import { capitalizar } from '../../../../shared/utils/formatos';
@@ -28,28 +24,26 @@ import { ErrorState } from '../../../../shared/components/error-state/error-stat
   templateUrl: './ruta-form.html'
 })
 export class RutaForm {
-  readonly store = inject(RutasStore);
-  private readonly route = inject(ActivatedRoute);
-  private readonly router = inject(Router);
   private readonly fb = inject(FormBuilder);
-  private readonly http = inject(HttpClient);
 
-  readonly slugInput = input<string>('');
+  readonly ruta = input<Ruta | null>(null);
+  readonly locations = input<Location[]>([]);
+  readonly categorias = input<Category[]>([]);
+  readonly hosts = input<Host[]>([]);
+  readonly esEdicion = input(false);
+  readonly cargando = input(false);
+  readonly enviando = input(false);
+  readonly errorCarga = input<string | null>(null);
+  readonly errorServidor = input<unknown>(null);
 
-  private readonly params = toSignal(this.route.paramMap);
-  readonly slug = computed(() => this.slugInput() || this.params()?.get('slug') || '');
+  readonly guardar = output<RutaInput>();
 
-  readonly esEdicion = computed(() => Boolean(this.slug()));
-  readonly rutaOriginal = signal<Ruta | null>(null);
   readonly erroresServidor = signal<string[]>([]);
 
   readonly dificultades = DIFICULTADES;
   readonly estados = ESTADOS;
   readonly capitalizar = capitalizar;
 
-  readonly locations = signal<Location[]>([]);
-  readonly categorias = signal<Category[]>([]);
-  readonly hosts = signal<Host[]>([]);
   readonly urlsImagenes = signal<string[]>(['']);
 
   readonly formulario = this.fb.group({
@@ -67,34 +61,15 @@ export class RutaForm {
   });
 
   constructor() {
-    this.cargarDatosAuxiliares();
+    effect(() => {
+      const ruta = this.ruta();
+      if (ruta) this.rellenar(ruta);
+    });
 
     effect(() => {
-      const slug = this.slug();
-      if (slug && !this.rutaOriginal()) {
-        this.store
-          .cargarPorSlug(slug)
-          .then(() => {
-            const ruta = this.store.seleccionada();
-            if (ruta) {
-              this.rutaOriginal.set(ruta);
-              this.rellenar(ruta);
-            }
-          })
-          .catch(() => undefined);
-      }
+      const error = this.errorServidor();
+      if (error) this.aplicarErroresServidor(error);
     });
-  }
-
-  private cargarDatosAuxiliares(): void {
-    this.http.get<{ data: Location[] }>(`${environment.API_URL}/locations?isActive=true`)
-      .subscribe({ next: (res) => this.locations.set(res.data.filter((l) => l.isActive)) });
-
-    this.http.get<{ data: Category[] }>(`${environment.API_URL}/categories?type=ruta&isActive=true`)
-      .subscribe({ next: (res) => this.categorias.set(res.data.filter((c) => c.isActive)) });
-
-    this.http.get<{ data: Host[] }>(`${environment.API_URL}/hosts?isActive=true`)
-      .subscribe({ next: (res) => this.hosts.set(res.data.filter((h) => h.isActive)) });
   }
 
   private rellenar(ruta: Ruta): void {
@@ -160,7 +135,7 @@ export class RutaForm {
     }
   }
 
-  async guardar(): Promise<void> {
+  enviar(): void {
     this.formulario.markAllAsTouched();
     this.erroresServidor.set([]);
     if (this.formulario.invalid) return;
@@ -168,7 +143,7 @@ export class RutaForm {
     const valores = this.formulario.getRawValue();
     const imagenes = this.urlsImagenes().filter((u) => u.trim() !== '');
 
-    const datos: RutaInput = {
+    this.guardar.emit({
       nombre: String(valores.nombre ?? '').trim(),
       descripcion: String(valores.descripcion ?? '').trim(),
       dificultad: (valores.dificultad as Dificultad) ?? 'facil',
@@ -181,21 +156,7 @@ export class RutaForm {
       circular: Boolean(valores.circular),
       images: imagenes.map((url) => ({ url, alt: '' })),
       status: (valores.status as EstadoRuta) ?? 'published'
-    };
-
-    try {
-      let ruta: Ruta;
-      if (this.esEdicion()) {
-        const original = this.rutaOriginal();
-        if (!original) return;
-        ruta = await this.store.actualizar(original._id, datos);
-      } else {
-        ruta = await this.store.crear(datos);
-      }
-      this.router.navigate(['/rutas', ruta.slug]);
-    } catch (error) {
-      this.aplicarErroresServidor(error);
-    }
+    });
   }
 
   private aplicarErroresServidor(error: unknown): void {

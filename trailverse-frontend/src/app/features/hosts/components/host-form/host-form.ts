@@ -1,13 +1,8 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject, input, signal } from '@angular/core';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { ChangeDetectionStrategy, Component, effect, inject, input, output, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { HttpClient } from '@angular/common/http';
-import { HostsStore } from '../../../../core/stores/hosts.store';
+import { RouterLink } from '@angular/router';
 import { Host, HostInput } from '../../../../core/models/host.model';
-import { HostsApiService } from '../../../../core/services/hosts-api.service';
 import { User } from '../../../../core/models/user.model';
-import { environment } from '@environments/environment';
 import { detallesDeError } from '../../../../shared/utils/errores';
 import { urlValidator } from '../../../../shared/utils/validators';
 import { ErrorState } from '../../../../shared/components/error-state/error-state';
@@ -19,22 +14,17 @@ import { ErrorState } from '../../../../shared/components/error-state/error-stat
   templateUrl: './host-form.html'
 })
 export class HostForm {
-  readonly store = inject(HostsStore);
-  private readonly api = inject(HostsApiService);
-  private readonly route = inject(ActivatedRoute);
-  private readonly router = inject(Router);
   private readonly fb = inject(FormBuilder);
-  private readonly http = inject(HttpClient);
 
-  readonly hostId = input<string>('');
+  readonly host = input<Host | null>(null);
+  readonly users = input<User[]>([]);
+  readonly esEdicion = input(false);
+  readonly enviando = input(false);
+  readonly errorServidor = input<unknown>(null);
 
-  private readonly params = toSignal(this.route.paramMap);
-  readonly id = computed(() => this.hostId() || this.params()?.get('id') || '');
-  readonly esEdicion = computed(() => Boolean(this.id()));
+  readonly guardar = output<HostInput>();
 
-  readonly hostOriginal = signal<Host | null>(null);
   readonly erroresServidor = signal<string[]>([]);
-  readonly usuarios = signal<User[]>([]);
 
   readonly formulario = this.fb.group({
     name: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100)]],
@@ -45,24 +35,16 @@ export class HostForm {
   });
 
   constructor() {
-    this.http.get<{ data: User[] }>(`${environment.API_URL}/users`).subscribe({
-      next: (res) => this.usuarios.set(res.data),
-      error: () => undefined
+    effect(() => {
+      const host = this.host();
+      if (!host) return;
+      const userId = typeof host.userId === 'object' && host.userId !== null ? host.userId._id : host.userId || '';
+      this.formulario.patchValue({ name: host.name, bio: host.bio, contactEmail: host.contactEmail, phone: host.phone, userId });
     });
 
     effect(() => {
-      const id = this.id();
-      if (id && !this.hostOriginal()) {
-        this.api.porId(id).subscribe({
-          next: (res) => {
-            const host = res.data;
-            this.hostOriginal.set(host);
-            const userId = typeof host.userId === 'object' && host.userId !== null ? host.userId._id : host.userId || '';
-            this.formulario.patchValue({ name: host.name, bio: host.bio, contactEmail: host.contactEmail, phone: host.phone, userId });
-          },
-          error: () => undefined
-        });
-      }
+      const error = this.errorServidor();
+      if (error) this.aplicarErroresServidor(error);
     });
   }
 
@@ -76,7 +58,7 @@ export class HostForm {
     return 'Valor no válido.';
   }
 
-  async guardar(): Promise<void> {
+  enviar(): void {
     this.formulario.markAllAsTouched();
     this.erroresServidor.set([]);
     if (this.formulario.invalid) return;
@@ -88,16 +70,7 @@ export class HostForm {
       phone: String(valores.phone ?? '').trim(),
       userId: valores.userId || null
     };
-    try {
-      if (this.esEdicion()) {
-        await this.store.actualizar(this.id(), datos);
-      } else {
-        await this.store.crear(datos);
-      }
-      this.router.navigate(['/admin/hosts']);
-    } catch (error) {
-      this.aplicarErroresServidor(error);
-    }
+    this.guardar.emit(datos);
   }
 
   private aplicarErroresServidor(error: unknown): void {

@@ -213,7 +213,46 @@ async function comprobarBorradoDefinitivo(tipo, id) {
   return comprobarSinReferencias(tipo, id, "eliminar definitivamente");
 }
 
+async function adminRoleIds() {
+  const roles = await Role.find({ name: "ADMIN", isActive: true, ...noBorrados }).select("_id").lean();
+  return roles.map((role) => role._id);
+}
+
+async function esAdminActivo(userId) {
+  const user = await User.findOne({ _id: userId, isActive: true, ...noBorrados })
+    .select("roleId")
+    .populate("roleId", "name");
+  return Boolean(user && user.roleId && typeof user.roleId === "object" && user.roleId.name === "ADMIN");
+}
+
+// Debe quedar, al menos, un administrador activo y no eliminado distinto del usuario indicado.
+async function exigirOtroAdminActivo(userId, accion) {
+  if (!(await esAdminActivo(userId))) return;
+
+  const otros = await User.countDocuments({
+    _id: { $ne: userId },
+    isActive: true,
+    ...noBorrados,
+    roleId: { $in: await adminRoleIds() }
+  });
+
+  if (otros === 0) {
+    throw AppError.conflict(`No se puede ${accion}: debe quedar al menos un administrador activo`);
+  }
+}
+
+async function exigirOtroAdminAlCambiarRol(userId, nuevoRolId) {
+  if (!(await esAdminActivo(userId))) return;
+
+  const nuevoRol = await Role.findById(nuevoRolId).select("name").lean();
+  if (!nuevoRol || nuevoRol.name === "ADMIN") return;
+
+  await exigirOtroAdminActivo(userId, "cambiar su rol");
+}
+
 module.exports = {
+  exigirOtroAdminActivo,
+  exigirOtroAdminAlCambiarRol,
   validarRelacionesUsuario,
   validarRelacionesHost,
   validarRelacionesCategoria,

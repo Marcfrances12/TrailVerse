@@ -11,10 +11,10 @@ const U_SIN_PERFIL = "65a000000000000000000004";
 const U_HUERFANO = "65a000000000000000000005";
 
 const usuarios = [
-  { _id: U_ACTIVO, email: "activo@test.com", isActive: true, deleted_at: null },
-  { _id: U_INACTIVO, email: "inactivo@test.com", isActive: false, deleted_at: null },
-  { _id: U_BORRADO, email: "borrado@test.com", isActive: false, deleted_at: new Date() },
-  { _id: U_SIN_PERFIL, email: "sinperfil@test.com", isActive: true, deleted_at: null }
+  { _id: U_ACTIVO, email: "activo@test.com", isActive: true, deleted_at: null, roleId: { name: "ADMIN" } },
+  { _id: U_INACTIVO, email: "inactivo@test.com", isActive: false, deleted_at: null, roleId: { name: "USER" } },
+  { _id: U_BORRADO, email: "borrado@test.com", isActive: false, deleted_at: new Date(), roleId: { name: "USER" } },
+  { _id: U_SIN_PERFIL, email: "sinperfil@test.com", isActive: true, deleted_at: null, roleId: { name: "USER" } }
 ];
 
 const perfiles = [
@@ -46,6 +46,15 @@ test("el listado incluye usuarios inactivos y oculta perfiles de usuarios elimin
   assert.equal(porNombre.Inactivo.estado, "usuario-inactivo");
   assert.equal(porNombre.Inactivo.usuarioActivo, false);
   assert.equal(porNombre.Borrado, undefined);
+});
+
+test("cada fila incluye el rol del usuario y null si el usuario no existe", async () => {
+  const resultado = await conDatos(() => profilesService.getProfiles());
+  const activo = resultado.find((fila) => fila.name === "Activo");
+  const huerfano = resultado.find((fila) => fila.name === "Huérfano");
+
+  assert.equal(activo.rol, "ADMIN");
+  assert.equal(huerfano.rol, null);
 });
 
 test("el listado marca perfiles huérfanos y usuarios sin perfil como incidencias", async () => {

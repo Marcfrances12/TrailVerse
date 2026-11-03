@@ -13,11 +13,17 @@ function estadoDe(usuario) {
   return "ok";
 }
 
+function rolDe(usuario) {
+  const rol = usuario?.roleId;
+  return rol && typeof rol === "object" ? rol.name : null;
+}
+
 function filaDePerfil(perfil, usuario) {
   return {
     _id: String(perfil._id),
     userId: String(perfil.userId),
     email: usuario?.email ?? null,
+    rol: rolDe(usuario),
     usuarioActivo: usuario ? usuario.isActive : null,
     name: perfil.name,
     avatarUrl: perfil.avatarUrl,
@@ -34,6 +40,7 @@ function filaSinPerfil(usuario) {
     _id: null,
     userId: String(usuario._id),
     email: usuario.email,
+    rol: rolDe(usuario),
     usuarioActivo: usuario.isActive,
     name: null,
     avatarUrl: "",

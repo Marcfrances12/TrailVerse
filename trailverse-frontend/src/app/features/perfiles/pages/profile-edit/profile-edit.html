@@ -10,6 +10,10 @@
     <div class="rounded-2xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900" role="alert">{{ mensaje }}</div>
   } @else if (perfil(); as perfilActual) {
     <app-profile-header [nombre]="perfilActual.name" [avatarUrl]="perfilActual.avatarUrl" />
-    <app-profile-form [perfil]="perfilActual" [userId]="userId()" (guardado)="onGuardado($event)" />
+    <app-profile-form
+      [perfil]="perfilActual"
+      [enviando]="enviando()"
+      [errorServidor]="errorServidor()"
+      (guardar)="guardar($event)" />
   }
 </div>

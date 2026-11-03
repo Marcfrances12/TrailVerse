@@ -11,7 +11,11 @@
       [avatarUrl]="perfilActual.avatarUrl" />
 
     <div class="grid gap-8 lg:grid-cols-[1fr_280px]">
-      <app-profile-form [perfil]="perfilActual" (guardado)="onGuardado($event)" />
+      <app-profile-form
+        [perfil]="perfilActual"
+        [enviando]="enviando()"
+        [errorServidor]="errorServidor()"
+        (guardar)="guardar($event)" />
 
       <aside class="h-fit space-y-5 rounded-3xl border border-crema-200 bg-white p-6 shadow-sm">
         <div>

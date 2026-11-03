@@ -1,10 +1,7 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject, input, signal } from '@angular/core';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { ChangeDetectionStrategy, Component, effect, inject, input, output, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { RolesStore } from '../../../../core/stores/roles.store';
+import { RouterLink } from '@angular/router';
 import { Role, RoleInput, PERMISOS } from '../../../../core/models/role.model';
-import { RolesApiService } from '../../../../core/services/roles-api.service';
 import { detallesDeError } from '../../../../shared/utils/errores';
 
 @Component({
@@ -14,19 +11,15 @@ import { detallesDeError } from '../../../../shared/utils/errores';
   templateUrl: './role-form.html'
 })
 export class RoleForm {
-  readonly store = inject(RolesStore);
-  private readonly api = inject(RolesApiService);
-  private readonly route = inject(ActivatedRoute);
-  private readonly router = inject(Router);
   private readonly fb = inject(FormBuilder);
 
-  readonly roleId = input<string>('');
+  readonly role = input<Role | null>(null);
+  readonly esEdicion = input(false);
+  readonly enviando = input(false);
+  readonly errorServidor = input<unknown>(null);
 
-  private readonly params = toSignal(this.route.paramMap);
-  readonly id = computed(() => this.roleId() || this.params()?.get('id') || '');
-  readonly esEdicion = computed(() => Boolean(this.id()));
+  readonly guardar = output<RoleInput>();
 
-  readonly roleOriginal = signal<Role | null>(null);
   readonly erroresServidor = signal<string[]>([]);
   readonly permisos = PERMISOS;
 
@@ -37,17 +30,14 @@ export class RoleForm {
 
   constructor() {
     effect(() => {
-      const id = this.id();
-      if (id && !this.roleOriginal()) {
-        this.api.porId(id).subscribe({
-          next: (res) => {
-            const role = res.data;
-            this.roleOriginal.set(role);
-            this.formulario.patchValue({ name: role.name, permissions: role.permissions });
-          },
-          error: () => undefined
-        });
-      }
+      const role = this.role();
+      if (!role) return;
+      this.formulario.patchValue({ name: role.name, permissions: role.permissions });
+    });
+
+    effect(() => {
+      const error = this.errorServidor();
+      if (error) this.aplicarErroresServidor(error);
     });
   }
 
@@ -61,7 +51,7 @@ export class RoleForm {
     return 'Valor no válido.';
   }
 
-  async guardar(): Promise<void> {
+  enviar(): void {
     this.formulario.markAllAsTouched();
     this.erroresServidor.set([]);
     if (this.formulario.invalid) return;
@@ -71,17 +61,7 @@ export class RoleForm {
       name: String(valores.name ?? '').trim().toLowerCase(),
       permissions: (valores.permissions ?? []).map(String)
     };
-
-    try {
-      if (this.esEdicion()) {
-        await this.store.actualizar(this.id(), datos);
-      } else {
-        await this.store.crear(datos);
-      }
-      this.router.navigate(['/admin/roles']);
-    } catch (error) {
-      this.aplicarErroresServidor(error);
-    }
+    this.guardar.emit(datos);
   }
 
   private aplicarErroresServidor(error: unknown): void {

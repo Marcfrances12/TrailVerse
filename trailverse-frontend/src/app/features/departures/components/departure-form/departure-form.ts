@@ -1,18 +1,13 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject, input, signal } from '@angular/core';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { ChangeDetectionStrategy, Component, effect, inject, input, output, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { HttpClient } from '@angular/common/http';
-import { DeparturesStore } from '../../../../core/stores/departures.store';
+import { RouterLink } from '@angular/router';
 import {
   Departure,
   DepartureInput,
   DepartureStatus,
   ESTATUSES
 } from '../../../../core/models/departure.model';
-import { DeparturesApiService } from '../../../../core/services/departures-api.service';
 import { Ruta } from '../../../../core/models/ruta.model';
-import { environment } from '@environments/environment';
 import { detallesDeError } from '../../../../shared/utils/errores';
 
 @Component({
@@ -22,22 +17,17 @@ import { detallesDeError } from '../../../../shared/utils/errores';
   templateUrl: './departure-form.html'
 })
 export class DepartureForm {
-  readonly store = inject(DeparturesStore);
-  private readonly api = inject(DeparturesApiService);
-  private readonly route = inject(ActivatedRoute);
-  private readonly router = inject(Router);
   private readonly fb = inject(FormBuilder);
-  private readonly http = inject(HttpClient);
 
-  readonly departureId = input<string>('');
+  readonly departure = input<Departure | null>(null);
+  readonly rutas = input<Ruta[]>([]);
+  readonly esEdicion = input(false);
+  readonly enviando = input(false);
+  readonly errorServidor = input<unknown>(null);
 
-  private readonly params = toSignal(this.route.paramMap);
-  readonly id = computed(() => this.departureId() || this.params()?.get('id') || '');
-  readonly esEdicion = computed(() => Boolean(this.id()));
+  readonly guardar = output<DepartureInput>();
 
-  readonly departureOriginal = signal<Departure | null>(null);
   readonly erroresServidor = signal<string[]>([]);
-  readonly rutas = signal<Ruta[]>([]);
 
   readonly statuses = ESTATUSES;
   readonly monedas = ['EUR', 'USD', 'GBP'];
@@ -55,27 +45,15 @@ export class DepartureForm {
   });
 
   constructor() {
-    this.cargarRutas();
+    effect(() => {
+      const departure = this.departure();
+      if (!departure) return;
+      this.rellenar(departure);
+    });
 
     effect(() => {
-      const id = this.id();
-      if (id && !this.departureOriginal()) {
-        this.api.porId(id).subscribe({
-          next: (res) => {
-            const d = res.data;
-            this.departureOriginal.set(d);
-            this.rellenar(d);
-          },
-          error: () => undefined
-        });
-      }
-    });
-  }
-
-  private cargarRutas(): void {
-    this.http.get<{ data: Ruta[] }>(`${environment.API_URL}/rutas?isActive=true`).subscribe({
-      next: (res) => this.rutas.set(res.data.filter((r) => r.isActive)),
-      error: () => undefined
+      const error = this.errorServidor();
+      if (error) this.aplicarErroresServidor(error);
     });
   }
 
@@ -114,7 +92,7 @@ export class DepartureForm {
     return 'Valor no válido.';
   }
 
-  async guardar(): Promise<void> {
+  enviar(): void {
     this.formulario.markAllAsTouched();
     this.erroresServidor.set([]);
     if (this.formulario.invalid) return;
@@ -133,17 +111,7 @@ export class DepartureForm {
       stock: Number(valores.stock),
       status: valores.status as DepartureStatus
     };
-
-    try {
-      if (this.esEdicion()) {
-        await this.store.actualizar(this.id(), datos);
-      } else {
-        await this.store.crear(datos);
-      }
-      this.router.navigate(['/admin/departures']);
-    } catch (error) {
-      this.aplicarErroresServidor(error);
-    }
+    this.guardar.emit(datos);
   }
 
   private aplicarErroresServidor(error: unknown): void {

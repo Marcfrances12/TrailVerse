@@ -1,12 +1,7 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject, input, signal } from '@angular/core';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { ChangeDetectionStrategy, Component, effect, inject, input, output, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { HttpClient } from '@angular/common/http';
-import { LocationsStore } from '../../../../core/stores/locations.store';
+import { RouterLink } from '@angular/router';
 import { Location, LocationInput } from '../../../../core/models/location.model';
-import { LocationsApiService } from '../../../../core/services/locations-api.service';
-import { environment } from '@environments/environment';
 import { detallesDeError } from '../../../../shared/utils/errores';
 import { ErrorState } from '../../../../shared/components/error-state/error-state';
 
@@ -17,20 +12,17 @@ import { ErrorState } from '../../../../shared/components/error-state/error-stat
   templateUrl: './location-form.html'
 })
 export class LocationForm {
-  readonly store = inject(LocationsStore);
-  private readonly api = inject(LocationsApiService);
-  private readonly route = inject(ActivatedRoute);
-  private readonly router = inject(Router);
   private readonly fb = inject(FormBuilder);
-  private readonly http = inject(HttpClient);
 
-  readonly locationId = input<string>('');
+  readonly location = input<Location | null>(null);
+  readonly esEdicion = input(false);
+  readonly cargando = input(false);
+  readonly errorCarga = input<string | null>(null);
+  readonly enviando = input(false);
+  readonly errorServidor = input<unknown>(null);
 
-  private readonly params = toSignal(this.route.paramMap);
-  readonly id = computed(() => this.locationId() || this.params()?.get('id') || '');
-  readonly esEdicion = computed(() => Boolean(this.id()));
+  readonly guardar = output<LocationInput>();
 
-  readonly locationOriginal = signal<Location | null>(null);
   readonly erroresServidor = signal<string[]>([]);
 
   readonly formulario = this.fb.group({
@@ -44,24 +36,21 @@ export class LocationForm {
 
   constructor() {
     effect(() => {
-      const id = this.id();
-      if (id && !this.locationOriginal()) {
-        this.api.porId(id).subscribe({
-          next: (res) => {
-            const loc = res.data;
-            this.locationOriginal.set(loc);
-            this.formulario.patchValue({
-              nombre: loc.nombre,
-              provincia: loc.provincia,
-              comunidad: loc.comunidad,
-              pais: loc.pais,
-              latitud: loc.geo?.coordinates?.[1] ?? null,
-              longitud: loc.geo?.coordinates?.[0] ?? null
-            });
-          },
-          error: () => undefined
-        });
-      }
+      const loc = this.location();
+      if (!loc) return;
+      this.formulario.patchValue({
+        nombre: loc.nombre,
+        provincia: loc.provincia,
+        comunidad: loc.comunidad,
+        pais: loc.pais,
+        latitud: loc.geo?.coordinates?.[1] ?? null,
+        longitud: loc.geo?.coordinates?.[0] ?? null
+      });
+    });
+
+    effect(() => {
+      const error = this.errorServidor();
+      if (error) this.aplicarErroresServidor(error);
     });
   }
 
@@ -77,7 +66,7 @@ export class LocationForm {
     return 'Valor no válido.';
   }
 
-  async guardar(): Promise<void> {
+  enviar(): void {
     this.formulario.markAllAsTouched();
     this.erroresServidor.set([]);
     if (this.formulario.invalid) return;
@@ -99,16 +88,7 @@ export class LocationForm {
       };
     }
 
-    try {
-      if (this.esEdicion()) {
-        await this.store.actualizar(this.id(), datos);
-      } else {
-        await this.store.crear(datos);
-      }
-      this.router.navigate(['/admin/localizaciones']);
-    } catch (error) {
-      this.aplicarErroresServidor(error);
-    }
+    this.guardar.emit(datos);
   }
 
   private aplicarErroresServidor(error: unknown): void {

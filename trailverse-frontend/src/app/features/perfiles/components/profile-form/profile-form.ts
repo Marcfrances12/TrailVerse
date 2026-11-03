@@ -1,9 +1,6 @@
 import { ChangeDetectionStrategy, Component, effect, inject, input, output, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { firstValueFrom } from 'rxjs';
-import Swal from 'sweetalert2';
-import { ProfilesApiService } from '../../../../core/services/profiles-api.service';
-import { Profile } from '../../../../core/models/profile.model';
+import { Profile, ProfileUpdateInput } from '../../../../core/models/profile.model';
 import { detallesDeError } from '../../../../shared/utils/errores';
 import { urlValidator } from '../../../../shared/utils/validators';
 
@@ -14,14 +11,14 @@ import { urlValidator } from '../../../../shared/utils/validators';
   templateUrl: './profile-form.html'
 })
 export class ProfileForm {
-  private readonly api = inject(ProfilesApiService);
   private readonly fb = inject(FormBuilder);
 
   readonly perfil = input.required<Profile>();
-  readonly userId = input<string | null>(null);
-  readonly guardado = output<Profile>();
+  readonly enviando = input(false);
+  readonly errorServidor = input<unknown>(null);
 
-  readonly enviando = signal(false);
+  readonly guardar = output<ProfileUpdateInput>();
+
   readonly erroresServidor = signal<string[]>([]);
 
   readonly formulario = this.fb.group({
@@ -41,6 +38,11 @@ export class ProfileForm {
         phone: perfil.phone ?? ''
       });
     });
+
+    effect(() => {
+      const error = this.errorServidor();
+      if (error) this.aplicarErroresServidor(error);
+    });
   }
 
   mostrarError(campo: string): string | null {
@@ -54,32 +56,18 @@ export class ProfileForm {
     return 'Valor no válido.';
   }
 
-  async guardar(): Promise<void> {
+  enviar(): void {
     this.formulario.markAllAsTouched();
     this.erroresServidor.set([]);
     if (this.formulario.invalid) return;
 
     const valores = this.formulario.getRawValue();
-    this.enviando.set(true);
-    try {
-      const datos = {
-        name: String(valores.name ?? '').trim(),
-        avatarUrl: String(valores.avatarUrl ?? '').trim(),
-        bio: String(valores.bio ?? '').trim(),
-        phone: String(valores.phone ?? '').trim()
-      };
-      const userId = this.userId();
-      const peticion = userId
-        ? this.api.actualizarPorUsuario(userId, datos)
-        : this.api.actualizarMiPerfil(datos);
-      const respuesta = await firstValueFrom(peticion);
-      this.guardado.emit(respuesta.data);
-      Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Perfil actualizado', showConfirmButton: false, timer: 2500, timerProgressBar: true });
-    } catch (error) {
-      this.aplicarErroresServidor(error);
-    } finally {
-      this.enviando.set(false);
-    }
+    this.guardar.emit({
+      name: String(valores.name ?? '').trim(),
+      avatarUrl: String(valores.avatarUrl ?? '').trim(),
+      bio: String(valores.bio ?? '').trim(),
+      phone: String(valores.phone ?? '').trim()
+    });
   }
 
   private aplicarErroresServidor(error: unknown): void {

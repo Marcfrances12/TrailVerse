@@ -69,6 +69,9 @@ async function updateUser(id, datos) {
   
   if (!actual) throw AppError.notFound("Usuario no encontrado");
   await integrity.validarRelacionesUsuario(datosUsuario);
+  if (datosUsuario.roleId !== undefined) {
+    await integrity.exigirOtroAdminAlCambiarRol(idValido, datosUsuario.roleId);
+  }
   if (datosUsuario.email) {
     const existe = await usersRepo.emailExists(datosUsuario.email, idValido);
     if (existe) throw AppError.conflict("Ya existe un usuario con ese email");
@@ -100,6 +103,7 @@ async function activateUser(id) {
 async function deactivateUser(id) {
   const idValido = await validarId(id);
   await integrity.comprobarSinReferencias("user", idValido, "desactivar");
+  await integrity.exigirOtroAdminActivo(idValido, "desactivar el último administrador");
   const user = await usersRepo.setActive(idValido, false);
   if (!user) throw AppError.notFound("Usuario no encontrado");
   return presentarConNombre(user);
@@ -108,6 +112,7 @@ async function deactivateUser(id) {
 async function deleteUser(id) {
   const idValido = await validarId(id);
   await integrity.comprobarSinReferencias("user", idValido, "eliminar lógicamente");
+  await integrity.exigirOtroAdminActivo(idValido, "eliminar el último administrador");
   const user = await usersRepo.softDelete(idValido);
   if (!user) throw AppError.notFound("Usuario no encontrado");
   return user;
@@ -126,6 +131,7 @@ async function restoreUser(id) {
 async function hardDeleteUser(id) {
   const idValido = await validarId(id);
   await integrity.comprobarBorradoDefinitivo("user", idValido);
+  await integrity.exigirOtroAdminActivo(idValido, "eliminar definitivamente el último administrador");
   const user = await usersRepo.hardDelete(idValido);
   if (!user) throw AppError.notFound("Usuario no encontrado");
   await profilesRepo.deleteForUser(idValido);

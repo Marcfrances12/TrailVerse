@@ -1,12 +1,8 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject, input, signal } from '@angular/core';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { ChangeDetectionStrategy, Component, effect, inject, input, output, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { CategoriesStore } from '../../../../core/stores/categories.store';
+import { RouterLink } from '@angular/router';
 import { Category, CategoryInput } from '../../../../core/models/category.model';
-import { CategoriesApiService } from '../../../../core/services/categories-api.service';
 import { detallesDeError } from '../../../../shared/utils/errores';
-import { ErrorState } from '../../../../shared/components/error-state/error-state';
 
 @Component({
   selector: 'app-category-form',
@@ -15,19 +11,15 @@ import { ErrorState } from '../../../../shared/components/error-state/error-stat
   templateUrl: './category-form.html'
 })
 export class CategoryForm {
-  readonly store = inject(CategoriesStore);
-  private readonly api = inject(CategoriesApiService);
-  private readonly route = inject(ActivatedRoute);
-  private readonly router = inject(Router);
   private readonly fb = inject(FormBuilder);
 
-  readonly categoryId = input<string>('');
+  readonly category = input<Category | null>(null);
+  readonly esEdicion = input(false);
+  readonly enviando = input(false);
+  readonly errorServidor = input<unknown>(null);
 
-  private readonly params = toSignal(this.route.paramMap);
-  readonly id = computed(() => this.categoryId() || this.params()?.get('id') || '');
-  readonly esEdicion = computed(() => Boolean(this.id()));
+  readonly guardar = output<CategoryInput>();
 
-  readonly categoryOriginal = signal<Category | null>(null);
   readonly erroresServidor = signal<string[]>([]);
 
   readonly formulario = this.fb.group({
@@ -37,17 +29,14 @@ export class CategoryForm {
 
   constructor() {
     effect(() => {
-      const id = this.id();
-      if (id && !this.categoryOriginal()) {
-        this.api.porId(id).subscribe({
-          next: (res) => {
-            const cat = res.data;
-            this.categoryOriginal.set(cat);
-            this.formulario.patchValue({ name: cat.name, parentId: cat.parentId || '' });
-          },
-          error: () => undefined
-        });
-      }
+      const cat = this.category();
+      if (!cat) return;
+      this.formulario.patchValue({ name: cat.name, parentId: cat.parentId || '' });
+    });
+
+    effect(() => {
+      const error = this.errorServidor();
+      if (error) this.aplicarErroresServidor(error);
     });
   }
 
@@ -57,10 +46,11 @@ export class CategoryForm {
     if (control.hasError('required')) return 'Este campo es obligatorio.';
     if (control.hasError('minlength')) return `Mínimo ${control.getError('minlength').requiredLength} caracteres.`;
     if (control.hasError('maxlength')) return `Máximo ${control.getError('maxlength').requiredLength} caracteres.`;
+    if (control.hasError('servidor')) return control.getError('servidor');
     return 'Valor no válido.';
   }
 
-  async guardar(): Promise<void> {
+  enviar(): void {
     this.formulario.markAllAsTouched();
     this.erroresServidor.set([]);
     if (this.formulario.invalid) return;
@@ -70,16 +60,7 @@ export class CategoryForm {
       type: 'ruta',
       parentId: valores.parentId || null
     };
-    try {
-      if (this.esEdicion()) {
-        await this.store.actualizar(this.id(), datos);
-      } else {
-        await this.store.crear(datos);
-      }
-      this.router.navigate(['/admin/categorias']);
-    } catch (error) {
-      this.aplicarErroresServidor(error);
-    }
+    this.guardar.emit(datos);
   }
 
   private aplicarErroresServidor(error: unknown): void {

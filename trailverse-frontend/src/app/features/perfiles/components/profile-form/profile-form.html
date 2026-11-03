@@ -1,4 +1,4 @@
-<form [formGroup]="formulario" (ngSubmit)="guardar()" novalidate class="space-y-8 rounded-3xl border border-crema-200 bg-white p-6 shadow-sm sm:p-8">
+<form [formGroup]="formulario" (ngSubmit)="enviar()" novalidate class="space-y-8 rounded-3xl border border-crema-200 bg-white p-6 shadow-sm sm:p-8">
   @if (erroresServidor().length) {
     <div class="rounded-2xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900" role="alert">
       <p class="font-semibold">No se ha podido guardar. Revisa estos errores:</p>

@@ -23,6 +23,7 @@ export interface PerfilAdmin {
   _id: string | null;
   userId: string;
   email: string | null;
+  rol: 'ADMIN' | 'USER' | null;
   usuarioActivo: boolean | null;
   name: string | null;
   avatarUrl: string;

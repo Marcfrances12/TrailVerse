@@ -26,7 +26,10 @@ const getAnyById = async (id) => {
 };
 
 const getAllWithState = async () => {
-  return User.find().select("email isActive deleted_at").lean();
+  return User.find()
+    .select("email isActive deleted_at roleId")
+    .populate("roleId", "name")
+    .lean();
 };
 
 const getRelationsById = async (id) => {
