@@ -17,6 +17,7 @@ const departuresRoutes = require("./routes/departures.routes");
 const rolesRoutes = require("./routes/roles.routes");
 const authRoutes = require("./routes/auth.routes");
 const profilesRoutes = require("./routes/profiles.routes");
+const shopRoutes = require("./routes/shop.routes");
 const { notFound, errorHandler } = require("./middlewares/error.middleware");
 
 const app = express();
@@ -57,6 +58,7 @@ app.get("/", (req, res) => {
       roles: "/api/roles",
       auth: "/api/auth",
       profiles: "/api/profiles",
+      shop: "/api/shop",
       health: "/api/health"
     }
   });
@@ -78,6 +80,7 @@ app.use("/api/departures", departuresRoutes);
 app.use("/api/roles", rolesRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/profiles", profilesRoutes);
+app.use("/api/shop", shopRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

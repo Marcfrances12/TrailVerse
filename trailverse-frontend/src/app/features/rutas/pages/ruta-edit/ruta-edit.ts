@@ -79,7 +79,7 @@ export class RutaEdit {
     if (!original) return;
     try {
       const ruta = await this.store.actualizar(original._id, datos);
-      this.router.navigate(['/rutas', ruta.slug]);
+      this.router.navigate(['/shop', ruta.slug]);
     } catch (error) {
       this.errorServidor.set(error);
     }

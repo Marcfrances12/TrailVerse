@@ -1,0 +1,40 @@
+<section class="space-y-12 py-10">
+  <header class="flex h-56 flex-col justify-center space-y-3 rounded-3xl bg-crema-100/60 px-8 sm:h-72 sm:px-12">
+    <p class="text-sm font-semibold uppercase tracking-wide text-bosque-600">TrailVerse</p>
+    <h1 class="font-display text-4xl font-bold text-bosque-950">Encuentra tu próxima ruta</h1>
+    <a routerLink="/shop"
+       class="inline-block w-fit rounded-full bg-gradient-to-r from-bosque-700 to-bosque-600 px-5 py-2 text-sm font-semibold text-white shadow-md transition-transform hover:-translate-y-0.5">
+      Ver todas las rutas
+    </a>
+  </header>
+
+  @if (store.errorHome(); as mensaje) {
+    <app-error-state [mensaje]="mensaje" (reintentar)="reintentar()" />
+  } @else if (store.home(); as home) {
+    <app-carousel titulo="Categorías">
+      @for (categoria of home.categories; track categoria._id) {
+        <app-shop-category-card [opcion]="categoria" />
+      } @empty {
+        <app-empty-state titulo="Sin categorías" mensaje="Todavía no hay categorías con rutas." />
+      }
+    </app-carousel>
+
+    <app-carousel titulo="Hosts">
+      @for (host of home.hosts; track host._id) {
+        <app-shop-host-card [opcion]="host" />
+      } @empty {
+        <app-empty-state titulo="Sin hosts" mensaje="Todavía no hay hosts con rutas." />
+      }
+    </app-carousel>
+
+    <app-carousel titulo="Localizaciones">
+      @for (localizacion of home.locations; track localizacion._id) {
+        <app-shop-location-card [opcion]="localizacion" />
+      } @empty {
+        <app-empty-state titulo="Sin localizaciones" mensaje="Todavía no hay localizaciones con rutas." />
+      }
+    </app-carousel>
+  } @else {
+    <p role="status" class="text-sm text-tinta-suave">Cargando…</p>
+  }
+</section>

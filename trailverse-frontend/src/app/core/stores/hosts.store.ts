@@ -3,6 +3,7 @@ import { firstValueFrom } from 'rxjs';
 import Swal from 'sweetalert2';
 import { HostsApiService } from '../services/hosts-api.service';
 import { Host, HostInput, HostsFiltros } from '../models/host.model';
+import { primerValorCancelable } from '../utils/primer-valor-cancelable';
 
 @Injectable({ providedIn: 'root' })
 export class HostsStore {
@@ -17,6 +18,8 @@ export class HostsStore {
   private readonly _cargandoEliminados = signal(false);
   private readonly _errorEliminados = signal<string | null>(null);
   private ultimaClave = '';
+  private controladorListado: AbortController | null = null;
+  private controladorEliminados: AbortController | null = null;
 
   readonly hosts = this._hosts.asReadonly();
   readonly cargando = this._cargando.asReadonly();
@@ -49,21 +52,30 @@ export class HostsStore {
   async cargar(opciones: { filtros?: HostsFiltros; forzar?: boolean } = {}): Promise<void> {
     const filtros = opciones.filtros ?? {};
     const clave = this.claveDe(filtros);
-    if (!opciones.forzar && this._cargada() && clave === this.ultimaClave) return;
+    this.controladorListado?.abort();
+    const controlador = new AbortController();
+    this.controladorListado = controlador;
+
+    if (!opciones.forzar && this._cargada() && clave === this.ultimaClave) {
+      this._cargando.set(false);
+      return;
+    }
 
     this._cargando.set(true);
     this._error.set(null);
     try {
-      const respuesta = await firstValueFrom(this.api.listar(filtros));
+      const respuesta = await primerValorCancelable(this.api.listar(filtros), controlador.signal);
+      if (controlador.signal.aborted) return;
       this._hosts.set(respuesta.data);
       this._filtros.set(filtros);
       this.ultimaClave = clave;
       this._cargada.set(true);
     } catch (error) {
+      if (controlador.signal.aborted) return;
       this._error.set(this.mensajeDeError(error));
       throw error;
     } finally {
-      this._cargando.set(false);
+      if (this.controladorListado === controlador) this._cargando.set(false);
     }
   }
 
@@ -99,16 +111,22 @@ export class HostsStore {
   }
 
   async cargarEliminados(): Promise<void> {
+    this.controladorEliminados?.abort();
+    const controlador = new AbortController();
+    this.controladorEliminados = controlador;
+
     this._cargandoEliminados.set(true);
     this._errorEliminados.set(null);
     try {
-      const respuesta = await firstValueFrom(this.api.eliminados());
+      const respuesta = await primerValorCancelable(this.api.eliminados(), controlador.signal);
+      if (controlador.signal.aborted) return;
       this._eliminados.set(respuesta.data);
     } catch (error) {
+      if (controlador.signal.aborted) return;
       this._errorEliminados.set(this.mensajeDeError(error));
       throw error;
     } finally {
-      this._cargandoEliminados.set(false);
+      if (this.controladorEliminados === controlador) this._cargandoEliminados.set(false);
     }
   }
 

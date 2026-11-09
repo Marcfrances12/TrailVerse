@@ -38,7 +38,7 @@ export class Login {
     if (returnUrl && returnUrl.startsWith('/') && !returnUrl.startsWith('//') && !returnUrl.startsWith('/login')) {
       return returnUrl;
     }
-    return this.store.isAdmin() ? '/admin/rutas' : '/rutas';
+    return this.store.isAdmin() ? '/admin/rutas' : '/';
   }
 
   private mensajeDeError(error: unknown): string {

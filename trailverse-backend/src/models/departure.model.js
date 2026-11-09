@@ -74,6 +74,7 @@ const departureSchema = new mongoose.Schema(
 );
 
 departureSchema.index({ rutaId: 1, startDate: 1 });
+departureSchema.index({ rutaId: 1, isActive: 1, deleted_at: 1, startDate: 1 });
 
 departureSchema.pre("validate", function () {
   if (this.stock > this.capacity) {

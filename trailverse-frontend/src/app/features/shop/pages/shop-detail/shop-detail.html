@@ -1,0 +1,128 @@
+@if (store.errorDetalle(); as mensaje) {
+  <section class="py-10">
+    <app-error-state [mensaje]="mensaje" />
+    <a routerLink="/shop" class="mt-4 inline-block text-sm font-semibold text-bosque-700 hover:text-bosque-500">← Volver a las rutas</a>
+  </section>
+} @else if (store.detalle(); as ruta) {
+  <article class="space-y-12 py-8">
+    <a routerLink="/shop" class="text-sm font-semibold text-bosque-700 hover:text-bosque-500">← Volver a las rutas</a>
+
+    <div class="grid gap-8 lg:grid-cols-[1.35fr_1fr] lg:items-start">
+      <div class="min-w-0">
+        @if (imagenes().length) {
+          <app-galeria [imagenes]="imagenes()" />
+        } @else {
+          <div class="grid aspect-[4/3] place-items-center rounded-2xl bg-bosque-100 text-sm font-semibold text-bosque-700">Sin imágenes</div>
+        }
+      </div>
+
+      <aside class="space-y-6 lg:sticky lg:top-24">
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="rounded-full bg-bosque-100 px-3 py-1 text-xs font-semibold text-bosque-800">{{ etiquetas[ruta.dificultad] }}</span>
+          <span class="rounded-full bg-crema-100 px-3 py-1 text-xs font-semibold text-tinta">{{ ruta.circular ? 'Circular' : 'Lineal' }}</span>
+        </div>
+
+        <h1 class="font-display text-4xl font-bold leading-tight text-bosque-950">{{ ruta.nombre }}</h1>
+
+        <dl class="grid grid-cols-3 gap-3">
+          <div class="rounded-2xl border border-crema-200 bg-white p-4 text-center shadow-sm">
+            <dt class="text-xs font-semibold uppercase tracking-wide text-tinta-suave">Distancia</dt>
+            <dd class="mt-1 text-lg font-bold text-bosque-900">{{ formatKm(ruta.distanciaKm) }}</dd>
+          </div>
+          <div class="rounded-2xl border border-crema-200 bg-white p-4 text-center shadow-sm">
+            <dt class="text-xs font-semibold uppercase tracking-wide text-tinta-suave">Desnivel</dt>
+            <dd class="mt-1 text-lg font-bold text-bosque-900">{{ formatMetros(ruta.desnivelM) }}</dd>
+          </div>
+          <div class="rounded-2xl border border-crema-200 bg-white p-4 text-center shadow-sm">
+            <dt class="text-xs font-semibold uppercase tracking-wide text-tinta-suave">Duración</dt>
+            <dd class="mt-1 text-lg font-bold text-bosque-900">{{ formatDuracion(ruta.duracionHoras) }}</dd>
+          </div>
+        </dl>
+
+        <div class="space-y-3">
+          <h2 class="text-lg font-bold text-bosque-950">Descripción</h2>
+          <p class="whitespace-pre-line leading-relaxed text-tinta">{{ ruta.descripcion }}</p>
+        </div>
+
+        @if (ruta.gpxUrl) {
+          <a [href]="ruta.gpxUrl" target="_blank" rel="noopener"
+             class="inline-flex items-center gap-2 rounded-full border border-bosque-300 bg-white px-5 py-2 text-sm font-semibold text-bosque-800 transition-colors hover:bg-bosque-100">
+            Descargar track GPX
+          </a>
+        }
+      </aside>
+    </div>
+
+    <app-carousel titulo="Relacionado">
+      @if (ruta.locationId; as localizacion) {
+        <app-shop-location-card [opcion]="{ _id: localizacion._id, nombre: localizacion.nombre, slug: localizacion.slug, imagen: localizacion.imagen }" />
+      }
+      @if (ruta.hostId; as host) {
+        <app-shop-host-card [opcion]="{ _id: host._id, nombre: host.name, slug: host.slug }" />
+      }
+      @for (categoria of ruta.categoryIds; track categoria._id) {
+        <app-shop-category-card [opcion]="{ _id: categoria._id, nombre: categoria.name, slug: categoria.slug, imagen: categoria.imagen }" />
+      }
+    </app-carousel>
+
+    @if (store.relacionadas().length) {
+      <app-carousel titulo="Rutas relacionadas">
+        @for (relacionada of store.relacionadas(); track relacionada._id) {
+          <app-shop-ruta-card [ruta]="relacionada" />
+        }
+      </app-carousel>
+    }
+
+    <section class="space-y-4">
+      <h2 class="font-display text-xl font-bold text-bosque-950">Salidas disponibles</h2>
+
+      @if (store.cargandoDetalle()) {
+        <p role="status" class="text-sm text-tinta-suave">Cargando salidas…</p>
+      } @else if (store.salidas().length === 0) {
+        <app-empty-state titulo="Sin salidas" mensaje="No hay salidas abiertas próximamente para esta ruta." />
+      } @else {
+        <ul class="grid gap-3" role="list">
+          @for (salida of store.salidas(); track salida._id) {
+            <li>
+              <button type="button"
+                      [disabled]="salida.stock === 0"
+                      [attr.aria-pressed]="store.salidaSeleccionada()?._id === salida._id"
+                      [class.border-bosque-600]="store.salidaSeleccionada()?._id === salida._id"
+                      [class.ring-2]="store.salidaSeleccionada()?._id === salida._id"
+                      [class.ring-bosque-300]="store.salidaSeleccionada()?._id === salida._id"
+                      class="grid w-full gap-2 rounded-2xl border border-crema-200 bg-white p-4 text-left shadow-sm transition-shadow hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50 sm:grid-cols-[1fr_auto] sm:items-center"
+                      (click)="seleccionar(salida._id)">
+                <span class="space-y-1">
+                  <span class="block font-semibold text-tinta">{{ formatFechaHora(salida.startDate) }}
+                    @if (salida.endDate) { → {{ formatFechaHora(salida.endDate) }} }
+                  </span>
+                  <span class="block text-sm text-tinta-suave">{{ salida.meetingPoint }}</span>
+                </span>
+                <span class="flex flex-wrap items-center gap-4 text-sm sm:justify-end">
+                  <strong class="text-bosque-900">{{ formatPrecio(salida.price.amount, salida.price.currency) }}</strong>
+                  <span class="text-tinta-suave">
+                    {{ salida.stock === 0 ? 'Completa' : salida.stock + ' plazas libres de ' + salida.capacity }}
+                  </span>
+                </span>
+              </button>
+            </li>
+          }
+        </ul>
+      }
+
+      @if (store.salidaSeleccionada(); as salida) {
+        <div class="flex flex-col gap-3 rounded-2xl bg-bosque-100 p-5 sm:flex-row sm:items-center sm:justify-between">
+          <p class="text-sm text-bosque-900">
+            Salida seleccionada: <strong>{{ formatFechaHora(salida.startDate) }}</strong>
+          </p>
+          <button type="button" disabled
+                  class="rounded-full bg-bosque-700 px-5 py-2 text-sm font-semibold text-white opacity-60">
+            Reservar (próximamente)
+          </button>
+        </div>
+      }
+    </section>
+  </article>
+} @else {
+  <p role="status" class="py-10 text-sm text-tinta-suave">Cargando ruta…</p>
+}

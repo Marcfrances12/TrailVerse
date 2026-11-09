@@ -1,0 +1,39 @@
+<div class="space-y-3">
+  <div class="group relative">
+    <div #pista
+         (scroll)="alDesplazar()"
+         class="flex snap-x snap-mandatory overflow-x-auto scroll-smooth rounded-2xl [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+      @for (imagen of imagenes(); track imagen.url) {
+        <img [src]="imagen.url" [alt]="imagen.alt" loading="lazy"
+             class="aspect-[4/3] w-full shrink-0 snap-start object-cover" />
+      }
+    </div>
+
+    @if (imagenes().length > 1) {
+      <button type="button" (click)="desplazar(-1)" [disabled]="indice() === 0" aria-label="Imagen anterior"
+              class="absolute left-3 top-1/2 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full bg-white/90 text-tinta shadow-md transition-opacity hover:bg-white disabled:opacity-0">
+        <span aria-hidden="true">‹</span>
+      </button>
+      <button type="button" (click)="desplazar(1)" [disabled]="indice() === imagenes().length - 1" aria-label="Imagen siguiente"
+              class="absolute right-3 top-1/2 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full bg-white/90 text-tinta shadow-md transition-opacity hover:bg-white disabled:opacity-0">
+        <span aria-hidden="true">›</span>
+      </button>
+    }
+  </div>
+
+  @if (imagenes().length > 1) {
+    <div class="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:thin]" role="list">
+      @for (imagen of imagenes(); track imagen.url; let i = $index) {
+        <button type="button" role="listitem" (click)="irA(i)"
+                [attr.aria-label]="'Ver imagen ' + (i + 1)"
+                [attr.aria-current]="i === indice()"
+                [class.border-bosque-600]="i === indice()"
+                [class.border-transparent]="i !== indice()"
+                [class.opacity-60]="i !== indice()"
+                class="h-16 w-16 shrink-0 overflow-hidden rounded-lg border-2 transition-opacity hover:opacity-100">
+          <img [src]="imagen.url" [alt]="imagen.alt" loading="lazy" class="h-full w-full object-cover" />
+        </button>
+      }
+    </div>
+  }
+</div>

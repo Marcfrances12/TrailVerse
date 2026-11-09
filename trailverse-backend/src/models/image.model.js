@@ -34,7 +34,7 @@ const imageSchema = new mongoose.Schema(
     entityType: {
       type: String,
       required: [true, "El tipo de entidad es obligatorio"],
-      enum: ["ruta", "host", "location", "evento"]
+      enum: ["ruta", "host", "location", "categoria", "evento"]
     },
     entityId: {
       type: mongoose.Schema.Types.ObjectId,

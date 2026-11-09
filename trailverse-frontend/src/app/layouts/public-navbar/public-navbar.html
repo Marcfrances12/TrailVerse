@@ -1,6 +1,6 @@
 <header class="sticky top-0 z-40 border-b border-crema-200/80 bg-crema-50/85 backdrop-blur-md">
-  <nav class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6" aria-label="Navegación principal">
-    <a routerLink="/rutas" class="flex items-center gap-2.5">
+  <nav class="mx-auto grid max-w-7xl grid-cols-[auto_1fr] items-center gap-x-4 gap-y-3 px-4 py-3 sm:grid-cols-[auto_1fr_auto] sm:px-6" aria-label="Navegación principal">
+    <a routerLink="/" class="flex items-center gap-2.5">
       <span class="grid h-9 w-9 place-items-center rounded-xl bg-bosque-700 shadow-inner">
         <svg viewBox="0 0 24 24" class="h-5 w-5" aria-hidden="true">
           <path d="M2 20 L8.5 7 L12 13 L15 9.5 L22 20 Z" fill="#d8f3dc" />
@@ -13,8 +13,12 @@
       </span>
     </a>
 
-    <div class="flex items-center gap-1 sm:gap-2">
-      <a routerLink="/rutas" routerLinkActive="bg-bosque-100 text-bosque-800" [routerLinkActiveOptions]="{ exact: true }"
+    <app-search class="order-last col-span-2 w-full sm:order-none sm:col-span-1 sm:w-full sm:max-w-lg sm:justify-self-center"
+                [valor]="busqueda()"
+                (buscar)="buscar($event)" />
+
+    <div class="flex items-center justify-self-end gap-1 sm:gap-2">
+      <a routerLink="/shop" routerLinkActive="bg-bosque-100 text-bosque-800" [routerLinkActiveOptions]="{ exact: false }"
          class="rounded-full px-3 py-2 text-sm font-semibold text-tinta-suave transition-colors hover:bg-crema-200 hover:text-bosque-800">
         Rutas
       </a>

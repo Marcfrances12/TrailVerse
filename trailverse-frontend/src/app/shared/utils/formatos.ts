@@ -30,5 +30,23 @@ export const formatFecha = (iso: string | null | undefined): string => {
   });
 };
 
+export const formatFechaHora = (iso: string | null | undefined): string => {
+  if (!iso) return '—';
+
+  const fecha = new Date(iso);
+  if (isNaN(fecha.getTime())) return '—';
+
+  return fecha.toLocaleString('es-ES', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+};
+
+export const formatPrecio = (importe: number, moneda: string): string =>
+  new Intl.NumberFormat('es-ES', { style: 'currency', currency: moneda }).format(importe);
+
 export const capitalizar = (texto: string): string =>
   texto.length === 0 ? texto : texto.charAt(0).toUpperCase() + texto.slice(1);

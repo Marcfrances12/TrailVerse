@@ -1,0 +1,21 @@
+<section class="space-y-4" [attr.aria-label]="titulo()">
+  <div class="flex items-center justify-between gap-3">
+    <h2 class="font-display text-xl font-bold text-bosque-950">{{ titulo() }}</h2>
+    <div class="flex gap-2">
+      <button type="button" (click)="desplazar(-1)" aria-label="Anterior"
+              class="grid h-9 w-9 place-items-center rounded-full border border-crema-300 bg-white text-tinta transition-colors hover:bg-crema-100">
+        <span aria-hidden="true">‹</span>
+      </button>
+      <button type="button" (click)="desplazar(1)" aria-label="Siguiente"
+              class="grid h-9 w-9 place-items-center rounded-full border border-crema-300 bg-white text-tinta transition-colors hover:bg-crema-100">
+        <span aria-hidden="true">›</span>
+      </button>
+    </div>
+  </div>
+
+  <div #pista
+       [ngClass]="clasesHijos()"
+       class="flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth pb-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden [&>*]:block [&>*]:shrink-0 [&>*]:snap-start">
+    <ng-content />
+  </div>
+</section>

@@ -112,5 +112,9 @@ const rutaSchema = new mongoose.Schema(
 );
 
 rutaSchema.index({ startPoint: "2dsphere" });
+rutaSchema.index({ status: 1, isActive: 1, deleted_at: 1, created_at: -1 });
+rutaSchema.index({ hostId: 1, status: 1, isActive: 1 });
+rutaSchema.index({ locationId: 1, status: 1, isActive: 1 });
+rutaSchema.index({ categoryIds: 1, status: 1, isActive: 1 });
 
 module.exports = mongoose.model("Ruta", rutaSchema);

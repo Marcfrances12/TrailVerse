@@ -2,6 +2,7 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { ProfilesApiService } from '../services/profiles-api.service';
 import { PerfilAdmin, Profile } from '../models/profile.model';
+import { primerValorCancelable } from '../utils/primer-valor-cancelable';
 
 const ESTADOS_INCIDENCIA = ['usuario-no-existe', 'sin-perfil'];
 
@@ -14,6 +15,7 @@ export class ProfilesStore {
   private readonly _error = signal<string | null>(null);
   private readonly _soloIncidencias = signal(false);
   private readonly _miPerfil = signal<Profile | null>(null);
+  private controladorListado: AbortController | null = null;
 
   readonly perfiles = this._perfiles.asReadonly();
   readonly cargando = this._cargando.asReadonly();
@@ -34,16 +36,25 @@ export class ProfilesStore {
   }
 
   async cargar(): Promise<void> {
+    this.controladorListado?.abort();
+    const controlador = new AbortController();
+    this.controladorListado = controlador;
+
     this._cargando.set(true);
     this._error.set(null);
     try {
-      const respuesta = await firstValueFrom(this.api.listar({ soloIncidencias: this._soloIncidencias() }));
+      const respuesta = await primerValorCancelable(
+        this.api.listar({ soloIncidencias: this._soloIncidencias() }),
+        controlador.signal
+      );
+      if (controlador.signal.aborted) return;
       this._perfiles.set(respuesta.data);
     } catch (error) {
+      if (controlador.signal.aborted) return;
       this._error.set(this.mensajeDeError(error));
       throw error;
     } finally {
-      this._cargando.set(false);
+      if (this.controladorListado === controlador) this._cargando.set(false);
     }
   }
 

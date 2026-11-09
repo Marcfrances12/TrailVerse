@@ -56,7 +56,7 @@ export class RutaCreate {
   async guardar(datos: RutaInput): Promise<void> {
     try {
       const ruta = await this.store.crear(datos);
-      this.router.navigate(['/rutas', ruta.slug]);
+      this.router.navigate(['/shop', ruta.slug]);
     } catch (error) {
       this.errorServidor.set(error);
     }

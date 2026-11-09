@@ -1,0 +1,36 @@
+<section class="space-y-6">
+  <header class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+    <div>
+      <h1 class="font-display text-3xl font-bold text-bosque-950">Rutas</h1>
+      <p class="mt-1 text-sm text-tinta-suave" aria-live="polite">{{ store.total() }} rutas encontradas</p>
+    </div>
+  </header>
+
+  <div class="grid gap-8 lg:grid-cols-[16rem_1fr]">
+    <app-filter-panel [grupos]="grupos()"
+                      [hayActivos]="store.hayFiltros()"
+                      (cambiar)="alCambiarFiltro($event)"
+                      (limpiar)="store.limpiarFiltros()" />
+
+    <div class="min-w-0 space-y-8">
+      @if (store.error(); as mensaje) {
+        <app-error-state [mensaje]="mensaje" (reintentar)="store.recargar()" />
+      } @else if (store.cargando() && store.rutas().length === 0) {
+        <app-skeleton-grid />
+      } @else if (store.rutas().length === 0) {
+        <app-empty-state titulo="Sin resultados" mensaje="Prueba con otra búsqueda o quita algún filtro." />
+      } @else {
+        <div class="grid grid-cols-1 gap-6 transition-opacity sm:grid-cols-2"
+             [class.opacity-60]="store.cargando()">
+          @for (ruta of store.rutas(); track ruta._id) {
+            <app-shop-ruta-card [ruta]="ruta" />
+          }
+        </div>
+      }
+
+      <app-pagination [pagina]="store.filtros().page"
+                      [totalPaginas]="store.totalPaginas()"
+                      (cambiar)="store.irAPagina($event)" />
+    </div>
+  </div>
+</section>

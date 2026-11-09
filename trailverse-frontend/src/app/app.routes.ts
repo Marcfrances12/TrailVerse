@@ -14,11 +14,15 @@ export const routes: Routes = [
     path: '',
     component: PublicLayout,
     children: [
-      { path: '', pathMatch: 'full', redirectTo: 'rutas' },
       {
-        path: 'rutas',
+        path: '',
         loadChildren: () =>
-          import('./features/rutas/rutas.routes').then((m) => m.RUTAS_PUBLIC_ROUTES)
+          import('./features/home/home.routes').then((m) => m.HOME_ROUTES)
+      },
+      {
+        path: 'shop',
+        loadChildren: () =>
+          import('./features/shop/shop.routes').then((m) => m.SHOP_ROUTES)
       },
       {
         path: 'perfil',
@@ -76,5 +80,5 @@ export const routes: Routes = [
       }
     ]
   },
-  { path: '**', redirectTo: 'rutas' }
+  { path: '**', redirectTo: '' }
 ];

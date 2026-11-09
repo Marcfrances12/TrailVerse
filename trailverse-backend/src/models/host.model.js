@@ -54,4 +54,6 @@ const hostSchema = new mongoose.Schema(
   }
 );
 
+hostSchema.index({ isActive: 1, deleted_at: 1 });
+
 module.exports = mongoose.model("Host", hostSchema);

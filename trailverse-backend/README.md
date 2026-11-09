@@ -134,6 +134,39 @@ GET /api/departures?status=open&isActive=true
 GET /api/departures/sku/CALALI-MED-4,8
 ```
 
+### Shop (lectura pública)
+
+Módulo de catálogo para el frontend. Solo muestra rutas con `status=published`, `isActive=true` y `deleted_at=null`, independientemente de lo que se envíe en la query.
+
+| Método | Ruta | Descripción |
+|---|---|---|
+| `GET` | `/api/shop/rutas` | Listado paginado con filtros, búsqueda y orden |
+| `GET` | `/api/shop/home` | Carruseles de categorías, hosts y locations con número de rutas |
+| `GET` | `/api/shop/filtros` | Valores para los desplegables: dificultades, modos de categoría, opciones de `sort` y listas completas de categorías, hosts y locations |
+
+Parámetros de `GET /api/shop/rutas`:
+
+| Parámetro | Descripción |
+|---|---|
+| `q` | Texto contenido en el nombre, sin distinguir mayúsculas |
+| `categoria` | Uno o varios slugs separados por comas (máximo 10), por ejemplo `montana,playa` |
+| `categoryMode` | `any` (por defecto: al menos una categoría) o `all` (todas) |
+| `host` / `localizacion` | Slug del host o de la localización, por ejemplo `juan-garcia` |
+| `dificultad` | `facil`, `media` o `dificil` |
+| `sort` | `nombre`, `created_at`, `distanciaKm` o `duracionHoras`; prefijo `-` para descendente. Por defecto `-created_at` |
+| `page` | Página, desde 1 (por defecto 1) |
+| `limit` | Elementos por página, de 1 a 50 (por defecto 12) |
+
+Respuesta: `{ ok, total, page, limit, totalPages, data }`. Cada ruta incluye `coverImage`, `precioDesde` (precio más bajo de sus salidas abiertas y futuras, o `null`) y las relaciones de categoría, host y localización con datos públicos.
+
+`GET /api/shop/home?limit=10` (máximo 20) devuelve `{ categories, hosts, locations }`, cada una con `_id`, `nombre`, `slug` y `total`, ordenadas por número de rutas.
+
+`GET /api/shop/rutas/:slug` devuelve la ruta visible con sus imágenes (`images`), `coverImage`, categorías, host (solo `name` y `slug`) y localización. Responde 404 si la ruta no es visible.
+
+`GET /api/shop/rutas/:slug/departures` devuelve las salidas abiertas, activas y futuras de la ruta, ordenadas por fecha de inicio. `stock` indica las plazas libres.
+
+`GET /api/shop/filtros` devuelve `{ dificultades, categoryModes, sort, categories, hosts, locations }`. Las listas de categorías, hosts y locations son completas, ordenadas por nombre, y solo incluyen entradas activas con al menos una ruta visible. Los valores de `sort` se pueden enviar tal cual en `GET /api/shop/rutas`.
+
 ### Estados, relaciones y reglas de integridad
 
 - `isActive` representa activación; `deleted_at` representa papelera. Desactivar no es lo mismo que eliminar.
@@ -172,7 +205,7 @@ Los esquemas Zod validan body, parámetros y queries; los esquemas de escritura 
 npm run seed
 ```
 
-Carga roles `ADMIN` y `USER`, usuarios demo, cinco localizaciones, dos hosts, cinco categorías, cinco rutas, seis salidas e imágenes. Los usuarios demo reciben hashes Argon2id derivados de `SEED_PASSWORD`; todos comparten esa clave, por lo que debe usarse únicamente en desarrollo. **Antes de insertar, vacía las colecciones del proyecto.**
+Carga roles `ADMIN` y `USER`, siete usuarios demo, dieciséis localizaciones, seis hosts, doce categorías, veinte rutas, unas sesenta salidas y unas cien imágenes. Las imágenes son fotos de Wikimedia Commons, con licencia libre, y cada ruta tiene entre tres y cinco. Los usuarios demo reciben hashes Argon2id derivados de `SEED_PASSWORD`; todos comparten esa clave, por lo que debe usarse únicamente en desarrollo. **Antes de insertar, vacía las colecciones del proyecto.**
 
 ## Seguridad y alcance
 

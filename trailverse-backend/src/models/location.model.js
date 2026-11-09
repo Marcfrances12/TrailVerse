@@ -71,5 +71,6 @@ const locationSchema = new mongoose.Schema(
 );
 
 locationSchema.index({ geo: "2dsphere" });
+locationSchema.index({ isActive: 1, deleted_at: 1 });
 
 module.exports = mongoose.model("Location", locationSchema);

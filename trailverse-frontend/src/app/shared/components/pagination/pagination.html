@@ -1,0 +1,23 @@
+@if (totalPaginas() > 1) {
+  <nav class="flex flex-wrap items-center justify-center gap-2" aria-label="Paginación">
+    <button type="button" (click)="irA(pagina() - 1)" [disabled]="pagina() <= 1"
+            class="rounded-lg border border-crema-300 bg-white px-3 py-2 text-sm font-semibold text-tinta transition-colors hover:bg-crema-100 disabled:cursor-not-allowed disabled:opacity-40">
+      Anterior
+    </button>
+
+    @for (numero of numeros(); track numero) {
+      <button type="button" (click)="irA(numero)"
+              [attr.aria-current]="numero === pagina() ? 'page' : null"
+              [class.bg-bosque-700]="numero === pagina()" [class.text-white]="numero === pagina()"
+              [class.bg-white]="numero !== pagina()" [class.text-tinta]="numero !== pagina()"
+              class="min-w-10 rounded-lg border border-crema-300 px-3 py-2 text-sm font-semibold transition-colors hover:bg-crema-100">
+        {{ numero }}
+      </button>
+    }
+
+    <button type="button" (click)="irA(pagina() + 1)" [disabled]="pagina() >= totalPaginas()"
+            class="rounded-lg border border-crema-300 bg-white px-3 py-2 text-sm font-semibold text-tinta transition-colors hover:bg-crema-100 disabled:cursor-not-allowed disabled:opacity-40">
+      Siguiente
+    </button>
+  </nav>
+}
