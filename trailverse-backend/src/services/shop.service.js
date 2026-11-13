@@ -1,7 +1,7 @@
 const shopRepo = require("../repos/shop.repo");
 const AppError = require("../utils/AppError");
 const { validarConZod } = require("../utils/validar");
-const { DIFICULTADES, MODOS_CATEGORIA, ORDENES, slugParamSchema } = require("../validators/shop.validator");
+const { DIFICULTADES, MODOS_CATEGORIA, ORDENES, PRECIO_MINIMO, PRECIO_MAXIMO, slugParamSchema } = require("../validators/shop.validator");
 
 const LIMITE_RELACIONADAS = 6;
 
@@ -9,7 +9,7 @@ function validarSlug(slug) {
   return validarConZod(slugParamSchema, { slug }, "params").slug;
 }
 
-// Añade `imagen` (la primera imagen de la entidad, o null) a cada elemento.
+
 async function conImagen(entidades, tipo) {
   const ids = entidades.map((entidad) => entidad._id);
   if (ids.length === 0) return entidades;
@@ -24,7 +24,7 @@ async function conImagen(entidades, tipo) {
   return entidades.map((entidad) => ({ ...entidad, imagen: portadas.get(String(entidad._id)) ?? null }));
 }
 
-// La imagen de portada es la primera de la colección images; si no hay, la de la ruta.
+
 function portadaDe(imagenes, coverImage) {
   const primera = imagenes[0];
   if (primera) return { url: primera.url || "", alt: primera.alt || "" };
@@ -41,7 +41,7 @@ function agruparPorRuta(filas) {
   return mapa;
 }
 
-// Añade portada y precio desde a una lista de rutas (dos consultas en lote, no una por ruta).
+
 async function enriquecerRutas(items) {
   const ids = items.map((ruta) => ruta._id);
   const [imagenes, precios] = await Promise.all([
@@ -63,13 +63,17 @@ async function enriquecerRutas(items) {
 }
 
 async function getRutas(query) {
-  const { page, limit, sort, categoryMode, categoria, host, localizacion, ...criterios } = query;
+  const { page, limit, sort, categoryMode, categoria, host, localizacion, precioMin, precioMax, ...criterios } = query;
 
   const porSlug = await shopRepo.idsDeSlugs({ categoria, host, localizacion });
   if (!porSlug) return { data: [], total: 0, page, limit, totalPages: 0 };
 
+  const porPrecio = precioMin > PRECIO_MINIMO || precioMax < PRECIO_MAXIMO
+    ? { rutaIds: await shopRepo.idsRutasPorPrecio({ min: precioMin, max: precioMax }) }
+    : {};
+
   const { items, total } = await shopRepo.buscarRutas({
-    criterios: { ...criterios, categoryMode, ...porSlug },
+    criterios: { ...criterios, categoryMode, ...porSlug, ...porPrecio },
     sort,
     page,
     limit

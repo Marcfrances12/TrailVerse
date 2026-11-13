@@ -1,0 +1,66 @@
+<article class="flex flex-col overflow-hidden rounded-2xl border border-crema-200 bg-white shadow-sm transition-opacity"
+         [class.grayscale]="!ruta().isActive"
+         [class.opacity-60]="!ruta().isActive">
+  <div class="relative h-40 bg-bosque-700">
+    @if (ruta().coverImage?.url) {
+      <img [src]="ruta().coverImage.url" [alt]="ruta().coverImage.alt || ruta().nombre" class="h-full w-full object-cover" />
+    } @else {
+      <div class="grid h-full w-full place-items-center">
+        <svg viewBox="0 0 24 24" class="h-10 w-10 text-bosque-300" aria-hidden="true">
+          <path d="M2 20 L8.5 7 L12 13 L15 9.5 L22 20 Z" fill="currentColor" opacity="0.5" />
+        </svg>
+      </div>
+    }
+    <span class="absolute left-3 top-3 rounded-full px-2.5 py-1 text-xs font-semibold" [class]="clasesDificultad(ruta().dificultad)">
+      {{ etiquetasDificultad[ruta().dificultad] }}
+    </span>
+    <span class="absolute right-3 top-3 rounded-full px-2.5 py-1 text-xs font-semibold"
+          [class.bg-bosque-100]="ruta().isActive"
+          [class.text-bosque-800]="ruta().isActive"
+          [class.bg-red-100]="!ruta().isActive"
+          [class.text-red-700]="!ruta().isActive">
+      {{ ruta().isActive ? 'Activa' : 'Inactiva' }}
+    </span>
+  </div>
+
+  <div class="flex flex-1 flex-col gap-3 p-4">
+    <div>
+      <a [routerLink]="['/shop', ruta().slug]" class="font-semibold text-bosque-700 hover:text-bosque-500">
+        {{ ruta().nombre }}
+      </a>
+      @if (nombreUbicacion()) {
+        <p class="text-xs text-tinta-suave">{{ nombreUbicacion() }}</p>
+      }
+    </div>
+
+    <dl class="grid grid-cols-3 gap-2 text-xs text-tinta-suave">
+      <div>
+        <dt>Distancia</dt>
+        <dd class="font-semibold text-tinta">{{ formatKm(ruta().distanciaKm) }}</dd>
+      </div>
+      <div>
+        <dt>Desnivel</dt>
+        <dd class="font-semibold text-tinta">{{ formatMetros(ruta().desnivelM) }}</dd>
+      </div>
+      <div>
+        <dt>Duración</dt>
+        <dd class="font-semibold text-tinta">{{ formatDuracion(ruta().duracionHoras) }}</dd>
+      </div>
+    </dl>
+
+    @if (ruta().dependencyWarnings?.length) {
+      <ul class="space-y-0.5 text-xs font-medium text-red-700" role="alert">
+        @for (aviso of ruta().dependencyWarnings; track aviso) {
+          <li>{{ aviso }}</li>
+        }
+      </ul>
+    }
+
+    <div class="mt-auto pt-2">
+      <app-action-botones
+        [ruta]="ruta()"
+        (activar)="activar.emit($event)"
+        (eliminar)="eliminar.emit($event)" />
+    </div>
+  </div>
+</article>

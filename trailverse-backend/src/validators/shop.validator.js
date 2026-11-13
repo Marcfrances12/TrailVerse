@@ -8,6 +8,8 @@ const LIMITE_POR_DEFECTO = 12;
 const LIMITE_MAXIMO = 50;
 const LIMITE_HOME_POR_DEFECTO = 10;
 const LIMITE_HOME_MAXIMO = 20;
+const PRECIO_MINIMO = 0;
+const PRECIO_MAXIMO = 50;
 
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
@@ -61,6 +63,8 @@ const listarRutasQuerySchema = z.object({
   host: slugCampo("host").optional(),
   localizacion: slugCampo("localizacion").optional(),
   dificultad: z.enum(DIFICULTADES, { error: `dificultad debe ser: ${DIFICULTADES.join(", ")}` }).optional(),
+  precioMin: entero("precioMin", { min: PRECIO_MINIMO, max: PRECIO_MAXIMO, defecto: PRECIO_MINIMO }),
+  precioMax: entero("precioMax", { min: PRECIO_MINIMO, max: PRECIO_MAXIMO, defecto: PRECIO_MAXIMO }),
   sort: ordenSchema.default({ campo: "created_at", descendente: true }),
   page: entero("page", { min: 1, max: 100000, defecto: 1 }),
   limit: entero("limit", { min: 1, max: LIMITE_MAXIMO, defecto: LIMITE_POR_DEFECTO })
@@ -85,6 +89,8 @@ module.exports = {
   LIMITE_POR_DEFECTO,
   LIMITE_MAXIMO,
   LIMITE_HOME_POR_DEFECTO,
+  PRECIO_MINIMO,
+  PRECIO_MAXIMO,
   listarRutasQuerySchema,
   homeQuerySchema,
   slugParamSchema

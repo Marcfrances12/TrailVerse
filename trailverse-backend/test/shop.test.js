@@ -89,6 +89,22 @@ test("host, location y dificultad solo se añaden cuando vienen informados", () 
   assert.equal(filtro.locationId, undefined);
 });
 
+test("precio por defecto es 0-50 y valores fuera de rango se rechazan", () => {
+  const defecto = listarRutasQuerySchema.parse({});
+
+  assert.equal(defecto.precioMin, 0);
+  assert.equal(defecto.precioMax, 50);
+  assert.equal(listarRutasQuerySchema.parse({ precioMin: "10", precioMax: "35" }).precioMax, 35);
+  assert.equal(listarRutasQuerySchema.safeParse({ precioMax: "51" }).success, false);
+  assert.equal(listarRutasQuerySchema.safeParse({ precioMin: "-1" }).success, false);
+});
+
+test("rutaIds restringe el filtro a esas rutas", () => {
+  const filtro = shopRepo.construirFiltroRuta({ rutaIds: [ID_A] });
+
+  assert.deepEqual(filtro._id, { $in: [ID_A] });
+});
+
 test("getRutas compone portada, precio desde y paginación", async () => {
   let criteriosUsados;
   const resultado = await conRepo({

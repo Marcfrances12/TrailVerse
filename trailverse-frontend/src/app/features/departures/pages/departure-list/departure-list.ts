@@ -3,18 +3,24 @@ import { RouterLink } from '@angular/router';
 import Swal from 'sweetalert2';
 import { DeparturesStore } from '../../../../core/stores/departures.store';
 import { Departure, DepartureStatus, ESTATUSES } from '../../../../core/models/departure.model';
-import { AdminListShell } from '../../../../shared/components/admin-list-shell/admin-list-shell';
+import { AdminListShell, VistaOpcion } from '../../../../shared/components/admin-list-shell/admin-list-shell';
+import { DeparturesCalendar } from '../../components/departures-calendar/departures-calendar';
 import { formatFecha } from '../../../../shared/utils/formatos';
 
 @Component({
   selector: 'app-departure-list',
-  imports: [RouterLink, AdminListShell],
+  imports: [RouterLink, AdminListShell, DeparturesCalendar],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './departure-list.html'
 })
 export class DepartureList implements OnInit {
   readonly store = inject(DeparturesStore);
   readonly modoPapelera = signal(false);
+  readonly vista = signal('tabla');
+  readonly opcionesVista: VistaOpcion[] = [
+    { valor: 'tabla', etiqueta: 'Tabla' },
+    { valor: 'calendario', etiqueta: 'Calendario' }
+  ];
   readonly statuses = ESTATUSES;
   readonly formatFecha = formatFecha;
   ngOnInit(): void {

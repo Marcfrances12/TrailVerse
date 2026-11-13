@@ -1,0 +1,76 @@
+<div class="pointer-events-none fixed bottom-4 right-4 z-50 flex flex-col items-end gap-3 sm:bottom-6 sm:right-6">
+  @if (abierto()) {
+    <section role="dialog" aria-label="Asistente de TrailVerse"
+             class="pointer-events-auto flex h-[min(32rem,calc(100vh-7rem))] w-[min(22rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-2xl border border-crema-200 bg-white shadow-2xl">
+      <header class="flex items-center justify-between gap-3 bg-bosque-800 px-4 py-3 text-white">
+        <div>
+          <p class="font-display text-sm font-bold">Asistente TrailVerse</p>
+          <p class="text-xs text-bosque-100">Rutas, alrededores y preguntas frecuentes</p>
+        </div>
+        <button type="button" (click)="alternar()" aria-label="Cerrar asistente"
+                class="rounded-full px-2 py-1 text-lg leading-none hover:bg-bosque-700">×</button>
+      </header>
+
+      <div #contenedor class="flex-1 space-y-3 overflow-y-auto bg-crema-50 p-4" aria-live="polite">
+        @if (mensajes().length === 0) {
+          <p class="text-sm text-tinta-suave">Hola, ¿en qué puedo ayudarte? Elige una sugerencia o escribe tu pregunta.</p>
+          <div class="flex flex-wrap gap-2">
+            @for (sugerencia of sugerencias; track sugerencia.etiqueta) {
+              <button type="button" (click)="usarSugerencia(sugerencia)" [disabled]="escribiendo()"
+                      class="rounded-full border border-bosque-300 bg-white px-3 py-1 text-xs font-semibold text-bosque-800 transition-colors hover:bg-bosque-100 disabled:opacity-50">
+                {{ sugerencia.etiqueta }}
+              </button>
+            }
+          </div>
+        }
+
+        @for (mensaje of mensajes(); track mensaje.id) {
+          @if (mensaje.rol === 'user') {
+            <div class="flex justify-end">
+              <p class="max-w-[85%] whitespace-pre-line rounded-2xl rounded-br-sm bg-bosque-700 px-3 py-2 text-sm text-white">{{ mensaje.texto }}</p>
+            </div>
+          } @else {
+            <div class="flex justify-start">
+              <div class="max-w-[85%] rounded-2xl rounded-bl-sm bg-white px-3 py-2 text-sm leading-relaxed text-tinta shadow-sm">
+                @if (mensaje.texto) {
+                  <div class="space-y-2" [innerHTML]="markdown(mensaje.texto)"></div>
+                } @else {
+                  <span class="flex items-center gap-1 py-1" role="status" aria-label="El asistente está escribiendo">
+                    <span class="h-2 w-2 animate-bounce rounded-full bg-bosque-500"></span>
+                    <span class="h-2 w-2 animate-bounce rounded-full bg-bosque-500 [animation-delay:150ms]"></span>
+                    <span class="h-2 w-2 animate-bounce rounded-full bg-bosque-500 [animation-delay:300ms]"></span>
+                  </span>
+                }
+              </div>
+            </div>
+          }
+        }
+
+        @if (herramienta(); as etiqueta) {
+          <p class="text-xs italic text-tinta-suave">{{ etiqueta }}…</p>
+        }
+
+        @if (error(); as mensajeError) {
+          <p role="alert" class="rounded-xl bg-red-50 px-3 py-2 text-xs text-red-700">{{ mensajeError }}</p>
+        }
+      </div>
+
+      <form (submit)="enviarDesdeFormulario($event)" class="flex items-center gap-2 border-t border-crema-200 bg-white p-3">
+        <input type="text" [value]="borrador()" (input)="actualizarBorrador($event)" maxlength="500"
+               placeholder="Escribe tu pregunta…" aria-label="Escribe tu pregunta"
+               class="min-w-0 flex-1 rounded-full border border-crema-300 px-4 py-2 text-sm text-tinta focus:border-bosque-500 focus:outline-none" />
+        <button type="submit" [disabled]="!puedeEnviar()"
+                class="rounded-full bg-bosque-700 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-bosque-600 disabled:cursor-not-allowed disabled:opacity-50">
+          Enviar
+        </button>
+      </form>
+    </section>
+  }
+
+  <button type="button" (click)="alternar()" [attr.aria-expanded]="abierto()" aria-label="Abrir el asistente de rutas"
+          class="pointer-events-auto flex h-14 w-14 items-center justify-center rounded-full bg-tierra-600 text-white shadow-lg transition-colors hover:bg-tierra-700 focus:outline-none focus-visible:ring-4 focus-visible:ring-tierra-500/40">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-6 w-6" aria-hidden="true">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M8 10h8M8 14h5m-9 6l3.5-3H19a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v11a2 2 0 002 2z" />
+    </svg>
+  </button>
+</div>

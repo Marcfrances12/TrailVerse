@@ -72,6 +72,12 @@ const imagenSchema = z.strictObject({
 
 const imagenesSchema = z.array(imagenSchema, { error: "images debe ser un array de imágenes" });
 
+const faqSchema = z.strictObject({
+  pregunta: textoObligatorio("La pregunta", 3),
+  respuesta: textoObligatorio("La respuesta", 3),
+  tags: z.array(z.string({ error: "Cada etiqueta debe ser texto" }).trim().min(1)).max(10).optional()
+});
+
 const createRutaSchema = z.strictObject({
   nombre: textoObligatorio("El nombre", 3),
   descripcion: textoObligatorio("La descripción"),
@@ -90,6 +96,7 @@ const createRutaSchema = z.strictObject({
     alt: z.string().optional()
   }).optional(),
   images: imagenesSchema.optional(),
+  faqs: z.array(faqSchema, { error: "faqs debe ser un array" }).max(30, { error: "Una ruta admite como máximo 30 FAQs" }).optional(),
   startPoint: startPointSchema,
   status: z.enum(STATUS, { error: `status debe ser: ${STATUS.join(", ")}` }).optional()
 });

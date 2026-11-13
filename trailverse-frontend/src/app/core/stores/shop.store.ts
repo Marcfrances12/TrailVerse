@@ -14,6 +14,7 @@ import {
   ParamsLike,
   claveDeFiltros,
   filtrosDesdeParams,
+  hayRangoPrecio,
   queryDesdeFiltros
 } from '../utils/shop-query';
 
@@ -87,7 +88,8 @@ export class ShopStore {
       || filtros.categoryId.length > 0
       || filtros.hostId !== ''
       || filtros.locationId !== ''
-      || filtros.dificultad !== '';
+      || filtros.dificultad !== ''
+      || hayRangoPrecio(filtros);
   });
 
   /** Lee la URL, actualiza los filtros y pide el listado solo si cambian. */

@@ -5,6 +5,11 @@ import { EmptyState } from '../empty-state/empty-state';
 import { ErrorState } from '../error-state/error-state';
 import { SkeletonGrid } from '../skeleton-grid/skeleton-grid';
 
+export interface VistaOpcion {
+  valor: string;
+  etiqueta: string;
+}
+
 @Component({
   selector: 'app-admin-list-shell',
   imports: [NgTemplateOutlet, RouterLink, EmptyState, ErrorState, SkeletonGrid],
@@ -13,6 +18,8 @@ import { SkeletonGrid } from '../skeleton-grid/skeleton-grid';
 })
 export class AdminListShell {
   readonly title = input.required<string>();
+  readonly vistas = input<VistaOpcion[]>([]);
+  readonly vista = input('');
   readonly summary = input('');
   readonly isTrash = input(false);
   readonly activeLabel = input('Ver activos');
@@ -25,6 +32,7 @@ export class AdminListShell {
   readonly createLabel = input('');
 
   readonly toggleTrash = output<void>();
+  readonly cambiarVista = output<string>();
   readonly retry = output<void>();
 
   @ContentChild('activeContent') activeContent?: TemplateRef<unknown>;

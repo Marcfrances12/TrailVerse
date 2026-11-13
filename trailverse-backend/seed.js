@@ -173,6 +173,23 @@ const CATEGORIAS = [
   { key: "lagos", name: "Lagos y humedales", slug: "lagos-y-humedales", foto: 132285054 }
 ];
 
+// FAQs de ejemplo para el agente IA (datos ficticios de desarrollo).
+const FAQS_POR_RUTA = {
+  "Ruta del Montgó": [
+    { pregunta: "¿Es apta para principiantes?", respuesta: "No del todo. Tiene un desnivel de 750 m y tramos con roca; se recomienda experiencia en montaña.", tags: ["dificultad"] },
+    { pregunta: "¿Se puede ir con perro?", respuesta: "Sí, con correa en todo el recorrido. Lleva agua para el animal.", tags: ["perros", "mascotas"] },
+    { pregunta: "¿Hay agua en la ruta?", respuesta: "No hay fuentes fiables en el recorrido. Lleva al menos 2 litros por persona.", tags: ["agua"] }
+  ],
+  "Ruta del Pou Clar": [
+    { pregunta: "¿Es adecuada para niños?", respuesta: "Sí, es un paseo sencillo de 3,2 km y 90 m de desnivel, ideal para familias.", tags: ["familias", "niños"] },
+    { pregunta: "¿Se puede ir con perro?", respuesta: "Sí, pero mantenlo con correa cerca de las zonas de agua.", tags: ["perros", "mascotas"] }
+  ],
+  "Ruta del Bosque Encantado": [
+    { pregunta: "¿Cuál es la mejor época?", respuesta: "Primavera y otoño. En invierno la niebla y la humedad son frecuentes.", tags: ["época", "clima"] },
+    { pregunta: "¿Qué material necesito?", respuesta: "Calzado de montaña, impermeable ligero y agua. La laurisilva es húmeda y resbaladiza.", tags: ["material"] }
+  ]
+};
+
 const RUTAS = [
   { nombre: "Ruta del Peñón de Ifach", descripcion: "Sendero costero con vistas al Mediterráneo desde la cima del Peñón de Ifach, en el Parque Natural de la Sierra Gelada.", loc: "calpe", host: "aventura", cats: ["costeras", "montana"], dificultad: "media", distanciaKm: 4.8, desnivelM: 330, duracionHoras: 2.5, circular: false, fotos: [35043181, 35043103, 35043101] },
   { nombre: "Ruta del Montgó", descripcion: "Ascenso al Montgó con vistas panorámicas de la bahía de Dénia y de la costa.", loc: "denia", host: "montana", cats: ["montana"], dificultad: "dificil", distanciaKm: 8.5, desnivelM: 750, duracionHoras: 4.5, circular: true, fotos: [114878630, 129950175, 26311527, 114878626] },
@@ -283,6 +300,7 @@ const seed = async () => {
           categoryIds: ruta.cats.map((key) => categoriaPorKey(key)._id),
           coverImage: { url: foto(ruta.fotos[0]), alt: ruta.nombre },
           startPoint: { type: "Point", coordinates: localizacion.geo.coordinates },
+          faqs: FAQS_POR_RUTA[ruta.nombre] ?? [],
           slug: generateSlug(ruta.nombre)
         };
       })

@@ -7,7 +7,7 @@ const Host = require("../models/host.model");
 const Location = require("../models/location.model");
 const escapeRegex = require("../utils/escapeRegex");
 
-// Solo se listan rutas publicadas, activas y no borradas. Es un invariante del shop.
+
 const RUTAS_VISIBLES = { status: "published", isActive: true, deleted_at: null };
 
 const PROYECCION_LISTADO =
@@ -43,6 +43,7 @@ function construirFiltroRuta(criterios = {}) {
   if (criterios.hostId) filtro.hostId = criterios.hostId;
   if (criterios.locationId) filtro.locationId = criterios.locationId;
   if (criterios.dificultad) filtro.dificultad = criterios.dificultad;
+  if (criterios.rutaIds) filtro._id = { $in: criterios.rutaIds };
 
   return filtro;
 }
@@ -216,6 +217,24 @@ async function idsDeSlugs({ categoria, host, localizacion }) {
   return criterios;
 }
 
+// Rutas cuyo precio más bajo de salida abierta y futura está entre min y max (ambos incluidos).
+async function idsRutasPorPrecio({ min, max }) {
+  const filas = await Departure.aggregate([
+    {
+      $match: {
+        isActive: true,
+        deleted_at: null,
+        status: "open",
+        startDate: { $gte: new Date() }
+      }
+    },
+    { $group: { _id: "$rutaId", amount: { $min: "$price.amount" } } },
+    { $match: { amount: { $gte: min, $lte: max } } }
+  ]);
+
+  return filas.map((fila) => fila._id);
+}
+
 // Todas las opciones de un filtro, ordenadas por nombre.
 async function opcionesFiltro(tipo) {
   return Ruta.aggregate([
@@ -231,6 +250,7 @@ module.exports = {
   preciosDesdeDeRutas,
   conteosHome,
   idsDeSlugs,
+  idsRutasPorPrecio,
   opcionesFiltro,
   buscarRutaVisiblePorSlug,
   idDeRutaVisible,

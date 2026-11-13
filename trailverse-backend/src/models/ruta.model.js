@@ -1,5 +1,15 @@
 const mongoose = require("mongoose");
 
+// Preguntas frecuentes de la ruta: las consume el servicio del agente (trailverse-agent).
+const faqSchema = new mongoose.Schema(
+  {
+    pregunta: { type: String, required: [true, "La pregunta es obligatoria"], trim: true },
+    respuesta: { type: String, required: [true, "La respuesta es obligatoria"], trim: true },
+    tags: { type: [String], default: [] }
+  },
+  { _id: false }
+);
+
 const rutaSchema = new mongoose.Schema(
   {
     nombre: {
@@ -81,6 +91,10 @@ const rutaSchema = new mongoose.Schema(
     gpxUrl: {
       type: String,
       default: ""
+    },
+    faqs: {
+      type: [faqSchema],
+      default: []
     },
     slug: {
       type: String,

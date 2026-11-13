@@ -19,6 +19,7 @@ import {
 } from '../../../../shared/utils/formatos';
 import { Galeria } from '../../../../shared/components/galeria/galeria';
 import { ShopRutaCard } from '../../components/shop-ruta-card/shop-ruta-card';
+import { RouteChat } from '../../../../shared/components/route-chat/route-chat';
 
 @Component({
   selector: 'app-shop-detail',
@@ -31,7 +32,8 @@ import { ShopRutaCard } from '../../components/shop-ruta-card/shop-ruta-card';
     ShopRutaCard,
     Galeria,
     EmptyState,
-    ErrorState
+    ErrorState,
+    RouteChat
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './shop-detail.html'

@@ -12,6 +12,9 @@
   [emptyMessage]="modoPapelera() ? 'No hay rutas eliminadas.' : 'Aún no hay rutas registradas.'"
   [createRoute]="'/admin/rutas/new'"
   [createLabel]="'+ Nueva ruta'"
+  [vistas]="opcionesVista"
+  [vista]="vista()"
+  (cambiarVista)="vista.set($event)"
   (toggleTrash)="alternarPapelera()"
   (retry)="modoPapelera() ? reintentarPapelera() : reintentar()">
   <ng-template #trashContent>
@@ -50,9 +53,20 @@
       </div>
   </ng-template>
   <ng-template #activeContent>
-    <app-admin-table
-      [rutas]="store.rutas()"
-      (cambiarEstado)="cambiarEstado($event)"
-      (eliminar)="eliminar($event)" />
+    @if (vista() === 'cuadricula') {
+      <div class="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+        @for (ruta of store.rutas(); track ruta._id) {
+          <app-ruta-card
+            [ruta]="ruta"
+            (activar)="cambiarEstado($event)"
+            (eliminar)="eliminar($event)" />
+        }
+      </div>
+    } @else {
+      <app-admin-table
+        [rutas]="store.rutas()"
+        (cambiarEstado)="cambiarEstado($event)"
+        (eliminar)="eliminar($event)" />
+    }
   </ng-template>
 </app-admin-list-shell>

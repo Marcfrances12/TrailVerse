@@ -13,6 +13,8 @@ export interface ShopFiltros {
   hostId: string;
   locationId: string;
   dificultad: Dificultad | '';
+  precioMin: number;
+  precioMax: number;
   sort: SortValor;
   page: number;
   limit: number;

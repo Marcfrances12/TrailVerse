@@ -77,6 +77,39 @@ describe('shop-query', () => {
     });
   });
 
+  it('el rango de precio por defecto (0-50) no añade parámetros', () => {
+    expect(queryDesdeFiltros({ ...FILTROS_SHOP_POR_DEFECTO })).toEqual({});
+    expect(parametrosApi({ ...FILTROS_SHOP_POR_DEFECTO }).has('precioMin')).toBe(false);
+    expect(parametrosApi({ ...FILTROS_SHOP_POR_DEFECTO }).has('precioMax')).toBe(false);
+  });
+
+  it('sin parámetros de precio el rango es 0-50 y no se envía filtro', () => {
+    const filtros = filtrosDesdeParams(params({}));
+
+    expect(filtros.precioMin).toBe(0);
+    expect(filtros.precioMax).toBe(50);
+    expect(parametrosApi(filtros).has('precioMin')).toBe(false);
+    expect(parametrosApi(filtros).has('precioMax')).toBe(false);
+  });
+
+  it('lee el rango de precio de la URL y descarta valores fuera de 0-50', () => {
+    const filtros = filtrosDesdeParams(params({ precioMin: '10', precioMax: '35' }));
+    expect(filtros.precioMin).toBe(10);
+    expect(filtros.precioMax).toBe(35);
+
+    const invalidos = filtrosDesdeParams(params({ precioMin: '-4', precioMax: '90' }));
+    expect(invalidos.precioMin).toBe(0);
+    expect(invalidos.precioMax).toBe(50);
+  });
+
+  it('un rango de precio activo se envía a la API y a la URL', () => {
+    const filtros = { ...FILTROS_SHOP_POR_DEFECTO, precioMin: 5, precioMax: 20 };
+
+    expect(parametrosApi(filtros).get('precioMin')).toBe('5');
+    expect(parametrosApi(filtros).get('precioMax')).toBe('20');
+    expect(queryDesdeFiltros(filtros)).toEqual({ precioMin: 5, precioMax: 20 });
+  });
+
   it('los parámetros de la API incluyen siempre página, límite y orden', () => {
     const api = parametrosApi({ ...FILTROS_SHOP_POR_DEFECTO, page: 2 });
 

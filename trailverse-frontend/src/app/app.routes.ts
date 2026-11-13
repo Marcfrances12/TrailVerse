@@ -37,7 +37,11 @@ export const routes: Routes = [
     component: MainLayout,
     canActivate: [authGuard, adminGuard],
     children: [
-      { path: '', pathMatch: 'full', redirectTo: 'rutas' },
+      {
+        path: '',
+        loadChildren: () =>
+          import('./features/inicio/inicio.routes').then((m) => m.INICIO_ROUTES)
+      },
       {
         path: 'rutas',
         loadChildren: () =>

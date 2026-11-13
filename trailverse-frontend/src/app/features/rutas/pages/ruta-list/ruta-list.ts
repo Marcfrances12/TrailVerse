@@ -2,19 +2,25 @@ import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@ang
 import Swal from 'sweetalert2';
 import { RutasStore } from '../../../../core/stores/rutas.store';
 import { AdminTable } from '../../../../shared/components/admin-table/admin-table';
-import { AdminListShell } from '../../../../shared/components/admin-list-shell/admin-list-shell';
+import { AdminListShell, VistaOpcion } from '../../../../shared/components/admin-list-shell/admin-list-shell';
+import { RutaCard } from '../../components/ruta-card/ruta-card';
 import { Ruta } from '../../../../core/models/ruta.model';
 import { formatFecha } from '../../../../shared/utils/formatos';
 
 @Component({
   selector: 'app-ruta-list',
-  imports: [AdminListShell, AdminTable],
+  imports: [AdminListShell, AdminTable, RutaCard],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './ruta-list.html'
 })
 export class RutaList implements OnInit {
   readonly store = inject(RutasStore);
   readonly modoPapelera = signal(false);
+  readonly vista = signal('tabla');
+  readonly opcionesVista: VistaOpcion[] = [
+    { valor: 'tabla', etiqueta: 'Tabla' },
+    { valor: 'cuadricula', etiqueta: 'Cuadrícula' }
+  ];
   readonly formatFecha = formatFecha;
 
   ngOnInit(): void {

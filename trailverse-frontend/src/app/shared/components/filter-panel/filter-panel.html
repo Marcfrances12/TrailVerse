@@ -72,6 +72,55 @@
         </button>
       }
     </div>
+  } @else if (grupo.tipo === 'rango') {
+    <div class="space-y-3 px-1">
+      <div class="flex items-center justify-between text-sm text-tinta">
+        <span class="font-semibold">{{ valoresRango(grupo)[0] }}{{ grupo.rango.unidad }}</span>
+        <span class="font-semibold">{{ etiquetaMaximo(grupo, valoresRango(grupo)[1]) }}</span>
+      </div>
+      <div class="relative h-6">
+        <div class="absolute inset-x-0 top-1/2 h-1.5 -translate-y-1/2 rounded-full bg-crema-300"></div>
+        <div class="absolute top-1/2 h-1.5 -translate-y-1/2 rounded-full bg-bosque-700"
+             [style.left.%]="porcentajeRango(grupo, valoresRango(grupo)[0])"
+             [style.right.%]="100 - porcentajeRango(grupo, valoresRango(grupo)[1])"></div>
+        <input type="range"
+               class="absolute inset-0 h-full w-full cursor-pointer appearance-none bg-transparent pointer-events-none
+                      [&::-webkit-slider-runnable-track]:bg-transparent [&::-moz-range-track]:bg-transparent
+                      [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5
+                      [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full
+                      [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-bosque-700 [&::-webkit-slider-thumb]:bg-bosque-700
+                      [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:w-5
+                      [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-bosque-700 [&::-moz-range-thumb]:bg-bosque-700"
+               [style.zIndex]="indiceRango(grupo)"
+               [min]="grupo.rango.min" [max]="grupo.rango.max" step="1"
+               [attr.aria-label]="grupo.titulo + ' mínimo'"
+               [value]="valoresRango(grupo)[0]"
+               (input)="arrastrarRango(grupo, 0, $any($event.target).value)"
+               (change)="soltarRango(grupo)" />
+        <input type="range"
+               class="absolute inset-0 h-full w-full cursor-pointer appearance-none bg-transparent pointer-events-none
+                      [&::-webkit-slider-runnable-track]:bg-transparent [&::-moz-range-track]:bg-transparent
+                      [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5
+                      [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full
+                      [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-bosque-700 [&::-webkit-slider-thumb]:bg-bosque-700
+                      [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:w-5
+                      [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-bosque-700 [&::-moz-range-thumb]:bg-bosque-700"
+               [style.zIndex]="1"
+               [min]="grupo.rango.min" [max]="grupo.rango.max" step="1"
+               [attr.aria-label]="grupo.titulo + ' máximo'"
+               [value]="valoresRango(grupo)[1]"
+               (input)="arrastrarRango(grupo, 1, $any($event.target).value)"
+               (change)="soltarRango(grupo)" />
+      </div>
+    </div>
+  } @else if (grupo.tipo === 'orden') {
+    <select class="w-full rounded-lg border border-crema-300 bg-white px-3 py-2 text-sm text-tinta focus:border-bosque-500 focus:outline-none"
+            [attr.aria-label]="grupo.titulo"
+            (change)="seleccionar(grupo, $any($event.target).value, true)">
+      @for (opcion of grupo.opciones; track opcion.valor) {
+        <option [value]="opcion.valor" [selected]="grupo.seleccion.includes(opcion.valor)">{{ opcion.etiqueta }}</option>
+      }
+    </select>
   } @else {
     <ul class="space-y-1">
       @for (opcion of opcionesVisibles(grupo); track opcion.valor) {

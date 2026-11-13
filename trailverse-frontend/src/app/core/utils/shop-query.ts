@@ -8,6 +8,9 @@ export interface ParamsLike {
 
 export const LIMITE_SHOP = 12;
 
+export const PRECIO_MINIMO = 0;
+export const PRECIO_MAXIMO = 50;
+
 export const FILTROS_SHOP_POR_DEFECTO: ShopFiltros = {
   q: '',
   categoryId: [],
@@ -15,6 +18,8 @@ export const FILTROS_SHOP_POR_DEFECTO: ShopFiltros = {
   hostId: '',
   locationId: '',
   dificultad: '',
+  precioMin: PRECIO_MINIMO,
+  precioMax: PRECIO_MAXIMO,
   sort: '-created_at',
   page: 1,
   limit: LIMITE_SHOP
@@ -39,6 +44,13 @@ const paginaDesde = (valor: string | null): number => {
   return Number.isInteger(numero) && numero >= 1 ? numero : 1;
 };
 
+const precioDesde = (valor: string | null, defecto: number): number => {
+  if (valor === null || valor.trim() === '') return defecto;
+
+  const numero = Number(valor);
+  return Number.isInteger(numero) && numero >= PRECIO_MINIMO && numero <= PRECIO_MAXIMO ? numero : defecto;
+};
+
 // Lee la URL y devuelve filtros válidos. Los valores no válidos vuelven a su valor por defecto.
 export function filtrosDesdeParams(params: ParamsLike): ShopFiltros {
   const categoryId = (params.get('categoria') ?? '')
@@ -49,6 +61,8 @@ export function filtrosDesdeParams(params: ParamsLike): ShopFiltros {
 
   const dificultad = params.get('dificultad') as Dificultad | null;
   const sort = params.get('sort') as SortValor | null;
+  const precioMin = precioDesde(params.get('precioMin'), PRECIO_MINIMO);
+  const precioMax = precioDesde(params.get('precioMax'), PRECIO_MAXIMO);
 
   return {
     q: (params.get('q') ?? '').trim().slice(0, 100),
@@ -57,6 +71,8 @@ export function filtrosDesdeParams(params: ParamsLike): ShopFiltros {
     hostId: slugValido(params.get('host')),
     locationId: slugValido(params.get('localizacion')),
     dificultad: dificultad && DIFICULTADES.includes(dificultad) ? dificultad : '',
+    precioMin,
+    precioMax: Math.max(precioMin, precioMax),
     sort: sort && ORDENES.includes(sort) ? sort : FILTROS_SHOP_POR_DEFECTO.sort,
     page: paginaDesde(params.get('page')),
     limit: LIMITE_SHOP
@@ -77,8 +93,17 @@ export function parametrosApi(filtros: ShopFiltros): URLSearchParams {
   if (filtros.hostId) params.set('host', filtros.hostId);
   if (filtros.locationId) params.set('localizacion', filtros.locationId);
   if (filtros.dificultad) params.set('dificultad', filtros.dificultad);
+  if (hayRangoPrecio(filtros)) {
+    params.set('precioMin', String(filtros.precioMin));
+    params.set('precioMax', String(filtros.precioMax));
+  }
 
   return params;
+}
+
+// El rango completo (0 a 50) no filtra. El máximo 50 significa "sin límite superior".
+export function hayRangoPrecio(filtros: Pick<ShopFiltros, 'precioMin' | 'precioMax'>): boolean {
+  return filtros.precioMin > PRECIO_MINIMO || filtros.precioMax < PRECIO_MAXIMO;
 }
 
 // Query de la URL del navegador. Omite los valores por defecto para que la URL quede limpia.
@@ -91,6 +116,10 @@ export function queryDesdeFiltros(filtros: ShopFiltros): Params {
   if (filtros.hostId) params['host'] = filtros.hostId;
   if (filtros.locationId) params['localizacion'] = filtros.locationId;
   if (filtros.dificultad) params['dificultad'] = filtros.dificultad;
+  if (hayRangoPrecio(filtros)) {
+    params['precioMin'] = filtros.precioMin;
+    params['precioMax'] = filtros.precioMax;
+  }
   if (filtros.sort !== FILTROS_SHOP_POR_DEFECTO.sort) params['sort'] = filtros.sort;
   if (filtros.page > 1) params['page'] = filtros.page;
 

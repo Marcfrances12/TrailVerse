@@ -12,6 +12,9 @@
   [emptyMessage]="modoPapelera() ? 'No hay salidas eliminadas.' : 'Aún no hay salidas registradas.'"
   [createRoute]="'/admin/departures/new'"
   [createLabel]="'+ Nueva salida'"
+  [vistas]="opcionesVista"
+  [vista]="vista()"
+  (cambiarVista)="vista.set($event)"
   (toggleTrash)="alternarPapelera()"
   (retry)="modoPapelera() ? reintentarPapelera() : reintentar()">
   <ng-template #trashContent>
@@ -50,6 +53,9 @@
       </div>
   </ng-template>
   <ng-template #activeContent>
+    @if (vista() === 'calendario') {
+      <app-departures-calendar [departures]="store.departures()" />
+    } @else {
       <div class="overflow-x-auto rounded-2xl border border-crema-200 bg-white shadow-sm">
         <table class="w-full min-w-[1000px] text-left text-sm">
           <thead>
@@ -106,5 +112,6 @@
           </tbody>
         </table>
       </div>
+    }
   </ng-template>
 </app-admin-list-shell>
