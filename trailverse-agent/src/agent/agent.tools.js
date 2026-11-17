@@ -1,8 +1,10 @@
 const geo = require("./geo.client");
 const { buscarFaqs } = require("./faq-search");
-const { obtenerRutaPublica, puntoDeInicio } = require("./route-data");
+const { obtenerRutaPublica, puntoDeInicio, buscarRutasPublicas } = require("./route-data");
 
 const CATEGORIAS = ["restaurant", "lodging", "transport", "parking"];
+const DIFICULTADES = ["facil", "media", "dificil"];
+const MAX_BUSQUEDA_TEXTO = 80;
 const RADIO_MIN_M = 100;
 const RADIO_MAX_M = 5000;
 const RADIO_DEFECTO_M = 2000;
@@ -74,6 +76,23 @@ const TOOLS = [
           }
         },
         required: ["category"],
+        additionalProperties: false
+      }
+    }
+  },
+  {
+    type: "function",
+    function: {
+      name: "search_routes",
+      description:
+        "Busca rutas publicadas en TrailVerse por nombre o descripción, dificultad o provincia. Devuelve nombre, slug, dificultad, distancia y ubicación. Úsala cuando el usuario pregunte qué rutas hay, o por rutas en una zona o de un nivel.",
+      parameters: {
+        type: "object",
+        properties: {
+          texto: { type: "string", description: "Palabras clave del nombre o descripción.", maxLength: MAX_BUSQUEDA_TEXTO },
+          dificultad: { type: "string", enum: DIFICULTADES, description: "Nivel de dificultad." },
+          provincia: { type: "string", description: "Provincia donde está la ruta.", maxLength: MAX_BUSQUEDA_TEXTO }
+        },
         additionalProperties: false
       }
     }
@@ -189,6 +208,24 @@ async function searchNearbyPlaces(args, contexto) {
   };
 }
 
+async function searchRoutes(args) {
+  const texto = String(args.texto ?? "").trim().slice(0, MAX_BUSQUEDA_TEXTO);
+  const provincia = String(args.provincia ?? "").trim().slice(0, MAX_BUSQUEDA_TEXTO);
+  const dificultad = DIFICULTADES.includes(args.dificultad) ? args.dificultad : undefined;
+
+  if (!texto && !provincia && !dificultad) {
+    return { error: "Indica al menos un texto, una provincia o una dificultad" };
+  }
+
+  const rutas = await buscarRutasPublicas({ texto, provincia, dificultad });
+
+  return {
+    encontradas: rutas.length > 0,
+    rutas,
+    mensaje: rutas.length === 0 ? "No hay rutas publicadas que coincidan con la búsqueda" : undefined
+  };
+}
+
 async function geocodePlace(args) {
   const consulta = String(args.query ?? "").trim().slice(0, MAX_LUGAR);
   if (!consulta) return { error: "Indica el nombre de un lugar" };
@@ -206,6 +243,7 @@ const EJECUTORES = {
   get_route_info: getRouteInfo,
   search_faqs: searchFaqs,
   search_nearby_places: searchNearbyPlaces,
+  search_routes: searchRoutes,
   geocode_place: geocodePlace
 };
 

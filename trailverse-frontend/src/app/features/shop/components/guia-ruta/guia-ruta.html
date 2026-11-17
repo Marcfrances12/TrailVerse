@@ -1,0 +1,79 @@
+@if (guia(); as datos) {
+  @if (hayContenido()) {
+    <section class="space-y-6" aria-labelledby="titulo-guia">
+      <div class="space-y-1">
+        <h2 id="titulo-guia" class="font-display text-xl font-bold text-bosque-950">Guía de la ruta</h2>
+        <p class="text-sm text-tinta-suave">Consejos y lugares cercanos al punto de inicio.</p>
+      </div>
+
+      <div class="grid gap-6 lg:grid-cols-[1fr_1.4fr] lg:items-start">
+        <div class="space-y-6">
+          @if (datos.consejos.length) {
+            <div class="space-y-3">
+              <h3 class="text-base font-bold text-bosque-950">Consejos</h3>
+              <ul class="space-y-2" role="list">
+                @for (consejo of datos.consejos; track consejo.pregunta) {
+                  <li>
+                    <details class="group rounded-2xl border border-crema-200 bg-white px-4 py-3 shadow-sm">
+                      <summary class="cursor-pointer list-none font-semibold text-tinta marker:hidden">{{ consejo.pregunta }}</summary>
+                      <p class="mt-2 text-sm leading-relaxed text-tinta">{{ consejo.respuesta }}</p>
+                    </details>
+                  </li>
+                }
+              </ul>
+            </div>
+          }
+
+          @if (datos.resumen) {
+            <div class="space-y-2 rounded-2xl bg-bosque-100 p-4">
+              <h3 class="text-base font-bold text-bosque-950">Resumen de alrededores</h3>
+              <p class="whitespace-pre-line text-sm leading-relaxed text-bosque-900">{{ datos.resumen }}</p>
+            </div>
+          }
+        </div>
+
+        @if (gruposConDatos().length) {
+          <div class="min-w-0 space-y-4">
+            @if (datos.inicio && marcadores().length) {
+              <app-mapa-ruta [inicio]="datos.inicio" [marcadores]="marcadores()" />
+            }
+
+            <div class="flex flex-wrap gap-2" role="group" aria-label="Mostrar en el mapa">
+              @for (grupo of gruposConDatos(); track grupo.categoria) {
+                <button type="button" (click)="alternarCategoria(grupo.categoria)"
+                        [attr.aria-pressed]="estaActiva(grupo.categoria)"
+                        class="rounded-full border px-3 py-1 text-xs font-semibold transition-colors"
+                        [class.border-bosque-700]="estaActiva(grupo.categoria)"
+                        [class.bg-bosque-700]="estaActiva(grupo.categoria)"
+                        [class.text-white]="estaActiva(grupo.categoria)"
+                        [class.border-crema-300]="!estaActiva(grupo.categoria)"
+                        [class.bg-white]="!estaActiva(grupo.categoria)"
+                        [class.text-tinta-suave]="!estaActiva(grupo.categoria)">
+                  {{ grupo.etiqueta }} ({{ grupo.resultados.length }})
+                </button>
+              }
+            </div>
+
+            <div class="grid gap-4 sm:grid-cols-2">
+              @for (grupo of gruposVisibles(); track grupo.categoria) {
+                <div class="space-y-2 rounded-2xl border border-crema-200 bg-white p-4 shadow-sm">
+                  <h3 class="text-sm font-bold text-bosque-950">{{ grupo.etiqueta }}</h3>
+                  <ul class="space-y-1 text-sm" role="list">
+                    @for (lugar of grupo.resultados; track $index) {
+                      <li class="flex justify-between gap-3">
+                        <span class="min-w-0 truncate text-tinta">{{ lugar.nombre ?? 'Sin nombre en OpenStreetMap' }}</span>
+                        <span class="shrink-0 text-tinta-suave">{{ distancia(lugar.distanciaM) }}</span>
+                      </li>
+                    }
+                  </ul>
+                </div>
+              }
+            </div>
+
+            <p class="text-xs text-tinta-suave">Lugares: {{ datos.fuentes.lugares }}. {{ datos.aviso }}</p>
+          </div>
+        }
+      </div>
+    </section>
+  }
+}

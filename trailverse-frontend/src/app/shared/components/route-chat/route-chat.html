@@ -5,7 +5,7 @@
       <header class="flex items-center justify-between gap-3 bg-bosque-800 px-4 py-3 text-white">
         <div>
           <p class="font-display text-sm font-bold">Asistente TrailVerse</p>
-          <p class="text-xs text-bosque-100">Rutas, alrededores y preguntas frecuentes</p>
+          <p class="text-xs text-bosque-100">Rutas, alrededores y ayuda con la web</p>
         </div>
         <button type="button" (click)="alternar()" aria-label="Cerrar asistente"
                 class="rounded-full px-2 py-1 text-lg leading-none hover:bg-bosque-700">×</button>
@@ -15,7 +15,7 @@
         @if (mensajes().length === 0) {
           <p class="text-sm text-tinta-suave">Hola, ¿en qué puedo ayudarte? Elige una sugerencia o escribe tu pregunta.</p>
           <div class="flex flex-wrap gap-2">
-            @for (sugerencia of sugerencias; track sugerencia.etiqueta) {
+            @for (sugerencia of sugerencias(); track sugerencia.etiqueta) {
               <button type="button" (click)="usarSugerencia(sugerencia)" [disabled]="escribiendo()"
                       class="rounded-full border border-bosque-300 bg-white px-3 py-1 text-xs font-semibold text-bosque-800 transition-colors hover:bg-bosque-100 disabled:opacity-50">
                 {{ sugerencia.etiqueta }}

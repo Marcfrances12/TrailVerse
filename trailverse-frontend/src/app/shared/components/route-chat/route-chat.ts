@@ -5,11 +5,11 @@ import {
   ElementRef,
   computed,
   inject,
-  input,
   signal,
   viewChild
 } from '@angular/core';
 import { AgentChatService, MensajeHistorial } from '../../../core/services/agent-chat.service';
+import { ChatContextService } from '../../../core/services/chat-context.service';
 import { renderMarkdownSeguro } from '../../utils/markdown-seguro';
 
 interface MensajeChat {
@@ -28,11 +28,18 @@ const ETIQUETAS_HERRAMIENTA: Record<string, string> = {
   geocode_place: 'Localizando el lugar'
 };
 
-const SUGERENCIAS = [
+const SUGERENCIAS_RUTA = [
   { etiqueta: '¿Cómo llego en transporte público?', mensaje: '¿Cómo llego en transporte público al punto de inicio?' },
   { etiqueta: '¿Dónde comer cerca?', mensaje: '¿Dónde puedo comer cerca del punto de inicio?' },
   { etiqueta: '¿Dónde dormir cerca?', mensaje: '¿Dónde puedo dormir cerca de la ruta?' },
   { etiqueta: 'Preguntas frecuentes', mensaje: 'Quiero ver las preguntas frecuentes de esta ruta' }
+];
+
+const SUGERENCIAS_GENERALES = [
+  { etiqueta: '¿Qué rutas hay?', mensaje: '¿Qué rutas hay publicadas en TrailVerse?' },
+  { etiqueta: 'Rutas fáciles', mensaje: 'Busco rutas de dificultad fácil' },
+  { etiqueta: 'Rutas en Asturias', mensaje: '¿Qué rutas hay en Asturias?' },
+  { etiqueta: '¿Qué es TrailVerse?', mensaje: '¿Qué puedo hacer en TrailVerse?' }
 ];
 
 @Component({
@@ -41,9 +48,11 @@ const SUGERENCIAS = [
   templateUrl: './route-chat.html'
 })
 export class RouteChat {
-  readonly routeId = input<string | null>(null);
+  private readonly contexto = inject(ChatContextService);
 
-  readonly sugerencias = SUGERENCIAS;
+  readonly sugerencias = computed(() =>
+    this.contexto.rutaId() ? SUGERENCIAS_RUTA : SUGERENCIAS_GENERALES
+  );
 
   readonly abierto = signal(false);
   readonly mensajes = signal<MensajeChat[]>([]);
@@ -111,7 +120,7 @@ export class RouteChat {
 
     try {
       await this.servicio.enviar(
-        { message: mensaje, history: historial, routeId: this.routeId() },
+        { message: mensaje, history: historial, ...(this.contexto.rutaId() ? { routeId: this.contexto.rutaId() } : {}) },
         {
           onToken: (texto) => this.anexar(idAsistente, texto),
           onTool: (nombre, estado) =>

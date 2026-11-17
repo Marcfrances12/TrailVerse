@@ -1,9 +1,10 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, computed, effect, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { map } from 'rxjs';
 import { ETIQUETAS_DIFICULTAD } from '../../../../core/models/ruta.model';
 import { ShopStore } from '../../../../core/stores/shop.store';
+import { ChatContextService } from '../../../../core/services/chat-context.service';
 import { Carousel } from '../../../../shared/components/carousel/carousel';
 import { ShopCategoryCard } from '../../../../shared/components/cards/shop-category-card';
 import { ShopHostCard } from '../../../../shared/components/cards/shop-host-card';
@@ -19,7 +20,7 @@ import {
 } from '../../../../shared/utils/formatos';
 import { Galeria } from '../../../../shared/components/galeria/galeria';
 import { ShopRutaCard } from '../../components/shop-ruta-card/shop-ruta-card';
-import { RouteChat } from '../../../../shared/components/route-chat/route-chat';
+import { GuiaRutaComponent } from '../../components/guia-ruta/guia-ruta';
 
 @Component({
   selector: 'app-shop-detail',
@@ -33,7 +34,7 @@ import { RouteChat } from '../../../../shared/components/route-chat/route-chat';
     Galeria,
     EmptyState,
     ErrorState,
-    RouteChat
+    GuiaRutaComponent
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './shop-detail.html'
@@ -61,7 +62,13 @@ export class ShopDetail {
       .pipe(map((params) => params.get('slug') ?? ''), takeUntilDestroyed())
       .subscribe((slug) => this.store.cargarDetalle(slug));
 
-    inject(DestroyRef).onDestroy(() => this.store.cancelar());
+    const contexto = inject(ChatContextService);
+    effect(() => contexto.establecerRuta(this.store.detalle()?._id ?? null));
+
+    inject(DestroyRef).onDestroy(() => {
+      this.store.cancelar();
+      contexto.establecerRuta(null);
+    });
   }
 
   seleccionar(salidaId: string): void {

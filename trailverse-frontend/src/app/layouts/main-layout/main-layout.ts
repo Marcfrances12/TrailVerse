@@ -4,6 +4,7 @@ import { NavigationEnd, Router, RouterOutlet, RouterStateSnapshot, ActivatedRout
 import { filter, map, startWith } from 'rxjs';
 import { Navbar } from '../navbar/navbar';
 import { Sidebar } from '../sidebar/sidebar';
+import { RouteChat } from '../../shared/components/route-chat/route-chat';
 
 function rutaHoja(estado: RouterStateSnapshot): ActivatedRouteSnapshot {
   let ruta = estado.root;
@@ -13,7 +14,7 @@ function rutaHoja(estado: RouterStateSnapshot): ActivatedRouteSnapshot {
 
 @Component({
   selector: 'app-main-layout',
-  imports: [RouterOutlet, Navbar, Sidebar],
+  imports: [RouterOutlet, Navbar, Sidebar, RouteChat],
   templateUrl: './main-layout.html'
 })
 export class MainLayout {

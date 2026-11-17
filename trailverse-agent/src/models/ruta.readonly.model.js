@@ -30,7 +30,9 @@ const rutaSchema = new mongoose.Schema(
     status: String,
     isActive: Boolean,
     deleted_at: Date,
-    faqs: { type: [faqSchema], default: [] }
+    faqs: { type: [faqSchema], default: [] },
+    // Guía generada por el script de IA (npm run guia:generar). Solo lectura aquí.
+    guiaIA: mongoose.Schema.Types.Mixed
   },
   { collection: "rutas", versionKey: false }
 );

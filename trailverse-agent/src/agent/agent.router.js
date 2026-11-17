@@ -18,6 +18,18 @@ const chatLimiter = rateLimit({
   }
 });
 
+const guiaLimiter = rateLimit({
+  windowMs: env.GUIA_RATE_LIMIT_WINDOW_MS,
+  limit: env.GUIA_RATE_LIMIT_MAX,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    ok: false,
+    error: "Has consultado demasiadas guías. Espera unos minutos antes de volver a intentarlo."
+  }
+});
+
 router.post("/chat", chatLimiter, validate({ body: chatBodySchema }), controller.chat);
+router.get("/rutas/:id/guia", guiaLimiter, controller.guia);
 
 module.exports = router;

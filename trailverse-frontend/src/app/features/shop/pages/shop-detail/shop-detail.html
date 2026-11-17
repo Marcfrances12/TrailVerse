@@ -53,6 +53,8 @@
       </aside>
     </div>
 
+    <app-guia-ruta [rutaId]="ruta._id" />
+
     <app-carousel titulo="Relacionado">
       @if (ruta.locationId; as localizacion) {
         <app-shop-location-card [opcion]="{ _id: localizacion._id, nombre: localizacion.nombre, slug: localizacion.slug, imagen: localizacion.imagen }" />
@@ -122,8 +124,6 @@
         </div>
       }
     </section>
-
-    <app-route-chat [routeId]="ruta._id" />
   </article>
 } @else {
   <p role="status" class="py-10 text-sm text-tinta-suave">Cargando ruta…</p>

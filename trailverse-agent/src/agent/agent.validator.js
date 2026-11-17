@@ -26,7 +26,7 @@ const chatBodySchema = z.strictObject({
   routeId: z
     .string({ error: "routeId debe ser texto" })
     .regex(/^[0-9a-fA-F]{24}$/, { error: "routeId no es un ID válido" })
-    .optional()
+    .nullish()
 });
 
 module.exports = { chatBodySchema };

@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "nodemon src/server.js",
     "start": "node src/server.js",
+    "faqs:generar": "node scripts/generar-contenido.js --tipo=faqs",
+    "guia:generar": "node scripts/generar-contenido.js --tipo=guia",
     "test": "node --test"
   },
   "dependencies": {

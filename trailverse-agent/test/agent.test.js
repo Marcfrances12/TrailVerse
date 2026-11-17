@@ -79,6 +79,10 @@ test("chatBodySchema rechaza roles distintos de user y assistant", () => {
   assert.equal(resultado.success, false);
 });
 
+test("chatBodySchema acepta routeId nulo cuando el chat no está en una ruta", () => {
+  assert.equal(chatBodySchema.safeParse({ message: "hola", routeId: null }).success, true);
+});
+
 test("chatBodySchema rechaza un routeId que no es ObjectId", () => {
   assert.equal(chatBodySchema.safeParse({ message: "hola", routeId: "no-es-id" }).success, false);
 });
@@ -115,7 +119,7 @@ test("responderChat emite tokens y done cuando el modelo no pide tools", async (
   ]]);
   const { eventos, emit } = crearEmisor();
 
-  await responderChat({ message: "hola", history: [], emit, llm });
+  await responderChat({ message: "hola", history: [], emit, llm, respaldo: null });
 
   const tokens = eventos.filter((e) => e.evento === "token").map((e) => e.datos.texto).join("");
   assert.equal(tokens, "Hola, ¿en qué te ayudo?");
@@ -134,7 +138,7 @@ test("responderChat limita el bucle de tools y la última ronda llega sin tools"
   const llm = crearLlmFalso([pedirTool]);
   const { eventos, emit } = crearEmisor();
 
-  await responderChat({ message: "¿hay agua?", history: [], emit, llm });
+  await responderChat({ message: "¿hay agua?", history: [], emit, llm, respaldo: null });
 
   assert.equal(llm.llamadas.length, MAX_TOOL_ROUNDS + 1);
   assert.equal(llm.llamadas.at(-1).tools, undefined);
@@ -156,7 +160,7 @@ test("responderChat emite error amigable si el proveedor responde 429", async ()
   };
   const { eventos, emit } = crearEmisor();
 
-  await responderChat({ message: "hola", history: [], emit, llm });
+  await responderChat({ message: "hola", history: [], emit, llm, respaldo: null });
 
   const error = eventos.find((e) => e.evento === "error");
   assert.ok(error);

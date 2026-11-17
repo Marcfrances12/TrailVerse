@@ -13,6 +13,7 @@ const MENSAJES_ERROR = {
 };
 
 let clienteLlm = null;
+let clienteRespaldo = null;
 
 function obtenerClienteLlm() {
   if (!clienteLlm) {
@@ -26,6 +27,21 @@ function obtenerClienteLlm() {
   return clienteLlm;
 }
 
+// Proveedor de respaldo (OpenRouter, modelos :free). Solo se usa si el principal falla.
+function obtenerRespaldo() {
+  if (!env.LLM_RESPALDO_API_KEY || !env.LLM_RESPALDO_MODEL) return null;
+
+  if (!clienteRespaldo) {
+    clienteRespaldo = new OpenAI({
+      baseURL: env.LLM_RESPALDO_BASE_URL,
+      apiKey: env.LLM_RESPALDO_API_KEY,
+      timeout: env.AGENT_TIMEOUT_MS,
+      maxRetries: 0
+    });
+  }
+  return { llm: clienteRespaldo, model: env.LLM_RESPALDO_MODEL };
+}
+
 function esReintentable(error) {
   return error instanceof APIConnectionTimeoutError || error.status === 429 || error.status >= 500;
 }
@@ -36,14 +52,11 @@ function clasificarError(error) {
   return MENSAJES_ERROR.generico;
 }
 
-// Intenta el modelo principal y, si está saturado o falla antes de empezar a emitir, el de respaldo.
-async function abrirStream(llm, parametros, signal) {
-  const modelos = [env.LLM_MODEL, env.LLM_FALLBACK_MODEL].filter(
-    (modelo, indice, lista) => modelo && lista.indexOf(modelo) === indice
-  );
-
+// Prueba el modelo principal, luego el de respaldo del mismo proveedor y por último el proveedor de respaldo.
+// Solo cambia de intento si el fallo ocurre antes de empezar a emitir texto.
+async function abrirStream(candidatos, parametros, signal) {
   let ultimoError;
-  for (const model of modelos) {
+  for (const { llm, model } of candidatos) {
     try {
       return await llm.chat.completions.create({ ...parametros, model, stream: true }, { signal });
     } catch (error) {
@@ -53,6 +66,16 @@ async function abrirStream(llm, parametros, signal) {
   }
 
   throw ultimoError;
+}
+
+function candidatosDeModelo(llm, respaldo) {
+  const candidatos = [env.LLM_MODEL, env.LLM_FALLBACK_MODEL]
+    .filter((modelo, indice, lista) => modelo && lista.indexOf(modelo) === indice)
+    .map((model) => ({ llm, model }));
+
+  if (respaldo) candidatos.push(respaldo);
+
+  return candidatos;
 }
 
 async function leerRonda(stream, emit) {
@@ -84,7 +107,16 @@ async function leerRonda(stream, emit) {
 
 // Bucle de tool calling: el modelo pide tools, el backend las ejecuta y el modelo responde.
 // Máximo MAX_TOOL_ROUNDS rondas con tools; después una ronda final sin tools.
-async function responderChat({ message, history = [], routeId, emit, signal, llm = obtenerClienteLlm() }) {
+async function responderChat({
+  message,
+  history = [],
+  routeId,
+  emit,
+  signal,
+  llm = obtenerClienteLlm(),
+  respaldo = obtenerRespaldo()
+}) {
+  const candidatos = candidatosDeModelo(llm, respaldo);
   const inicio = Date.now();
   const contexto = { routeId };
   const herramientasUsadas = [];
@@ -103,7 +135,7 @@ async function responderChat({ message, history = [], routeId, emit, signal, llm
         ...(conTools && { tools: TOOLS, tool_choice: "auto" })
       };
 
-      const stream = await abrirStream(llm, parametros, signal);
+      const stream = await abrirStream(candidatos, parametros, signal);
       const { texto, llamadas } = await leerRonda(stream, emit);
 
       if (!conTools || llamadas.length === 0) {
@@ -155,4 +187,4 @@ function registrar({ inicio, rondas, herramientasUsadas, routeId, message, estad
   }));
 }
 
-module.exports = { responderChat, MAX_TOOL_ROUNDS };
+module.exports = { responderChat, obtenerClienteLlm, MAX_TOOL_ROUNDS, candidatosDeModelo };
