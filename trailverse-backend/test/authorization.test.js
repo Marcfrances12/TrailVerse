@@ -3,6 +3,7 @@ const crypto = require("node:crypto");
 const test = require("node:test");
 const mongoose = require("mongoose");
 process.env.JWT_SECRET ||= crypto.randomBytes(32).toString("hex");
+process.env.JWT_REFRESH_SECRET ||= crypto.randomBytes(32).toString("hex");
 const { authenticate } = require("../src/middlewares/auth.middleware");
 const { requireAdmin } = require("../src/middlewares/admin.middleware");
 const usersRouter = require("../src/routes/users.routes");

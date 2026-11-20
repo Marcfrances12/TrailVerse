@@ -52,7 +52,7 @@ const errorHandler = (error, req, res, next) => {
   }
 
   if (statusCode === 401 || statusCode === 403) {
-    return res.status(statusCode).json({ message });
+    return res.status(statusCode).json({ message, ...(error.codigo && { codigo: error.codigo }) });
   }
 
   res.status(statusCode).json({

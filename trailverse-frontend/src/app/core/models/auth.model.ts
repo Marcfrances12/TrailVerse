@@ -13,7 +13,13 @@ export interface LoginRequest {
   password: string;
 }
 
-/** El token viaja en una cookie HttpOnly; el cuerpo solo trae el usuario. */
+export interface RegisterRequest {
+  name: string;
+  email: string;
+  password: string;
+}
+
+/** Los tokens viajan en cookies HttpOnly (access_token y refresh_token); el cuerpo solo trae el usuario. */
 export interface LoginResponse {
   user: AuthUser;
 }

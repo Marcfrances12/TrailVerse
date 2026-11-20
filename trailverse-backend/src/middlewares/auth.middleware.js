@@ -1,29 +1,35 @@
+const jsonwebtoken = require("jsonwebtoken");
 const { verifyAccessToken } = require("../utils/jwt");
-const { AUTH_COOKIE } = require("../utils/auth-cookie");
+const { ACCESS_COOKIE } = require("../utils/auth-cookie");
 const usersRepo = require("../repos/users.repo");
 const revokedTokensRepo = require("../repos/revoked-tokens.repo");
 const AppError = require("../utils/AppError");
 const Role = require("../models/role.model");
 
-const unauthorized = () => AppError.unauthorized("Authentication required");
+const unauthorized = (codigo) => {
+  const error = AppError.unauthorized("Authentication required");
+  if (codigo) error.codigo = codigo;
+  return error;
+};
 
-// Prioriza la cabecera Bearer (API y pruebas) y usa la cookie de sesión como alternativa.
+// Prioriza la cabecera Bearer (API y pruebas) y usa la cookie de acceso como alternativa.
 function tokenDeRequest(req) {
   const authorization = req.get("authorization") || "";
   const match = authorization.match(/^Bearer\s+([^\s]+)$/i);
   if (match) return match[1];
-  return req.cookies?.[AUTH_COOKIE] ?? null;
+  return req.cookies?.[ACCESS_COOKIE] ?? null;
 }
 
 async function authenticate(req, res, next) {
   const token = tokenDeRequest(req);
-  if (!token) return next(unauthorized());
+  if (!token) return next(unauthorized("SESSION_REQUIRED"));
 
   let payload;
   try {
     payload = verifyAccessToken(token);
-  } catch {
-    return next(unauthorized());
+  } catch (error) {
+    const caducado = error instanceof jsonwebtoken.TokenExpiredError;
+    return next(unauthorized(caducado ? "ACCESS_EXPIRED" : undefined));
   }
 
   if (

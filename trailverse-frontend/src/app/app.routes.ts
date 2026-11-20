@@ -11,6 +11,11 @@ export const routes: Routes = [
       import('./features/auth/auth.routes').then((m) => m.AUTH_ROUTES)
   },
   {
+    path: 'register',
+    loadChildren: () =>
+      import('./features/auth/auth.routes').then((m) => m.REGISTER_ROUTES)
+  },
+  {
     path: '',
     component: PublicLayout,
     children: [

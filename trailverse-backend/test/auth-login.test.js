@@ -2,6 +2,7 @@ const assert = require("node:assert/strict");
 const test = require("node:test");
 const usersRepo = require("../src/repos/users.repo");
 const profilesRepo = require("../src/repos/profiles.repo");
+const refreshSessionsRepo = require("../src/repos/refresh-sessions.repo");
 const authService = require("../src/services/auth.service");
 const password = require("../src/utils/password");
 const User = require("../src/models/user.model");
@@ -35,21 +36,25 @@ test("login por nombre de usuario devuelve el rol y el nombre del perfil", async
   const originals = {
     porEmail: usersRepo.getByEmailForAuthentication,
     porUsuario: usersRepo.getByUsernameForAuthentication,
-    perfil: profilesRepo.getByUserId
+    perfil: profilesRepo.getByUserId,
+    crearSesion: refreshSessionsRepo.create
   };
   usersRepo.getByEmailForAuthentication = async () => null;
   usersRepo.getByUsernameForAuthentication = async (username) => (username === "marc" ? usuario : null);
   profilesRepo.getByUserId = async () => ({ name: "Marc" });
+  refreshSessionsRepo.create = async () => null;
 
   try {
     const resultado = await authService.login({ identificador: "MARC", password: "marc" });
     assert.equal(resultado.user.role, "ADMIN");
     assert.equal(resultado.user.name, "Marc");
-    assert.equal(typeof resultado.token, "string");
+    assert.equal(typeof resultado.accessToken, "string");
+    assert.equal(typeof resultado.refreshToken, "string");
   } finally {
     usersRepo.getByEmailForAuthentication = originals.porEmail;
     usersRepo.getByUsernameForAuthentication = originals.porUsuario;
     profilesRepo.getByUserId = originals.perfil;
+    refreshSessionsRepo.create = originals.crearSesion;
   }
 });
 

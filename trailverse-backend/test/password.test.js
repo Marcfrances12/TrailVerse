@@ -2,6 +2,7 @@ const assert = require("node:assert/strict");
 const crypto = require("node:crypto");
 const test = require("node:test");
 process.env.JWT_SECRET ||= crypto.randomBytes(32).toString("hex");
+process.env.JWT_REFRESH_SECRET ||= crypto.randomBytes(32).toString("hex");
 const password = require("../src/utils/password");
 const Role = require("../src/models/role.model");
 const Profile = require("../src/models/profile.model");
@@ -70,6 +71,6 @@ test("el perfil requiere usuario y nombre; el nombre no pertenece a User", () =>
   assert.equal(User.schema.path("name"), undefined);
 });
 
-test("AuthService expone login y logout", () => {
-  assert.deepEqual(Object.keys(authService), ["login", "logout"]);
+test("AuthService expone login, register, refresh y logout", () => {
+  assert.deepEqual(Object.keys(authService), ["login", "register", "refresh", "logout"]);
 });

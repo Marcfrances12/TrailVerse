@@ -1,9 +1,6 @@
 import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
-import { inject } from '@angular/core';
-import { Router } from '@angular/router';
 import { catchError, throwError } from 'rxjs';
 import Swal from 'sweetalert2';
-import { AuthStore } from '../stores/auth.store';
 
 interface Aviso {
   titulo: string;
@@ -19,10 +16,6 @@ function traducir(error: unknown): Aviso {
         titulo: 'No se pudo conectar con el servidor. Comprueba que la API esté activa.',
         icono: 'error'
       };
-    }
-
-    if (error.status === 401) {
-      return { titulo: 'Tu sesión ha caducado. Inicia sesión de nuevo.', icono: 'warning' };
     }
 
     if (error.status === 403) {
@@ -59,20 +52,16 @@ function traducir(error: unknown): Aviso {
 
 /**
  * Captura errores de red, timeout y respuestas de error del backend.
- * Un 401 limpia la sesión y redirige a login. Las peticiones de login y
- * logout gestionan su propio error, así que no muestran aviso global.
+ * Los 401 los gestiona refreshInterceptor (renovar sesión o expulsar al login),
+ * así que aquí no muestran aviso. Las peticiones de autenticación gestionan su propio error.
  */
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
-  const router = inject(Router);
-  const store = inject(AuthStore);
-  const esAuth = ['/auth/login', '/auth/logout', '/auth/me'].some((ruta) => req.url.endsWith(ruta));
-  const esComprobacionSesion = req.url.endsWith('/auth/me');
+  const esAuth = ['/auth/login', '/auth/register', '/auth/logout', '/auth/me'].some((ruta) => req.url.endsWith(ruta));
 
   return next(req).pipe(
     catchError((error: unknown) => {
-      if (error instanceof HttpErrorResponse && error.status === 401 && !esComprobacionSesion && !req.url.endsWith('/auth/login')) {
-        store.limpiar();
-        router.navigate(['/login'], { queryParams: { returnUrl: router.url } });
+      if (error instanceof HttpErrorResponse && error.status === 401) {
+        return throwError(() => error);
       }
 
       if (esAuth) {

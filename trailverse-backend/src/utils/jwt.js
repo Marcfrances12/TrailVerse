@@ -9,9 +9,22 @@ if (typeof secret !== "string" || Buffer.byteLength(secret) < 32) {
   throw new Error("JWT_SECRET debe estar configurado y tener al menos 32 bytes");
 }
 
+const refreshSecret = process.env.JWT_REFRESH_SECRET;
+if (typeof refreshSecret !== "string" || Buffer.byteLength(refreshSecret) < 32) {
+  throw new Error("JWT_REFRESH_SECRET debe estar configurado y tener al menos 32 bytes");
+}
+if (refreshSecret === secret) {
+  throw new Error("JWT_REFRESH_SECRET debe ser distinto de JWT_SECRET");
+}
+
 const expiresIn = process.env.JWT_EXPIRES_IN || "1h";
-if (!/^[1-9]\d*(s|m|h|d|w|y)$/.test(expiresIn)) {
+const refreshExpiresIn = process.env.JWT_REFRESH_EXPIRES_IN || "7d";
+const formatoDuracion = /^[1-9]\d*(s|m|h|d|w|y)$/;
+if (!formatoDuracion.test(expiresIn)) {
   throw new Error("JWT_EXPIRES_IN debe usar un formato como 15m, 1h o 7d");
+}
+if (!formatoDuracion.test(refreshExpiresIn)) {
+  throw new Error("JWT_REFRESH_EXPIRES_IN debe usar un formato como 15m, 1h o 7d");
 }
 
 const issuer = process.env.JWT_ISSUER || "trailverse-api";
@@ -24,7 +37,7 @@ function signAccessToken({ id, role }) {
   }
 
   return jsonwebtoken.sign(
-    { role },
+    { role, typ: "access" },
     secret,
     {
       algorithm: "HS256",
@@ -37,12 +50,47 @@ function signAccessToken({ id, role }) {
   );
 }
 
+function signRefreshToken({ id, jti }) {
+  if (!id || !jti) {
+    throw new TypeError("El refresh token requiere un usuario y un identificador");
+  }
+
+  return jsonwebtoken.sign(
+    { typ: "refresh" },
+    refreshSecret,
+    {
+      algorithm: "HS256",
+      subject: String(id),
+      jwtid: jti,
+      expiresIn: refreshExpiresIn,
+      issuer,
+      audience
+    }
+  );
+}
+
 function verifyAccessToken(token) {
-  return jsonwebtoken.verify(token, secret, {
+  const payload = jsonwebtoken.verify(token, secret, {
     algorithms: ["HS256"],
     issuer,
     audience
   });
+  if (payload.typ !== "access") throw new jsonwebtoken.JsonWebTokenError("Tipo de token no válido");
+  return payload;
 }
 
-module.exports = { signAccessToken, verifyAccessToken };
+function verifyRefreshToken(token) {
+  const payload = jsonwebtoken.verify(token, refreshSecret, {
+    algorithms: ["HS256"],
+    issuer,
+    audience
+  });
+  if (payload.typ !== "refresh") throw new jsonwebtoken.JsonWebTokenError("Tipo de token no válido");
+  return payload;
+}
+
+function expirationDate(token) {
+  return new Date(jsonwebtoken.decode(token).exp * 1000);
+}
+
+module.exports = { signAccessToken, signRefreshToken, verifyAccessToken, verifyRefreshToken, expirationDate };

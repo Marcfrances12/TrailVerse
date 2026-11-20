@@ -20,12 +20,14 @@ MONGODB_URI=mongodb://127.0.0.1:27017/rutas_senderismo
 NODE_ENV=development
 JWT_SECRET=REPLACE_ME_WITH_A_RANDOM_SECRET
 JWT_EXPIRES_IN=1h
+JWT_REFRESH_SECRET=REPLACE_ME_WITH_A_DIFFERENT_RANDOM_SECRET
+JWT_REFRESH_EXPIRES_IN=7d
 JWT_ISSUER=trailverse-api
 JWT_AUDIENCE=trailverse-client
 SEED_PASSWORD=una-clave-local-de-al-menos-12-caracteres
 ```
 
-Genera `JWT_SECRET` con al menos 32 bytes aleatorios y guárdalo solo en `.env`; `.env` está excluido por `.gitignore`. El archivo `.env.example` contiene únicamente placeholders y no sirve como secreto de ejecución.
+Genera `JWT_SECRET` y `JWT_REFRESH_SECRET` con al menos 32 bytes aleatorios cada uno, distintos entre sí, y guárdalos solo en `.env`; `.env` está excluido por `.gitignore`. El archivo `.env.example` contiene únicamente placeholders y no sirve como secreto de ejecución.
 
 ```bash
 npm run dev
@@ -37,15 +39,24 @@ La API usa `http://localhost:3000` como origen y `/api` como prefijo de recursos
 
 | Método | Ruta | Descripción |
 |---|---|---|
-| `POST` | `/api/auth/login` | Comprueba email y contraseña y devuelve un JWT |
-| `POST` | `/api/auth/logout` | Revoca el JWT actual; requiere `Authorization: Bearer <token>` |
-| `GET` | `/api/auth/me` | Devuelve la identidad actual; requiere `Authorization: Bearer <token>` |
+| `POST` | `/api/auth/register` | Crea una cuenta de cliente (rol `USER`) con `name`, `email` y `password`; no inicia sesión. Límite: 5 registros por hora y conexión |
+| `POST` | `/api/auth/login` | Comprueba email o usuario y contraseña; emite `access_token` y `refresh_token` en cookies. Límite: `LOGIN_MAX_INTENTOS` intentos fallidos cada 15 minutos por IP e identificador (por defecto 10 en producción y 50 en desarrollo) |
+| `POST` | `/api/auth/refresh` | Rota el `refresh_token` de la cookie y emite un par nuevo. Sin sesión válida responde 401 con `codigo` `SESSION_REQUIRED` o `SESSION_EXPIRED` |
+| `POST` | `/api/auth/logout` | Revoca el access y el refresh actuales y borra ambas cookies; requiere autenticación |
+| `GET` | `/api/auth/me` | Devuelve la identidad actual; requiere autenticación |
 | `GET` | `/api/profiles/me` | Devuelve el perfil del usuario autenticado |
 | `PATCH` | `/api/profiles/me` | Actualiza el perfil propio |
 | `GET` | `/api/profiles` | Lista perfiles; solo `ADMIN` |
 | `GET` / `PATCH` | `/api/profiles/:userId` | Consulta o modifica un perfil; solo `ADMIN` |
 
-El JWT está firmado con HS256, incluye `sub`, `jti` y el claim `role` (`USER` o `ADMIN`), y expira según `JWT_EXPIRES_IN`. Logout guarda solo el `jti` en la colección `revokedtokens`, nunca el token completo; un índice TTL elimina las revocaciones al expirar el JWT. El middleware vuelve a consultar usuario, rol y revocación; si la cuenta se desactiva, el rol cambia o se cierra la sesión, el token deja de servir.
+La sesión usa dos tokens HS256 en cookies HttpOnly:
+
+- **`access_token`** (1h, `JWT_EXPIRES_IN`), path `/`. Incluye `sub`, `jti`, `role` y `typ: "access"`, y firma con `JWT_SECRET`. También acepta `Authorization: Bearer <token>`. Logout guarda solo su `jti` en `revokedtokens`.
+- **`refresh_token`** (7 días, `JWT_REFRESH_EXPIRES_IN`), path `/api/auth`, para que solo viaje a las rutas de auth. Incluye `sub`, `jti` y `typ: "refresh"`, y firma con `JWT_REFRESH_SECRET`. Cada refresh queda guardado en la colección `refreshsessions` (solo `jti`, usuario, caducidad y `revokedAt`); al usarse se revoca y se emite uno nuevo, así que cada refresh solo sirve una vez.
+
+Un índice TTL elimina las revocaciones y sesiones al caducar. El middleware vuelve a consultar usuario, rol y revocación; si la cuenta se desactiva o cambia el rol, el token deja de servir.
+
+Cuando el access caduca, el cliente llama a `/api/auth/refresh`. Si el refresh también ha caducado o ha sido revocado, la API responde 401 con `codigo` `SESSION_EXPIRED` y borra las cookies; el cliente debe iniciar sesión de nuevo.
 
 | Comando | Descripción |
 |---|---|
@@ -209,7 +220,7 @@ Carga roles `ADMIN` y `USER`, siete usuarios demo, dieciséis localizaciones, se
 
 ## Seguridad y alcance
 
-El backend configura Helmet, CORS, validación de entradas y manejo centralizado de errores. `auth.service.js` gestiona el login, verifica hashes scrypt heredados y los actualiza tras un login válido. Las cuentas se crean mediante `POST /api/users`, exclusivo de ADMIN, o mediante el seed de desarrollo; no hay registro público. Las credenciales nuevas se hashean con Argon2id. La API aplica RBAC para ADMIN y ABAC para propiedad de perfiles. Las lecturas del catálogo son públicas; escritura de catálogo y administración de usuarios son exclusivas de ADMIN. No hay aún modelo ni endpoints de reservas o Experience; no se aplican permisos sobre recursos inexistentes.
+El backend configura Helmet, CORS, validación de entradas y manejo centralizado de errores. `auth.service.js` gestiona el login, verifica hashes scrypt heredados y los actualiza tras un login válido. Las cuentas se crean mediante `POST /api/users`, exclusivo de ADMIN, mediante el seed de desarrollo, o por registro público de clientes en `POST /api/auth/register` (siempre con rol `USER`). Las credenciales nuevas se hashean con Argon2id. La API aplica RBAC para ADMIN y ABAC para propiedad de perfiles. Las lecturas del catálogo son públicas; escritura de catálogo y administración de usuarios son exclusivas de ADMIN. No hay aún modelo ni endpoints de reservas o Experience; no se aplican permisos sobre recursos inexistentes.
 
 ## Documentación relacionada
 

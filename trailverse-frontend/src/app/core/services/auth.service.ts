@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiService } from './api.service';
 import { RecursoRespuesta } from '../models/api-response';
-import { AuthUser, LoginRequest, LoginResponse } from '../models/auth.model';
+import { AuthUser, LoginRequest, LoginResponse, RegisterRequest } from '../models/auth.model';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -10,6 +10,10 @@ export class AuthService {
 
   login(datos: LoginRequest): Observable<RecursoRespuesta<LoginResponse>> {
     return this.api.post<RecursoRespuesta<LoginResponse>, LoginRequest>('/auth/login', datos);
+  }
+
+  register(datos: RegisterRequest): Observable<RecursoRespuesta<AuthUser>> {
+    return this.api.post<RecursoRespuesta<AuthUser>, RegisterRequest>('/auth/register', datos);
   }
 
   logout(): Observable<{ ok: boolean; message: string }> {
