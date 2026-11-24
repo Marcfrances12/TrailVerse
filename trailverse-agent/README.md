@@ -28,6 +28,7 @@ El `.npmrc` activa `legacy-peer-deps` porque `openai` declara un peer opcional `
 | GET | `/api/health` | Estado del servicio |
 | POST | `/api/agent/chat` | Chat con streaming SSE |
 | GET | `/api/agent/rutas/:id/guia` | Consejos, lugares cercanos y resumen de una ruta |
+| GET | `/api/agent/rutas/:id/valoracion` | Resumen IA de los comentarios de clientes de una ruta (mín. 3 comentarios) |
 
 Body de `POST /api/agent/chat` (`routeId` es opcional):
 
@@ -56,6 +57,19 @@ Opciones: `--slug=<slug>` limita a una ruta, `--sobrescribir` reemplaza el conte
 
 - **FAQs** (`faqs`): el modelo solo puede afirmar lo que aparece en los datos de la ruta. Lo demás se formula como recomendación. Se valida el JSON antes de guardar.
 - **Guía** (`guiaIA`): una sola consulta a Overpass por ruta (restaurantes, alojamientos, transporte y aparcamiento); el modelo redacta el resumen usando solo esos lugares. Overpass público suele estar saturado, así que el script reintenta ante 429 y 503.
+
+## Comentarios de clientes
+
+- **Resumen de valoración** (`/rutas/:id/valoracion`): el modelo principal del chat resume los últimos 60 comentarios (texto y estrellas, sin datos del autor). El resultado se cachea en memoria con una clave que cambia al publicar, editar o borrar un comentario, así que solo se llama al modelo cuando hay cambios. Varias visitas simultáneas comparten la misma llamada. Si la IA falla, se devuelven la media y el total sin resumen (`disponible: false`). No usa el proveedor de respaldo gratuito porque los comentarios son contenido de los usuarios.
+- **Sentimiento** (script): clasifica cada comentario como positivo, neutro o negativo, con puntuación de -1 a 1 y temas, y lo guarda en `comments.sentimiento`. El dashboard del admin lo agrega por ruta desde el backend.
+
+```bash
+npm run sentimiento:analizar -- --dry-run   # muestra el análisis sin guardar
+npm run sentimiento:analizar                # analiza los comentarios pendientes
+npm run sentimiento:analizar -- --todos     # vuelve a analizar todos
+```
+
+Al editar el texto de un comentario, el backend borra su sentimiento y vuelve a quedar pendiente.
 
 ## Proveedores de IA
 

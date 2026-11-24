@@ -123,7 +123,8 @@ test("getRutas compone portada, precio desde y paginación", async () => {
       { entityId: ID_A, url: "https://x/a-nueva.jpg", alt: "a", position: 0 },
       { entityId: ID_A, url: "https://x/a-2.jpg", alt: "", position: 1 }
     ],
-    preciosDesdeDeRutas: async () => [{ _id: ID_A, amount: 35, currency: "EUR" }]
+    preciosDesdeDeRutas: async () => [{ _id: ID_A, amount: 35, currency: "EUR" }],
+    likesDeRutas: async () => [{ _id: ID_A, total: 3 }]
   }, () => shopService.getRutas(listarRutasQuerySchema.parse({ q: "ruta", page: "2", categoria: "montana" })));
 
   assert.equal(criteriosUsados.page, 2);
@@ -138,6 +139,8 @@ test("getRutas compone portada, precio desde y paginación", async () => {
   assert.deepEqual(resultado.data[0].precioDesde, { amount: 35, currency: "EUR" });
   assert.equal(resultado.data[1].precioDesde, null);
   assert.deepEqual(resultado.data[1].coverImage, { url: "https://x/b.jpg", alt: "b" });
+  assert.equal(resultado.data[0].likes, 3);
+  assert.equal(resultado.data[1].likes, 0);
 });
 
 test("un slug que no existe devuelve listado vacío sin consultar rutas", async () => {
@@ -158,7 +161,8 @@ test("getRutas sin resultados no consulta imágenes ni precios", async () => {
     idsDeSlugs: async () => ({}),
     buscarRutas: async () => ({ items: [], total: 0 }),
     imagenesDeRutas: async () => { consultas += 1; return []; },
-    preciosDesdeDeRutas: async () => { consultas += 1; return []; }
+    preciosDesdeDeRutas: async () => { consultas += 1; return []; },
+    likesDeRutas: async () => { consultas += 1; return []; }
   }, () => shopService.getRutas(listarRutasQuerySchema.parse({})));
 
   assert.equal(consultas, 0);
@@ -275,7 +279,8 @@ test("getRelacionadas pasa localización y categorías de la ruta y enriquece el
       return [{ _id: ID_B, nombre: "Otra", coverImage: { url: "", alt: "" } }];
     },
     imagenesDeRutas: async () => [],
-    preciosDesdeDeRutas: async () => []
+    preciosDesdeDeRutas: async () => [],
+    likesDeRutas: async () => []
   }, () => shopService.getRelacionadas("ruta"));
 
   assert.equal(relacion.ruta.locationId, ID_B);

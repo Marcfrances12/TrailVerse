@@ -1,4 +1,6 @@
 const rutasRepo = require("../repos/rutas.repo");
+const likesRepo = require("../repos/likes.repo");
+const commentsRepo = require("../repos/comments.repo");
 const imagenesService = require("./images.service");
 const AppError = require("../utils/AppError");
 const escapeRegex = require("../utils/escapeRegex");
@@ -295,7 +297,11 @@ async function hardDeleteRuta(id) {
     throw AppError.notFound("Ruta no encontrada");
   }
 
-  await imagenesService.eliminarImagenes(idValido);
+  await Promise.all([
+    imagenesService.eliminarImagenes(idValido),
+    likesRepo.eliminarDeRuta(idValido),
+    commentsRepo.eliminarDeRuta(idValido)
+  ]);
 
   return ruta;
 }

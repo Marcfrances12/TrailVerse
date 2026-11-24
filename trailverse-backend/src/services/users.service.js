@@ -1,5 +1,7 @@
 const usersRepo = require("../repos/users.repo");
 const profilesRepo = require("../repos/profiles.repo");
+const likesRepo = require("../repos/likes.repo");
+const commentsRepo = require("../repos/comments.repo");
 const AppError = require("../utils/AppError");
 const password = require("../utils/password");
 const { validarConZod } = require("../utils/validar");
@@ -134,7 +136,11 @@ async function hardDeleteUser(id) {
   await integrity.exigirOtroAdminActivo(idValido, "eliminar definitivamente el último administrador");
   const user = await usersRepo.hardDelete(idValido);
   if (!user) throw AppError.notFound("Usuario no encontrado");
-  await profilesRepo.deleteForUser(idValido);
+  await Promise.all([
+    profilesRepo.deleteForUser(idValido),
+    likesRepo.eliminarDeUsuario(idValido),
+    commentsRepo.eliminarDeUsuario(idValido)
+  ]);
   return user;
 }
 

@@ -83,6 +83,11 @@ export const routes: Routes = [
           import('./features/departures/departures.routes').then((m) => m.DEPARTURES_ROUTES)
       },
       {
+        path: 'comentarios',
+        loadChildren: () =>
+          import('./features/comentarios/comentarios.routes').then((m) => m.COMENTARIOS_ROUTES)
+      },
+      {
         path: 'roles',
         loadChildren: () =>
           import('./features/roles/roles.routes').then((m) => m.ROLES_ROUTES)

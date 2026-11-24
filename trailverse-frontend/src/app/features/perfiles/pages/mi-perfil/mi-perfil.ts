@@ -7,10 +7,13 @@ import { ProfilesStore } from '../../../../core/stores/profiles.store';
 import { Profile, ProfileUpdateInput } from '../../../../core/models/profile.model';
 import { ProfileForm } from '../../components/profile-form/profile-form';
 import { ProfileHeader } from '../../components/profile-header/profile-header';
+import { LikesApiService } from '../../../../core/services/likes-api.service';
+import { ShopRuta } from '../../../../core/models/shop.model';
+import { ShopRutaCard } from '../../../shop/components/shop-ruta-card/shop-ruta-card';
 
 @Component({
   selector: 'app-mi-perfil',
-  imports: [ProfileForm, ProfileHeader],
+  imports: [ProfileForm, ProfileHeader, ShopRutaCard],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './mi-perfil.html'
 })
@@ -25,7 +28,22 @@ export class MiPerfil {
   readonly enviando = signal(false);
   readonly errorServidor = signal<unknown>(null);
 
+  readonly rutasQueMeGustan = signal<ShopRuta[]>([]);
+  readonly cargandoLikes = signal(true);
+  readonly errorLikes = signal(false);
+
   constructor() {
+    inject(LikesApiService).misLikes().subscribe({
+      next: (respuesta) => {
+        this.rutasQueMeGustan.set(respuesta.data);
+        this.cargandoLikes.set(false);
+      },
+      error: () => {
+        this.errorLikes.set(true);
+        this.cargandoLikes.set(false);
+      }
+    });
+
     this.api.miPerfil().subscribe({
       next: (respuesta) => {
         this.perfil.set(respuesta.data);

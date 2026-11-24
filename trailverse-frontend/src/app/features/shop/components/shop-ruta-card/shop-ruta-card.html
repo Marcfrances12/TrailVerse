@@ -13,9 +13,18 @@
       <h2 class="text-lg font-bold text-bosque-950">
         <a [routerLink]="['/shop', ruta().slug]" class="hover:text-bosque-600">{{ ruta().nombre }}</a>
       </h2>
-      <span class="shrink-0 rounded-full bg-bosque-100 px-2.5 py-1 text-xs font-semibold text-bosque-800">
-        {{ etiquetas[ruta().dificultad] }}
-      </span>
+      <div class="flex shrink-0 items-center gap-2">
+        <span class="inline-flex items-center gap-1 text-sm font-semibold text-rose-600"
+              [attr.aria-label]="ruta().likes + (ruta().likes === 1 ? ' me gusta' : ' me gustas')">
+          <svg viewBox="0 0 24 24" class="h-4 w-4" fill="currentColor" aria-hidden="true">
+            <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z" />
+          </svg>
+          <span aria-hidden="true">{{ ruta().likes }}</span>
+        </span>
+        <span class="rounded-full bg-bosque-100 px-2.5 py-1 text-xs font-semibold text-bosque-800">
+          {{ etiquetas[ruta().dificultad] }}
+        </span>
+      </div>
     </div>
 
     <p class="text-sm text-tinta-suave">

@@ -44,20 +44,23 @@ function agruparPorRuta(filas) {
 
 async function enriquecerRutas(items) {
   const ids = items.map((ruta) => ruta._id);
-  const [imagenes, precios] = await Promise.all([
+  const [imagenes, precios, likes] = await Promise.all([
     ids.length ? shopRepo.imagenesDeRutas(ids) : [],
-    ids.length ? shopRepo.preciosDesdeDeRutas(ids) : []
+    ids.length ? shopRepo.preciosDesdeDeRutas(ids) : [],
+    ids.length ? shopRepo.likesDeRutas(ids) : []
   ]);
 
   const imagenesPorRuta = agruparPorRuta(imagenes);
   const preciosPorRuta = new Map(precios.map((precio) => [String(precio._id), precio]));
+  const likesPorRuta = new Map(likes.map((fila) => [String(fila._id), fila.total]));
 
   return items.map((ruta) => {
     const precio = preciosPorRuta.get(String(ruta._id));
     return {
       ...ruta,
       coverImage: portadaDe(imagenesPorRuta.get(String(ruta._id)) ?? [], ruta.coverImage),
-      precioDesde: precio ? { amount: precio.amount, currency: precio.currency } : null
+      precioDesde: precio ? { amount: precio.amount, currency: precio.currency } : null,
+      likes: likesPorRuta.get(String(ruta._id)) ?? 0
     };
   });
 }
@@ -164,4 +167,4 @@ async function getRelacionadas(slug) {
   return enriquecerRutas(items);
 }
 
-module.exports = { getRutas, getHome, getFiltros, getRuta, getSalidas, getRelacionadas };
+module.exports = { getRutas, getHome, getFiltros, getRuta, getSalidas, getRelacionadas, enriquecerRutas };

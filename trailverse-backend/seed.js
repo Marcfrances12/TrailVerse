@@ -15,6 +15,8 @@ const Category = require("./src/models/category.model");
 const Image = require("./src/models/image.model");
 const Ruta = require("./src/models/ruta.model");
 const Departure = require("./src/models/departure.model");
+const Like = require("./src/models/like.model");
+const Comment = require("./src/models/comment.model");
 
 // Fotos de Wikimedia Commons (licencias libres). Las URLs están verificadas con la API de Commons.
 // La clave es el pageid de la imagen en Commons.
@@ -236,7 +238,9 @@ const seed = async () => {
       Category.deleteMany({}),
       Image.deleteMany({}),
       Ruta.deleteMany({}),
-      Departure.deleteMany({})
+      Departure.deleteMany({}),
+      Like.deleteMany({}),
+      Comment.deleteMany({})
     ]);
 
     const roles = await Role.insertMany([
@@ -403,6 +407,15 @@ const seed = async () => {
     });
     await Image.insertMany(imagenes);
 
+    // Likes de ejemplo: cada usuario da like a una de cada tres rutas, desplazado según el usuario.
+    const likes = [];
+    users.forEach((usuario, indiceUsuario) => {
+      rutas.forEach((ruta, indiceRuta) => {
+        if ((indiceRuta + indiceUsuario) % 3 === 0) likes.push({ userId: usuario._id, rutaId: ruta._id });
+      });
+    });
+    await Like.insertMany(likes);
+
     await Promise.all([
       Role.syncIndexes(),
       User.syncIndexes(),
@@ -412,14 +425,17 @@ const seed = async () => {
       Category.syncIndexes(),
       Image.syncIndexes(),
       Ruta.syncIndexes(),
-      Departure.syncIndexes()
+      Departure.syncIndexes(),
+      Like.syncIndexes(),
+      Comment.syncIndexes()
     ]);
 
     console.log(
       `Seed completado: ${roles.length} roles, ${users.length} usuarios, ${hosts.length} hosts, ` +
       `${locations.length} localizaciones, ${categories.length} categorías, ${rutas.length} rutas, ` +
-      `${salidas.length} salidas, ${imagenes.length} imágenes.`
+      `${salidas.length} salidas, ${imagenes.length} imágenes, ${likes.length} likes.`
     );
+    console.log("Para añadir comentarios de clientes de ejemplo: npm run seed:comentarios");
   } catch (error) {
     console.error("Error ejecutando seed:", error.message);
     process.exitCode = 1;

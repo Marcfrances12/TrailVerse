@@ -1,0 +1,33 @@
+<ng-template #estrella let-posicion>
+  <svg viewBox="0 0 24 24" [class]="clasesTamano()" aria-hidden="true">
+    <defs>
+      <linearGradient [attr.id]="'relleno-' + posicion + '-' + valor()">
+        <stop [attr.offset]="relleno(posicion) * 100 + '%'" stop-color="#f59e0b" />
+        <stop [attr.offset]="relleno(posicion) * 100 + '%'" stop-color="#e9e4d3" />
+      </linearGradient>
+    </defs>
+    <path [attr.fill]="'url(#relleno-' + posicion + '-' + valor() + ')'"
+          d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4l-5.9 3.1 1.2-6.5L2.5 9.4l6.6-.9z" />
+  </svg>
+</ng-template>
+
+@if (editable()) {
+  <div role="slider" tabindex="0" aria-label="Valoración" aria-valuemin="1" aria-valuemax="5"
+       [attr.aria-valuenow]="valor() || null" [attr.aria-valuetext]="etiqueta()"
+       (keydown)="teclado($event)"
+       class="inline-flex items-center gap-1 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-bosque-400">
+    @for (posicion of posiciones; track posicion) {
+      <button type="button" tabindex="-1" (click)="elegir(posicion)"
+              [attr.aria-label]="posicion + (posicion === 1 ? ' estrella' : ' estrellas')"
+              class="transition-transform hover:scale-110">
+        <ng-container [ngTemplateOutlet]="estrella" [ngTemplateOutletContext]="{ $implicit: posicion }" />
+      </button>
+    }
+  </div>
+} @else {
+  <span class="inline-flex items-center gap-0.5" role="img" [attr.aria-label]="etiqueta()">
+    @for (posicion of posiciones; track posicion) {
+      <ng-container [ngTemplateOutlet]="estrella" [ngTemplateOutletContext]="{ $implicit: posicion }" />
+    }
+  </span>
+}

@@ -32,4 +32,14 @@ const registerLimiter = rateLimit({
   handler: respuestaLimitada("Demasiados registros desde esta conexión. Inténtalo más tarde")
 });
 
-module.exports = { loginLimiter, registerLimiter, claveDeLogin, LOGIN_MAX_INTENTOS };
+// Publicar y editar comentarios: por usuario autenticado (o IP si no hubiera usuario).
+const commentLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000,
+  limit: Number(process.env.COMMENT_RATE_LIMIT_MAX) || 20,
+  keyGenerator: (req) => (req.user?.id ? `user:${req.user.id}` : ipKeyGenerator(req.ip)),
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+  handler: respuestaLimitada("Has publicado demasiados comentarios seguidos. Espera unos minutos")
+});
+
+module.exports = { loginLimiter, registerLimiter, commentLimiter, claveDeLogin, LOGIN_MAX_INTENTOS };

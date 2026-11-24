@@ -67,6 +67,7 @@ export interface ShopRuta {
   categoryIds: { _id: string; name: string; slug: string }[];
   coverImage: { url: string; alt: string };
   precioDesde: ShopPrecio | null;
+  likes: number;
 }
 
 export interface ShopRutaImagen {

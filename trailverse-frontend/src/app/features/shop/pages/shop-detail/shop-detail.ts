@@ -21,6 +21,8 @@ import {
 import { Galeria } from '../../../../shared/components/galeria/galeria';
 import { ShopRutaCard } from '../../components/shop-ruta-card/shop-ruta-card';
 import { GuiaRutaComponent } from '../../components/guia-ruta/guia-ruta';
+import { LikeButton } from '../../components/like-button/like-button';
+import { ComentariosRuta } from '../../components/comentarios-ruta/comentarios-ruta';
 
 @Component({
   selector: 'app-shop-detail',
@@ -34,7 +36,9 @@ import { GuiaRutaComponent } from '../../components/guia-ruta/guia-ruta';
     Galeria,
     EmptyState,
     ErrorState,
-    GuiaRutaComponent
+    GuiaRutaComponent,
+    LikeButton,
+    ComentariosRuta
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './shop-detail.html'

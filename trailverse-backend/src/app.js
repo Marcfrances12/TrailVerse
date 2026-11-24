@@ -19,6 +19,8 @@ const authRoutes = require("./routes/auth.routes");
 const profilesRoutes = require("./routes/profiles.routes");
 const shopRoutes = require("./routes/shop.routes");
 const adminRoutes = require("./routes/admin.routes");
+const likesRoutes = require("./routes/likes.routes");
+const commentsRoutes = require("./routes/comments.routes");
 const { notFound, errorHandler } = require("./middlewares/error.middleware");
 
 const app = express();
@@ -61,6 +63,8 @@ app.get("/", (req, res) => {
       profiles: "/api/profiles",
       shop: "/api/shop",
       admin: "/api/admin",
+      likes: "/api/likes",
+      comments: "/api/comments",
       health: "/api/health"
     }
   });
@@ -84,6 +88,8 @@ app.use("/api/auth", authRoutes);
 app.use("/api/profiles", profilesRoutes);
 app.use("/api/shop", shopRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/likes", likesRoutes);
+app.use("/api/comments", commentsRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

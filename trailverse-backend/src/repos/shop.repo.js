@@ -5,6 +5,7 @@ const Image = require("../models/image.model");
 const Category = require("../models/category.model");
 const Host = require("../models/host.model");
 const Location = require("../models/location.model");
+const Like = require("../models/like.model");
 const escapeRegex = require("../utils/escapeRegex");
 
 
@@ -87,6 +88,15 @@ async function idDeRutaVisible(slug) {
   return Ruta.findOne({ slug, ...RUTAS_VISIBLES }).select("_id locationId categoryIds").lean();
 }
 
+// Rutas visibles con esos ids, con la misma forma que el listado del shop.
+async function rutasVisiblesPorIds(ids) {
+  if (!ids.length) return [];
+  return Ruta.find({ ...RUTAS_VISIBLES, _id: { $in: ids } })
+    .select(PROYECCION_LISTADO)
+    .populate(POPULATE_LISTADO)
+    .lean();
+}
+
 // Rutas visibles de la misma localización o con alguna categoría en común, sin la ruta actual.
 async function rutasRelacionadas({ _id, locationId, categoryIds = [] }, limite) {
   const coincidencias = [];
@@ -127,6 +137,14 @@ async function imagenesDeEntidades(entityType, entityIds) {
     .sort({ position: 1 })
     .select("url alt entityId")
     .lean();
+}
+
+// Número de likes de cada ruta en una sola consulta: [{ _id: rutaId, total }].
+async function likesDeRutas(rutaIds) {
+  return Like.aggregate([
+    { $match: { rutaId: { $in: rutaIds.map((id) => new mongoose.Types.ObjectId(id)) } } },
+    { $group: { _id: "$rutaId", total: { $sum: 1 } } }
+  ]);
 }
 
 // Precio más bajo de las salidas abiertas y futuras de cada ruta.
@@ -256,5 +274,7 @@ module.exports = {
   idDeRutaVisible,
   salidasPublicasDeRuta,
   imagenesDeEntidades,
-  rutasRelacionadas
+  rutasRelacionadas,
+  rutasVisiblesPorIds,
+  likesDeRutas
 };

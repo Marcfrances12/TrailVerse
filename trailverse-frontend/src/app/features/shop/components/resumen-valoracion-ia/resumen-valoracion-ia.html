@@ -1,0 +1,43 @@
+@if (cargando() && !datos()) {
+  <div class="animate-pulse space-y-2 rounded-2xl bg-bosque-100 p-5" role="status" aria-label="Generando resumen de opiniones">
+    <div class="h-4 w-1/2 rounded bg-bosque-300/60"></div>
+    <div class="h-3 w-full rounded bg-bosque-300/40"></div>
+    <div class="h-3 w-5/6 rounded bg-bosque-300/40"></div>
+  </div>
+} @else if (datos(); as v) {
+  @if (v.total > 0 && !v.suficientes) {
+    <p class="rounded-2xl bg-crema-100 p-4 text-sm text-tinta-suave">
+      <span aria-hidden="true">✨</span> El resumen con IA aparecerá cuando la ruta tenga al menos {{ v.minimo }} opiniones.
+    </p>
+  } @else if (v.resumen) {
+    <div class="space-y-3 rounded-2xl bg-bosque-100 p-5" [class.opacity-60]="cargando()" aria-live="polite">
+      <h3 class="flex items-center gap-2 text-base font-bold text-bosque-950">
+        <span aria-hidden="true">✨</span> Resumen de opiniones
+      </h3>
+      <p class="text-sm leading-relaxed text-bosque-900">{{ v.resumen }}</p>
+
+      @if (v.positivos.length || v.negativos.length) {
+        <div class="grid gap-3 sm:grid-cols-2">
+          @if (v.positivos.length) {
+            <div>
+              <h4 class="text-xs font-bold uppercase tracking-wide text-bosque-800">Lo mejor</h4>
+              <ul class="mt-1 space-y-1 text-sm text-bosque-900" role="list">
+                @for (punto of v.positivos; track $index) { <li>+ {{ punto }}</li> }
+              </ul>
+            </div>
+          }
+          @if (v.negativos.length) {
+            <div>
+              <h4 class="text-xs font-bold uppercase tracking-wide text-tierra-700">A mejorar</h4>
+              <ul class="mt-1 space-y-1 text-sm text-bosque-900" role="list">
+                @for (punto of v.negativos; track $index) { <li>– {{ punto }}</li> }
+              </ul>
+            </div>
+          }
+        </div>
+      }
+
+      <p class="text-xs text-bosque-800/80">Basado en {{ v.basadoEn }} opiniones. {{ v.aviso }}</p>
+    </div>
+  }
+}

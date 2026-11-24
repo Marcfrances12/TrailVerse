@@ -8,7 +8,8 @@
     "start": "node src/server.js",
     "faqs:generar": "node scripts/generar-contenido.js --tipo=faqs",
     "guia:generar": "node scripts/generar-contenido.js --tipo=guia",
-    "test": "node --test"
+    "test": "node --test",
+    "sentimiento:analizar": "node scripts/analizar-sentimiento.js"
   },
   "dependencies": {
     "cors": "^2.8.5",

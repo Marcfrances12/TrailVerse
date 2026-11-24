@@ -1,5 +1,7 @@
 const { responderChat } = require("./agent.service");
 const { obtenerGuia } = require("./guia.service");
+const { obtenerValoracion } = require("./valoracion.service");
+const { obtenerClienteLlm } = require("./agent.service");
 
 // Respuesta en streaming SSE. Eventos: token, tool, done, error.
 async function chat(req, res) {
@@ -34,4 +36,13 @@ async function guia(req, res) {
   res.json({ ok: true, data: datos });
 }
 
-module.exports = { chat, guia };
+async function valoracion(req, res) {
+  const datos = await obtenerValoracion(req.params.id, { llm: obtenerClienteLlm() });
+  if (!datos) {
+    return res.status(404).json({ ok: false, error: "No hay ninguna ruta publicada con ese identificador" });
+  }
+
+  res.json({ ok: true, data: datos });
+}
+
+module.exports = { chat, guia, valoracion };

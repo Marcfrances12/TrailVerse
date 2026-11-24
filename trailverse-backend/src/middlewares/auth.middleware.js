@@ -14,9 +14,9 @@ const unauthorized = (codigo) => {
 
 // Prioriza la cabecera Bearer (API y pruebas) y usa la cookie de acceso como alternativa.
 function tokenDeRequest(req) {
-  const authorization = req.get("authorization") || "";
-  const match = authorization.match(/^Bearer\s+([^\s]+)$/i);
-  if (match) return match[1];
+  // const authorization = req.get("authorization") || "";
+  // const match = authorization.match(/^Bearer\s+([^\s]+)$/i);
+  // if (match) return match[1];
   return req.cookies?.[ACCESS_COOKIE] ?? null;
 }
 

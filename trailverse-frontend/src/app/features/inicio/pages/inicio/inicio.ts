@@ -3,6 +3,7 @@ import { AdminResumen } from '../../../../core/models/admin-resumen.model';
 import { AdminApiService } from '../../../../core/services/admin-api.service';
 import { ErrorState } from '../../../../shared/components/error-state/error-state';
 import { SkeletonGrid } from '../../../../shared/components/skeleton-grid/skeleton-grid';
+import { PanelSentimiento } from '../../components/panel-sentimiento/panel-sentimiento';
 import { capitalizar } from '../../../../shared/utils/formatos';
 
 type TonoChip = 'verde' | 'azul' | 'ambar' | 'gris';
@@ -30,7 +31,7 @@ const CLASES_CHIP: Record<TonoChip, string> = {
 
 @Component({
   selector: 'app-inicio',
-  imports: [ErrorState, SkeletonGrid],
+  imports: [ErrorState, SkeletonGrid, PanelSentimiento],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './inicio.html'
 })

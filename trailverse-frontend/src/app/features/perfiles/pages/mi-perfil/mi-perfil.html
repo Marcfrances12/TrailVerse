@@ -40,5 +40,22 @@
         </dl>
       </aside>
     </div>
+
+    <section class="space-y-4">
+      <h2 class="font-display text-2xl font-bold text-bosque-950">Rutas que me gustan</h2>
+      @if (cargandoLikes()) {
+        <p class="text-sm text-tinta-suave">Cargando rutas…</p>
+      } @else if (errorLikes()) {
+        <p class="text-sm text-amber-900">No se han podido cargar tus rutas favoritas.</p>
+      } @else if (rutasQueMeGustan().length === 0) {
+        <p class="text-sm text-tinta-suave">Todavía no has dado like a ninguna ruta.</p>
+      } @else {
+        <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          @for (ruta of rutasQueMeGustan(); track ruta._id) {
+            <app-shop-ruta-card [ruta]="ruta" />
+          }
+        </div>
+      }
+    </section>
   }
 </div>

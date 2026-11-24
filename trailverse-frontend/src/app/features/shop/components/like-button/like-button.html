@@ -1,0 +1,17 @@
+<button
+  type="button"
+  (click)="alternar()"
+  [disabled]="enviando()"
+  [attr.aria-pressed]="estado().likedByMe"
+  [attr.aria-label]="estado().likedByMe ? 'Quitar me gusta' : 'Me gusta'"
+  class="inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition-colors disabled:cursor-wait disabled:opacity-70"
+  [class]="estado().likedByMe
+    ? 'border-rose-300 bg-rose-50 text-rose-700 hover:bg-rose-100'
+    : 'border-crema-200 bg-white text-tinta hover:bg-crema-100'">
+  <svg viewBox="0 0 24 24" class="h-5 w-5" aria-hidden="true"
+       [attr.fill]="estado().likedByMe ? 'currentColor' : 'none'"
+       stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z" />
+  </svg>
+  <span>{{ estado().total }}</span>
+</button>
