@@ -6,6 +6,7 @@ import {
   effect,
   inject,
   input,
+  output,
   signal,
   untracked,
   viewChild
@@ -32,7 +33,8 @@ function aviso(titulo: string): void {
   selector: 'app-comentarios-ruta',
   imports: [Estrellas, ComentarioForm, ComentarioItem, ResumenValoracionIa],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  templateUrl: './comentarios-ruta.html'
+  templateUrl: './comentarios-ruta.html',
+  host: { class: 'block' }
 })
 export class ComentariosRuta {
   private readonly api = inject(CommentsApiService);
@@ -41,6 +43,8 @@ export class ComentariosRuta {
 
   readonly slug = input.required<string>();
   readonly rutaId = input.required<string>();
+  /** Media y total actualizados, para mostrarlos en la cabecera del detalle. */
+  readonly estadisticasCambian = output<ComentarioEstadisticas>();
 
   private readonly formulario = viewChild(ComentarioForm);
 
@@ -165,6 +169,7 @@ export class ComentariosRuta {
       next: (respuesta) => {
         this.comentarios.update((lista) => (pagina === 1 ? respuesta.data : [...lista, ...respuesta.data]));
         this.estadisticas.set(respuesta.estadisticas);
+        this.estadisticasCambian.emit(respuesta.estadisticas);
         this.yaComentado.set(respuesta.yaComentado);
         this.pagina.set(respuesta.page);
         this.totalPaginas.set(respuesta.totalPages);

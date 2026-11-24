@@ -12,11 +12,14 @@ export type CarouselVariante = 'tarjetas' | 'completo';
   selector: 'app-carousel',
   imports: [NgClass],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  templateUrl: './carousel.html'
+  templateUrl: './carousel.html',
+  host: { class: 'block' }
 })
 export class Carousel {
   readonly titulo = input.required<string>();
   readonly variante = input<CarouselVariante>('tarjetas');
+  /** Título con el tamaño de las secciones principales (home). */
+  readonly grande = input(false);
 
   private readonly pista = viewChild.required<ElementRef<HTMLElement>>('pista');
 

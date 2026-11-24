@@ -1,39 +1,81 @@
-<div class="space-y-3">
-  <div class="group relative">
-    <div #pista
-         (scroll)="alDesplazar()"
-         class="flex snap-x snap-mandatory overflow-x-auto scroll-smooth rounded-2xl [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-      @for (imagen of imagenes(); track imagen.url) {
-        <img [src]="imagen.url" [alt]="imagen.alt" loading="lazy"
-             class="aspect-[4/3] w-full shrink-0 snap-start object-cover" />
-      }
-    </div>
-
-    @if (imagenes().length > 1) {
-      <button type="button" (click)="desplazar(-1)" [disabled]="indice() === 0" aria-label="Imagen anterior"
-              class="absolute left-3 top-1/2 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full bg-white/90 text-tinta shadow-md transition-opacity hover:bg-white disabled:opacity-0">
-        <span aria-hidden="true">‹</span>
-      </button>
-      <button type="button" (click)="desplazar(1)" [disabled]="indice() === imagenes().length - 1" aria-label="Imagen siguiente"
-              class="absolute right-3 top-1/2 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full bg-white/90 text-tinta shadow-md transition-opacity hover:bg-white disabled:opacity-0">
-        <span aria-hidden="true">›</span>
+<!-- Móvil: carrusel -->
+<div class="relative md:hidden">
+  <div #pista (scroll)="alDesplazarMovil()"
+       class="flex snap-x snap-mandatory overflow-x-auto rounded-3xl [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+    @for (imagen of imagenes(); track imagen.url; let i = $index) {
+      <button type="button" (click)="abrir(i)" class="w-full shrink-0 snap-start" [attr.aria-label]="'Ampliar imagen ' + (i + 1)">
+        <img [src]="imagen.url" [alt]="imagen.alt" [attr.loading]="i === 0 ? 'eager' : 'lazy'" class="aspect-[4/3] w-full object-cover" />
       </button>
     }
   </div>
-
   @if (imagenes().length > 1) {
-    <div class="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:thin]" role="list">
-      @for (imagen of imagenes(); track imagen.url; let i = $index) {
-        <button type="button" role="listitem" (click)="irA(i)"
-                [attr.aria-label]="'Ver imagen ' + (i + 1)"
-                [attr.aria-current]="i === indice()"
-                [class.border-bosque-600]="i === indice()"
-                [class.border-transparent]="i !== indice()"
-                [class.opacity-60]="i !== indice()"
-                class="h-16 w-16 shrink-0 overflow-hidden rounded-lg border-2 transition-opacity hover:opacity-100">
-          <img [src]="imagen.url" [alt]="imagen.alt" loading="lazy" class="h-full w-full object-cover" />
-        </button>
-      }
-    </div>
+    <span class="pointer-events-none absolute bottom-3 right-3 rounded-full bg-black/60 px-3 py-1 text-xs font-semibold text-white">
+      {{ indiceMovil() + 1 }} / {{ imagenes().length }}
+    </span>
+    <button type="button" (click)="desplazarMovil(-1)" [disabled]="indiceMovil() === 0" aria-label="Imagen anterior"
+            class="absolute left-3 top-1/2 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-full bg-white/90 text-lg text-tinta shadow disabled:opacity-0">‹</button>
+    <button type="button" (click)="desplazarMovil(1)" [disabled]="indiceMovil() === imagenes().length - 1" aria-label="Imagen siguiente"
+            class="absolute right-3 top-1/2 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-full bg-white/90 text-lg text-tinta shadow disabled:opacity-0">›</button>
   }
 </div>
+
+<!-- Escritorio: mosaico -->
+<div class="relative hidden h-[460px] grid-cols-4 grid-rows-2 gap-2 overflow-hidden rounded-3xl md:grid">
+  @for (imagen of mosaico(); track imagen.url; let i = $index) {
+    <button type="button" (click)="abrir(i)" [class]="claseCelda(i)"
+            class="group relative overflow-hidden bg-bosque-100 focus:outline-none focus-visible:ring-4 focus-visible:ring-inset focus-visible:ring-bosque-400"
+            [attr.aria-label]="'Ampliar imagen ' + (i + 1) + ' de ' + imagenes().length">
+      <img [src]="imagen.url" [alt]="imagen.alt" [attr.loading]="i === 0 ? 'eager' : 'lazy'"
+           class="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03] group-hover:brightness-90" />
+    </button>
+  }
+  <button type="button" (click)="abrir(0)"
+          class="absolute bottom-4 right-4 inline-flex items-center gap-2 rounded-full border border-tinta/10 bg-white/95 px-4 py-2 text-sm font-semibold text-tinta shadow-md transition hover:bg-white">
+    <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+      <rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" />
+      <rect x="3" y="14" width="7" height="7" rx="1" /><rect x="14" y="14" width="7" height="7" rx="1" />
+    </svg>
+    Ver {{ imagenes().length === 1 ? 'la foto' : 'las ' + imagenes().length + ' fotos' }}
+    @if (restantes()) { <span class="text-tinta-suave">(+{{ restantes() }})</span> }
+  </button>
+</div>
+
+<!-- Visor a pantalla completa -->
+@if (imagenVisor(); as imagen) {
+  <div class="fixed inset-0 z-[60] flex flex-col bg-black/95" role="dialog" aria-modal="true" aria-label="Galería de imágenes">
+    <div class="flex items-center justify-between px-4 py-3 text-white sm:px-6">
+      <span class="text-sm font-semibold">{{ indiceVisor()! + 1 }} / {{ imagenes().length }}</span>
+      <button #cerrarVisor type="button" (click)="cerrar()" aria-label="Cerrar galería"
+              class="grid h-10 w-10 place-items-center rounded-full text-2xl hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-white">×</button>
+    </div>
+
+    <div class="relative flex min-h-0 flex-1 items-center justify-center px-4 sm:px-16" (click)="cerrar()">
+      <img [src]="imagen.url" [alt]="imagen.alt" (click)="$event.stopPropagation()"
+           class="max-h-full max-w-full rounded-lg object-contain shadow-2xl" />
+      @if (imagenes().length > 1) {
+        <button type="button" (click)="moverVisor(-1); $event.stopPropagation()" aria-label="Imagen anterior"
+                class="absolute left-2 top-1/2 grid h-12 w-12 -translate-y-1/2 place-items-center rounded-full bg-white/10 text-3xl text-white hover:bg-white/20 sm:left-4">‹</button>
+        <button type="button" (click)="moverVisor(1); $event.stopPropagation()" aria-label="Imagen siguiente"
+                class="absolute right-2 top-1/2 grid h-12 w-12 -translate-y-1/2 place-items-center rounded-full bg-white/10 text-3xl text-white hover:bg-white/20 sm:right-4">›</button>
+      }
+    </div>
+
+    @if (imagen.alt) {
+      <p class="px-6 pt-3 text-center text-sm text-white/70">{{ imagen.alt }}</p>
+    }
+
+    @if (imagenes().length > 1) {
+      <div class="flex justify-center gap-2 overflow-x-auto px-4 py-4">
+        @for (miniatura of imagenes(); track miniatura.url; let i = $index) {
+          <button type="button" (click)="indiceVisor.set(i)" [attr.aria-label]="'Ver imagen ' + (i + 1)"
+                  [attr.aria-current]="i === indiceVisor()"
+                  class="h-14 w-20 shrink-0 overflow-hidden rounded-md ring-2 transition"
+                  [class.ring-white]="i === indiceVisor()" [class.ring-transparent]="i !== indiceVisor()"
+                  [class.opacity-50]="i !== indiceVisor()">
+            <img [src]="miniatura.url" [alt]="" loading="lazy" class="h-full w-full object-cover" />
+          </button>
+        }
+      </div>
+    }
+  </div>
+}

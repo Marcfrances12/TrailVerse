@@ -1,6 +1,6 @@
 <section class="space-y-4" [attr.aria-label]="titulo()">
   <div class="flex items-center justify-between gap-3">
-    <h2 class="font-display text-xl font-bold text-bosque-950">{{ titulo() }}</h2>
+    <h2 class="font-display font-bold text-bosque-950" [class.text-xl]="!grande()" [class.text-3xl]="grande()">{{ titulo() }}</h2>
     <div class="flex gap-2">
       <button type="button" (click)="desplazar(-1)" aria-label="Anterior"
               class="grid h-9 w-9 place-items-center rounded-full border border-crema-300 bg-white text-tinta transition-colors hover:bg-crema-100">

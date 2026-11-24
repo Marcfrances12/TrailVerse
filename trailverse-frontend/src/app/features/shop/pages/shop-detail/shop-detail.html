@@ -4,131 +4,254 @@
     <a routerLink="/shop" class="mt-4 inline-block text-sm font-semibold text-bosque-700 hover:text-bosque-500">← Volver a las rutas</a>
   </section>
 } @else if (store.detalle(); as ruta) {
-  <article class="space-y-12 py-8">
-    <a routerLink="/shop" class="text-sm font-semibold text-bosque-700 hover:text-bosque-500">← Volver a las rutas</a>
+  <article class="space-y-14 py-8">
+    <!-- Cabecera -->
+    <header class="space-y-5">
+      <nav aria-label="Ruta de navegación" class="flex flex-wrap items-center gap-1.5 text-sm text-tinta-suave">
+        <a routerLink="/shop" class="font-semibold text-bosque-700 hover:text-bosque-500">Rutas</a>
+        @if (ruta.locationId; as loc) {
+          <span aria-hidden="true">/</span>
+          <a routerLink="/shop" [queryParams]="{ localizacion: loc.slug }" class="hover:text-bosque-700">{{ loc.nombre }}</a>
+        }
+        <span aria-hidden="true">/</span>
+        <span class="truncate text-tinta" aria-current="page">{{ ruta.nombre }}</span>
+      </nav>
 
-    <div class="grid gap-8 lg:grid-cols-[1.35fr_1fr] lg:items-start">
-      <div class="min-w-0">
-        @if (imagenes().length) {
-          <app-galeria [imagenes]="imagenes()" />
-        } @else {
-          <div class="grid aspect-[4/3] place-items-center rounded-2xl bg-bosque-100 text-sm font-semibold text-bosque-700">Sin imágenes</div>
+      <div class="flex flex-wrap items-end justify-between gap-4">
+        <div class="min-w-0 space-y-3">
+          <h1 class="font-display text-4xl font-bold leading-tight text-bosque-950 sm:text-5xl">{{ ruta.nombre }}</h1>
+          <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-tinta">
+            @if (opiniones(); as op) {
+              @if (op.total && op.media !== null) {
+                <button type="button" (click)="irA('opiniones')" class="inline-flex items-center gap-1.5 font-semibold hover:text-bosque-700">
+                  <app-estrellas [valor]="op.media" />
+                  <span>{{ mediaTexto() }}</span>
+                  <span class="font-normal text-tinta-suave underline decoration-crema-300 underline-offset-2">
+                    ({{ op.total }} {{ op.total === 1 ? 'opinión' : 'opiniones' }})
+                  </span>
+                </button>
+              } @else {
+                <button type="button" (click)="irA('opiniones')" class="text-tinta-suave underline decoration-crema-300 underline-offset-2 hover:text-bosque-700">
+                  Sin opiniones todavía
+                </button>
+              }
+            }
+            @if (ruta.locationId; as loc) {
+              <span class="inline-flex items-center gap-1.5 text-tinta-suave">
+                <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0Z" /><circle cx="12" cy="10" r="3" />
+                </svg>
+                {{ loc.nombre }} · {{ loc.provincia }}
+              </span>
+            }
+          </div>
+        </div>
+        <app-like-button class="shrink-0" [slug]="ruta.slug" />
+      </div>
+    </header>
+
+    <!-- Galería -->
+    @if (imagenes().length) {
+      <app-galeria [imagenes]="imagenes()" />
+    } @else {
+      <div class="grid h-72 place-items-center rounded-3xl bg-bosque-100 text-sm font-semibold text-bosque-700">Sin imágenes</div>
+    }
+
+    <!-- Información + reserva (sin sticky: cada bloque se queda en su sitio al hacer scroll) -->
+    <div class="grid gap-10 lg:grid-cols-[1fr_380px] lg:items-start">
+      <div class="min-w-0 space-y-10">
+        <!-- Ficha técnica -->
+        <section aria-labelledby="titulo-ficha" class="space-y-4">
+          <h2 id="titulo-ficha" class="sr-only">Ficha técnica</h2>
+          <dl class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <div class="rounded-2xl border border-crema-200 bg-white p-4 shadow-sm">
+              <dt class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-tinta-suave">
+                <svg viewBox="0 0 24 24" class="h-4 w-4 text-bosque-600" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <path d="M3 17h4l3-10 4 14 3-7h4" />
+                </svg>
+                Distancia
+              </dt>
+              <dd class="mt-2 text-xl font-bold text-bosque-950">{{ formatKm(ruta.distanciaKm) }}</dd>
+            </div>
+            <div class="rounded-2xl border border-crema-200 bg-white p-4 shadow-sm">
+              <dt class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-tinta-suave">
+                <svg viewBox="0 0 24 24" class="h-4 w-4 text-bosque-600" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <path d="M2 20 8.5 7 12 13l3-3.5L22 20Z" />
+                </svg>
+                Desnivel
+              </dt>
+              <dd class="mt-2 text-xl font-bold text-bosque-950">{{ formatMetros(ruta.desnivelM) }}</dd>
+            </div>
+            <div class="rounded-2xl border border-crema-200 bg-white p-4 shadow-sm">
+              <dt class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-tinta-suave">
+                <svg viewBox="0 0 24 24" class="h-4 w-4 text-bosque-600" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" />
+                </svg>
+                Duración
+              </dt>
+              <dd class="mt-2 text-xl font-bold text-bosque-950">{{ formatDuracion(ruta.duracionHoras) }}</dd>
+            </div>
+            <div class="rounded-2xl border border-crema-200 bg-white p-4 shadow-sm">
+              <dt class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-tinta-suave">
+                <svg viewBox="0 0 24 24" class="h-4 w-4 text-bosque-600" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  @if (ruta.circular) {
+                    <path d="M21 12a9 9 0 1 1-3-6.7L21 8" /><path d="M21 3v5h-5" />
+                  } @else {
+                    <path d="M4 12h16" /><path d="m14 6 6 6-6 6" />
+                  }
+                </svg>
+                Recorrido
+              </dt>
+              <dd class="mt-2 text-xl font-bold text-bosque-950">{{ ruta.circular ? 'Circular' : 'Lineal' }}</dd>
+            </div>
+          </dl>
+        </section>
+
+        <!-- Descripción -->
+        <section aria-labelledby="titulo-descripcion" class="space-y-4">
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="rounded-full px-3 py-1 text-xs font-semibold" [class]="clasesDificultad[ruta.dificultad]">
+              Dificultad {{ etiquetas[ruta.dificultad].toLowerCase() }}
+            </span>
+            @for (categoria of ruta.categoryIds; track categoria._id) {
+              <a routerLink="/shop" [queryParams]="{ categoria: categoria.slug }"
+                 class="rounded-full bg-crema-100 px-3 py-1 text-xs font-semibold text-tinta transition-colors hover:bg-crema-200">
+                {{ categoria.name }}
+              </a>
+            }
+          </div>
+          <h2 id="titulo-descripcion" class="font-display text-2xl font-bold text-bosque-950">Sobre la ruta</h2>
+          <p class="max-w-prose whitespace-pre-line text-base leading-relaxed text-tinta">{{ ruta.descripcion }}</p>
+
+          @if (ruta.gpxUrl) {
+            <a [href]="ruta.gpxUrl" target="_blank" rel="noopener"
+               class="inline-flex items-center gap-2 rounded-full border border-bosque-300 bg-white px-5 py-2 text-sm font-semibold text-bosque-800 transition-colors hover:bg-bosque-100">
+              <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M12 3v12" /><path d="m7 10 5 5 5-5" /><path d="M5 21h14" />
+              </svg>
+              Descargar track GPX
+            </a>
+          }
+        </section>
+
+        <!-- Organizador -->
+        @if (ruta.hostId; as host) {
+          <section class="flex items-center gap-4 rounded-2xl border border-crema-200 bg-white p-5 shadow-sm" aria-label="Organizador">
+            <span class="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-bosque-700 text-sm font-bold text-white" aria-hidden="true">
+              {{ iniciales(host.name) }}
+            </span>
+            <div class="min-w-0 flex-1">
+              <p class="text-xs font-semibold uppercase tracking-wide text-tinta-suave">Organiza</p>
+              <p class="truncate text-lg font-bold text-bosque-950">{{ host.name }}</p>
+            </div>
+            <a routerLink="/shop" [queryParams]="{ host: host.slug }"
+               class="shrink-0 rounded-full border border-crema-300 px-4 py-2 text-sm font-semibold text-tinta transition-colors hover:bg-crema-100">
+              Ver sus rutas
+            </a>
+          </section>
         }
       </div>
 
-      <aside class="space-y-6 lg:sticky lg:top-24">
-        <div class="flex flex-wrap items-center gap-2">
-          <span class="rounded-full bg-bosque-100 px-3 py-1 text-xs font-semibold text-bosque-800">{{ etiquetas[ruta.dificultad] }}</span>
-          <span class="rounded-full bg-crema-100 px-3 py-1 text-xs font-semibold text-tinta">{{ ruta.circular ? 'Circular' : 'Lineal' }}</span>
+      <!-- Reserva -->
+      <aside id="salidas" class="scroll-mt-24 space-y-5 rounded-3xl border border-crema-200 bg-white p-6 shadow-md" aria-labelledby="titulo-salidas">
+        <div>
+          @if (precioDesde(); as precio) {
+            <p class="text-sm text-tinta-suave">Desde</p>
+            <p class="text-3xl font-bold text-bosque-950">
+              {{ formatPrecio(precio.amount, precio.currency) }}
+              <span class="text-base font-normal text-tinta-suave">/ persona</span>
+            </p>
+          }
+          <h2 id="titulo-salidas" class="mt-1 text-base font-bold text-bosque-950">Próximas salidas</h2>
         </div>
 
-        <div class="flex items-start justify-between gap-4">
-          <h1 class="font-display text-4xl font-bold leading-tight text-bosque-950">{{ ruta.nombre }}</h1>
-          <app-like-button class="shrink-0" [slug]="ruta.slug" />
-        </div>
+        @if (store.cargandoDetalle()) {
+          <p role="status" class="text-sm text-tinta-suave">Cargando salidas…</p>
+        } @else if (salidasOrdenadas().length === 0) {
+          <app-empty-state titulo="Sin salidas" mensaje="No hay salidas abiertas próximamente para esta ruta." />
+        } @else {
+          <ul class="space-y-2" role="list">
+            @for (salida of salidasVisibles(); track salida._id) {
+              @let elegida = store.salidaSeleccionada()?._id === salida._id;
+              <li>
+                <button type="button"
+                        [disabled]="salida.stock === 0"
+                        [attr.aria-pressed]="elegida"
+                        (click)="seleccionar(salida._id)"
+                        class="w-full rounded-2xl border p-3 text-left transition disabled:cursor-not-allowed disabled:opacity-50"
+                        [class.border-bosque-600]="elegida" [class.bg-bosque-100]="elegida" [class.ring-2]="elegida" [class.ring-bosque-300]="elegida"
+                        [class.border-crema-200]="!elegida" [class.hover:border-bosque-300]="!elegida">
+                  <span class="flex items-start justify-between gap-3">
+                    <span class="text-sm font-semibold text-tinta">{{ formatFechaHora(salida.startDate) }}</span>
+                    <strong class="shrink-0 text-sm text-bosque-900">{{ formatPrecio(salida.price.amount, salida.price.currency) }}</strong>
+                  </span>
+                  <span class="mt-1 flex items-center justify-between gap-3 text-xs text-tinta-suave">
+                    <span class="truncate">{{ salida.meetingPoint }}</span>
+                    <span class="shrink-0" [class.font-semibold]="salida.stock > 0 && salida.stock <= 5" [class.text-tierra-600]="salida.stock > 0 && salida.stock <= 5">
+                      {{ salida.stock === 0 ? 'Completa' : salida.stock + (salida.stock === 1 ? ' plaza' : ' plazas') }}
+                    </span>
+                  </span>
+                </button>
+              </li>
+            }
+          </ul>
 
-        <dl class="grid grid-cols-3 gap-3">
-          <div class="rounded-2xl border border-crema-200 bg-white p-4 text-center shadow-sm">
-            <dt class="text-xs font-semibold uppercase tracking-wide text-tinta-suave">Distancia</dt>
-            <dd class="mt-1 text-lg font-bold text-bosque-900">{{ formatKm(ruta.distanciaKm) }}</dd>
-          </div>
-          <div class="rounded-2xl border border-crema-200 bg-white p-4 text-center shadow-sm">
-            <dt class="text-xs font-semibold uppercase tracking-wide text-tinta-suave">Desnivel</dt>
-            <dd class="mt-1 text-lg font-bold text-bosque-900">{{ formatMetros(ruta.desnivelM) }}</dd>
-          </div>
-          <div class="rounded-2xl border border-crema-200 bg-white p-4 text-center shadow-sm">
-            <dt class="text-xs font-semibold uppercase tracking-wide text-tinta-suave">Duración</dt>
-            <dd class="mt-1 text-lg font-bold text-bosque-900">{{ formatDuracion(ruta.duracionHoras) }}</dd>
-          </div>
-        </dl>
+          @if (haySalidasOcultas()) {
+            <button type="button" (click)="verTodasSalidas.set(!verTodasSalidas())"
+                    class="text-sm font-semibold text-bosque-700 hover:text-bosque-500">
+              {{ verTodasSalidas() ? 'Ver menos fechas' : 'Ver todas las fechas (' + salidasOrdenadas().length + ')' }}
+            </button>
+          }
 
-        <div class="space-y-3">
-          <h2 class="text-lg font-bold text-bosque-950">Descripción</h2>
-          <p class="whitespace-pre-line leading-relaxed text-tinta">{{ ruta.descripcion }}</p>
-        </div>
-
-        @if (ruta.gpxUrl) {
-          <a [href]="ruta.gpxUrl" target="_blank" rel="noopener"
-             class="inline-flex items-center gap-2 rounded-full border border-bosque-300 bg-white px-5 py-2 text-sm font-semibold text-bosque-800 transition-colors hover:bg-bosque-100">
-            Descargar track GPX
-          </a>
+          <button type="button" disabled
+                  class="w-full rounded-full bg-bosque-700 px-5 py-3 text-sm font-semibold text-white opacity-60">
+            {{ store.salidaSeleccionada() ? 'Reservar (próximamente)' : 'Elige una fecha' }}
+          </button>
         }
       </aside>
     </div>
 
     <app-guia-ruta [rutaId]="ruta._id" />
 
-    <app-comentarios-ruta [slug]="ruta.slug" [rutaId]="ruta._id" />
+    <div id="opiniones" class="scroll-mt-24">
+      <app-comentarios-ruta [slug]="ruta.slug" [rutaId]="ruta._id" (estadisticasCambian)="opiniones.set($event)" />
+    </div>
 
-    <app-carousel titulo="Relacionado">
-      @if (ruta.locationId; as localizacion) {
-        <app-shop-location-card [opcion]="{ _id: localizacion._id, nombre: localizacion.nombre, slug: localizacion.slug, imagen: localizacion.imagen }" />
-      }
-      @if (ruta.hostId; as host) {
-        <app-shop-host-card [opcion]="{ _id: host._id, nombre: host.name, slug: host.slug }" />
-      }
-      @for (categoria of ruta.categoryIds; track categoria._id) {
-        <app-shop-category-card [opcion]="{ _id: categoria._id, nombre: categoria.name, slug: categoria.slug, imagen: categoria.imagen }" />
-      }
-    </app-carousel>
+    <!-- Explora más -->
+    @if (explorar().length) {
+      <section class="space-y-4" aria-labelledby="titulo-explorar">
+        <h2 id="titulo-explorar" class="font-display text-xl font-bold text-bosque-950">Explora más</h2>
+        <ul class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4" role="list">
+          @for (item of explorar(); track item.clave) {
+            <li>
+              <a routerLink="/shop" [queryParams]="item.queryParams"
+                 class="group flex h-full items-center gap-4 rounded-2xl border border-crema-200 bg-white p-3 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+                @if (item.imagen; as imagen) {
+                  <img [src]="imagen.url" [alt]="''" loading="lazy" class="h-16 w-16 shrink-0 rounded-xl object-cover" />
+                } @else {
+                  <span class="grid h-16 w-16 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-bosque-600 to-bosque-900 text-lg font-bold text-white" aria-hidden="true">
+                    {{ iniciales(item.nombre) }}
+                  </span>
+                }
+                <span class="min-w-0 flex-1">
+                  <span class="block text-xs font-semibold uppercase tracking-wide text-tinta-suave">{{ item.tipo }}</span>
+                  <span class="block truncate font-bold text-bosque-950">{{ item.nombre }}</span>
+                  <span class="text-xs font-semibold text-bosque-700 group-hover:text-bosque-500">Ver rutas →</span>
+                </span>
+              </a>
+            </li>
+          }
+        </ul>
+      </section>
+    }
 
     @if (store.relacionadas().length) {
-      <app-carousel titulo="Rutas relacionadas">
+      <app-carousel titulo="Rutas que también te pueden gustar">
         @for (relacionada of store.relacionadas(); track relacionada._id) {
           <app-shop-ruta-card [ruta]="relacionada" />
         }
       </app-carousel>
     }
-
-    <section class="space-y-4">
-      <h2 class="font-display text-xl font-bold text-bosque-950">Salidas disponibles</h2>
-
-      @if (store.cargandoDetalle()) {
-        <p role="status" class="text-sm text-tinta-suave">Cargando salidas…</p>
-      } @else if (store.salidas().length === 0) {
-        <app-empty-state titulo="Sin salidas" mensaje="No hay salidas abiertas próximamente para esta ruta." />
-      } @else {
-        <ul class="grid gap-3" role="list">
-          @for (salida of store.salidas(); track salida._id) {
-            <li>
-              <button type="button"
-                      [disabled]="salida.stock === 0"
-                      [attr.aria-pressed]="store.salidaSeleccionada()?._id === salida._id"
-                      [class.border-bosque-600]="store.salidaSeleccionada()?._id === salida._id"
-                      [class.ring-2]="store.salidaSeleccionada()?._id === salida._id"
-                      [class.ring-bosque-300]="store.salidaSeleccionada()?._id === salida._id"
-                      class="grid w-full gap-2 rounded-2xl border border-crema-200 bg-white p-4 text-left shadow-sm transition-shadow hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50 sm:grid-cols-[1fr_auto] sm:items-center"
-                      (click)="seleccionar(salida._id)">
-                <span class="space-y-1">
-                  <span class="block font-semibold text-tinta">{{ formatFechaHora(salida.startDate) }}
-                    @if (salida.endDate) { → {{ formatFechaHora(salida.endDate) }} }
-                  </span>
-                  <span class="block text-sm text-tinta-suave">{{ salida.meetingPoint }}</span>
-                </span>
-                <span class="flex flex-wrap items-center gap-4 text-sm sm:justify-end">
-                  <strong class="text-bosque-900">{{ formatPrecio(salida.price.amount, salida.price.currency) }}</strong>
-                  <span class="text-tinta-suave">
-                    {{ salida.stock === 0 ? 'Completa' : salida.stock + ' plazas libres de ' + salida.capacity }}
-                  </span>
-                </span>
-              </button>
-            </li>
-          }
-        </ul>
-      }
-
-      @if (store.salidaSeleccionada(); as salida) {
-        <div class="flex flex-col gap-3 rounded-2xl bg-bosque-100 p-5 sm:flex-row sm:items-center sm:justify-between">
-          <p class="text-sm text-bosque-900">
-            Salida seleccionada: <strong>{{ formatFechaHora(salida.startDate) }}</strong>
-          </p>
-          <button type="button" disabled
-                  class="rounded-full bg-bosque-700 px-5 py-2 text-sm font-semibold text-white opacity-60">
-            Reservar (próximamente)
-          </button>
-        </div>
-      }
-    </section>
   </article>
 } @else {
   <p role="status" class="py-10 text-sm text-tinta-suave">Cargando ruta…</p>

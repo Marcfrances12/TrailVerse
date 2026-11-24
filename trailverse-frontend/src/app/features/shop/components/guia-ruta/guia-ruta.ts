@@ -24,7 +24,8 @@ function distanciaLegible(metros: number): string {
   selector: 'app-guia-ruta',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [MapaRuta],
-  templateUrl: './guia-ruta.html'
+  templateUrl: './guia-ruta.html',
+  host: { class: 'block' }
 })
 export class GuiaRutaComponent {
   readonly rutaId = input.required<string>();
