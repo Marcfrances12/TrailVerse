@@ -5,13 +5,15 @@ const usersRepo = require("../src/repos/users.repo");
 const profilesRepo = require("../src/repos/profiles.repo");
 const likesRepo = require("../src/repos/likes.repo");
 const commentsRepo = require("../src/repos/comments.repo");
+const cartRepo = require("../src/repos/cart.repo");
 const usersService = require("../src/services/users.service");
 
 function simularBorrado({
   alBorrarUsuario,
   alBorrarPerfil,
   alBorrarLikes = async () => {},
-  alBorrarComentarios = async () => {}
+  alBorrarComentarios = async () => {},
+  alBorrarCarrito = async () => {}
 }) {
   const originals = {
     comprobar: integrity.comprobarBorradoDefinitivo,
@@ -19,7 +21,8 @@ function simularBorrado({
     hardDelete: usersRepo.hardDelete,
     deleteForUser: profilesRepo.deleteForUser,
     eliminarLikes: likesRepo.eliminarDeUsuario,
-    eliminarComentarios: commentsRepo.eliminarDeUsuario
+    eliminarComentarios: commentsRepo.eliminarDeUsuario,
+    eliminarCarrito: cartRepo.eliminarDeUsuario
   };
 
   integrity.comprobarBorradoDefinitivo = async () => {};
@@ -28,6 +31,7 @@ function simularBorrado({
   profilesRepo.deleteForUser = alBorrarPerfil;
   likesRepo.eliminarDeUsuario = alBorrarLikes;
   commentsRepo.eliminarDeUsuario = alBorrarComentarios;
+  cartRepo.eliminarDeUsuario = alBorrarCarrito;
 
   return () => {
     integrity.comprobarBorradoDefinitivo = originals.comprobar;
@@ -36,10 +40,11 @@ function simularBorrado({
     profilesRepo.deleteForUser = originals.deleteForUser;
     likesRepo.eliminarDeUsuario = originals.eliminarLikes;
     commentsRepo.eliminarDeUsuario = originals.eliminarComentarios;
+    cartRepo.eliminarDeUsuario = originals.eliminarCarrito;
   };
 }
 
-test("el borrado definitivo elimina primero el usuario y después su perfil, sus likes y sus comentarios", async () => {
+test("el borrado definitivo elimina primero el usuario y después su perfil, sus likes, sus comentarios y su carrito", async () => {
   const llamadas = [];
   const restaurar = simularBorrado({
     alBorrarUsuario: async (id) => {
@@ -54,12 +59,15 @@ test("el borrado definitivo elimina primero el usuario y después su perfil, sus
     },
     alBorrarComentarios: async () => {
       llamadas.push("comentarios");
+    },
+    alBorrarCarrito: async () => {
+      llamadas.push("carrito");
     }
   });
 
   try {
     await usersService.hardDeleteUser("65a000000000000000000001");
-    assert.deepEqual(llamadas, ["usuario", "perfil", "likes", "comentarios"]);
+    assert.deepEqual(llamadas, ["usuario", "perfil", "likes", "comentarios", "carrito"]);
   } finally {
     restaurar();
   }

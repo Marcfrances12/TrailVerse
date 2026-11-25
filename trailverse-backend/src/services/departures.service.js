@@ -1,4 +1,5 @@
 const departuresRepo = require("../repos/departures.repo");
+const cartRepo = require("../repos/cart.repo");
 const Ruta = require("../models/ruta.model");
 const AppError = require("../utils/AppError");
 const { generateSku, generateSkuWithSequence } = require("../utils/sku");
@@ -200,6 +201,7 @@ async function hardDeleteDeparture(id) {
   const idValido = await validarId(id);
   const departure = await departuresRepo.hardDelete(idValido);
   if (!departure) throw AppError.notFound("Salida no encontrada");
+  await cartRepo.eliminarDeDeparture(idValido);
   return departure;
 }
 

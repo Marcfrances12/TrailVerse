@@ -21,6 +21,7 @@ const shopRoutes = require("./routes/shop.routes");
 const adminRoutes = require("./routes/admin.routes");
 const likesRoutes = require("./routes/likes.routes");
 const commentsRoutes = require("./routes/comments.routes");
+const cartRoutes = require("./routes/cart.routes");
 const { notFound, errorHandler } = require("./middlewares/error.middleware");
 
 const app = express();
@@ -65,6 +66,7 @@ app.get("/", (req, res) => {
       admin: "/api/admin",
       likes: "/api/likes",
       comments: "/api/comments",
+      cart: "/api/cart",
       health: "/api/health"
     }
   });
@@ -90,6 +92,7 @@ app.use("/api/shop", shopRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/likes", likesRoutes);
 app.use("/api/comments", commentsRoutes);
+app.use("/api/cart", cartRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

@@ -2,6 +2,7 @@ const usersRepo = require("../repos/users.repo");
 const profilesRepo = require("../repos/profiles.repo");
 const likesRepo = require("../repos/likes.repo");
 const commentsRepo = require("../repos/comments.repo");
+const cartRepo = require("../repos/cart.repo");
 const AppError = require("../utils/AppError");
 const password = require("../utils/password");
 const { validarConZod } = require("../utils/validar");
@@ -139,7 +140,8 @@ async function hardDeleteUser(id) {
   await Promise.all([
     profilesRepo.deleteForUser(idValido),
     likesRepo.eliminarDeUsuario(idValido),
-    commentsRepo.eliminarDeUsuario(idValido)
+    commentsRepo.eliminarDeUsuario(idValido),
+    cartRepo.eliminarDeUsuario(idValido)
   ]);
   return user;
 }

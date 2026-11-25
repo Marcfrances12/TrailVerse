@@ -97,6 +97,22 @@ async function estadisticasDeRuta(rutaId) {
   };
 }
 
+// Comentarios activos de un usuario, con la ruta (para "Mis opiniones" del perfil).
+async function listarDeUsuario(userId, { page, limit }) {
+  const filtro = { userId, ...ACTIVOS };
+  const [items, total] = await Promise.all([
+    Comment.find(filtro)
+      .populate(POPULATE_AUTOR)
+      .populate({ ...POPULATE_RUTA, select: "nombre slug status isActive deleted_at" })
+      .sort({ created_at: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .lean(),
+    Comment.countDocuments(filtro)
+  ]);
+  return { items, total };
+}
+
 function filtroAdmin({ rutaId, userId, sentimiento, estado, q }) {
   const filtro = {};
   if (estado === "activos") filtro.deleted_at = null;
@@ -181,6 +197,7 @@ module.exports = {
   listarDeRuta,
   estadisticasDeRuta,
   listarAdmin,
+  listarDeUsuario,
   sentimientoPorRuta,
   eliminarDeUsuario,
   eliminarDeRuta

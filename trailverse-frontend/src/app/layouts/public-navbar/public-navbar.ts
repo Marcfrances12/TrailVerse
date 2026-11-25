@@ -7,15 +7,18 @@ import { AuthStore } from '../../core/stores/auth.store';
 import { ProfilesStore } from '../../core/stores/profiles.store';
 import { Search } from '../../shared/components/search/search';
 import { UserAvatar } from '../../shared/components/user-avatar/user-avatar';
+import { CartStore } from '../../core/stores/cart.store';
+import { CartDrawer } from '../../features/cart/components/cart-drawer/cart-drawer';
 
 @Component({
   selector: 'app-public-navbar',
-  imports: [RouterLink, RouterLinkActive, UserAvatar, Search],
+  imports: [RouterLink, RouterLinkActive, UserAvatar, Search, CartDrawer],
   templateUrl: './public-navbar.html'
 })
 export class PublicNavbar {
   readonly store = inject(AuthStore);
   readonly perfiles = inject(ProfilesStore);
+  readonly carrito = inject(CartStore);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
 

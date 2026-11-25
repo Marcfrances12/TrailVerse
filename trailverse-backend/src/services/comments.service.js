@@ -153,6 +153,32 @@ async function eliminar(id, actor) {
   return { _id: idString(borrado) };
 }
 
+// Opiniones del usuario actual. La ruta se marca como no visible si ya no está publicada.
+async function misComentarios(actor, query = {}) {
+  const { page, limit } = validarConZod(paginaQuerySchema, query, "query");
+  const { items, total } = await commentsRepo.listarDeUsuario(actor.id, { page, limit });
+  return {
+    data: items.map((comentario) => {
+      const ruta = comentario.rutaId && typeof comentario.rutaId === "object" ? comentario.rutaId : null;
+      return {
+        ...presentarPublico(comentario, actor),
+        ruta: ruta
+          ? {
+              _id: idString(ruta),
+              nombre: ruta.nombre,
+              slug: ruta.slug,
+              visible: ruta.status === "published" && ruta.isActive !== false && !ruta.deleted_at
+            }
+          : { _id: null, nombre: "Ruta eliminada", slug: null, visible: false }
+      };
+    }),
+    total,
+    page,
+    limit,
+    totalPages: Math.max(1, Math.ceil(total / limit))
+  };
+}
+
 // ---------- Admin ----------
 
 async function listarAdmin(query = {}) {
@@ -288,6 +314,7 @@ async function sentimiento() {
 
 module.exports = {
   listarDeRuta,
+  misComentarios,
   crear,
   editar,
   eliminar,

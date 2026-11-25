@@ -203,9 +203,31 @@
             </button>
           }
 
-          <button type="button" disabled
-                  class="w-full rounded-full bg-bosque-700 px-5 py-3 text-sm font-semibold text-white opacity-60">
-            {{ store.salidaSeleccionada() ? 'Reservar (próximamente)' : 'Elige una fecha' }}
+          @if (store.salidaSeleccionada(); as salida) {
+            <div class="flex items-center justify-between gap-3">
+              <span class="text-sm font-semibold text-tinta">Plazas</span>
+              <div class="inline-flex items-center rounded-full border border-crema-300" role="group" aria-label="Número de plazas">
+                <button type="button" (click)="cambiarPlazas(-1)" [disabled]="plazas() <= 1" aria-label="Quitar una plaza"
+                        class="grid h-9 w-9 place-items-center rounded-full text-tinta hover:bg-crema-200 disabled:opacity-40">−</button>
+                <span class="w-8 text-center text-sm font-semibold tabular-nums" aria-live="polite">{{ plazas() }}</span>
+                <button type="button" (click)="cambiarPlazas(1)" [disabled]="plazas() >= plazasLibres()" aria-label="Añadir una plaza"
+                        class="grid h-9 w-9 place-items-center rounded-full text-tinta hover:bg-crema-200 disabled:opacity-40">+</button>
+              </div>
+            </div>
+
+            @if (enCarrito() > 0) {
+              <p class="text-xs text-tinta-suave">
+                Ya tienes {{ enCarrito() }} {{ enCarrito() === 1 ? 'plaza' : 'plazas' }} de esta fecha en el carrito.
+              </p>
+            }
+            @if (salida.price.currency !== 'EUR') {
+              <p class="text-xs text-tierra-700">Esta salida no se puede reservar: el carrito solo admite precios en EUR.</p>
+            }
+          }
+
+          <button type="button" (click)="anadirAlCarrito()" [disabled]="!puedeAnadir()"
+                  class="w-full rounded-full bg-bosque-700 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-bosque-600 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:bg-bosque-700">
+            {{ textoBotonCarrito() }}
           </button>
         }
       </aside>
@@ -214,7 +236,7 @@
     <app-guia-ruta [rutaId]="ruta._id" />
 
     <div id="opiniones" class="scroll-mt-24">
-      <app-comentarios-ruta [slug]="ruta.slug" [rutaId]="ruta._id" (estadisticasCambian)="opiniones.set($event)" />
+      <app-comentarios-ruta [slug]="ruta.slug" [rutaId]="ruta._id" (estadisticasCambian)="alCargarOpiniones($event)" />
     </div>
 
     <!-- Explora más -->

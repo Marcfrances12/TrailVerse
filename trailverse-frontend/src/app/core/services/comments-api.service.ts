@@ -9,6 +9,7 @@ import {
   ComentarioDatos,
   ComentariosAdminPagina,
   ComentariosPagina,
+  ComentariosPropiosPagina,
   FiltrosComentariosAdmin,
   SentimientoResumen
 } from '../models/comment.model';
@@ -20,6 +21,12 @@ export class CommentsApiService {
   listar(slug: string, page = 1, limit = 10): Observable<ComentariosPagina> {
     const params = new HttpParams().set('page', page).set('limit', limit);
     return this.api.get<ComentariosPagina>(this.ruta(slug), { params });
+  }
+
+  /** Opiniones del usuario con sesión iniciada. */
+  mias(page = 1, limit = 50): Observable<ComentariosPropiosPagina> {
+    const params = new HttpParams().set('page', page).set('limit', limit);
+    return this.api.get<ComentariosPropiosPagina>('/comments/me', { params });
   }
 
   crear(slug: string, datos: ComentarioDatos): Observable<RecursoRespuesta<Comentario>> {

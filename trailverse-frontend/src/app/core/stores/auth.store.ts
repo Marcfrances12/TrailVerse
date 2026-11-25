@@ -4,12 +4,14 @@ import { AuthService } from '../services/auth.service';
 import { AuthUser, LoginRequest, RolName } from '../models/auth.model';
 import { RutasStore } from './rutas.store';
 import { ProfilesStore } from './profiles.store';
+import { CartStore } from './cart.store';
 
 @Injectable({ providedIn: 'root' })
 export class AuthStore {
   private readonly auth = inject(AuthService);
   private readonly rutas = inject(RutasStore);
   private readonly perfiles = inject(ProfilesStore);
+  private readonly carrito = inject(CartStore);
 
   private readonly _user = signal<AuthUser | null>(null);
 
@@ -53,12 +55,17 @@ export class AuthStore {
     this.cambiarUsuario(null);
   }
 
-  /** Cualquier cambio de sesión descarta la caché de rutas del usuario anterior. */
+  /**
+   * Cualquier cambio de sesión descarta la caché de rutas del usuario anterior.
+   * El carrito se guarda en el servidor: al salir solo se borra de memoria y al entrar se recupera.
+   */
   private cambiarUsuario(usuario: AuthUser | null): void {
     this._user.set(usuario);
     this.rutas.limpiarCache();
+    this.carrito.limpiar();
     if (usuario) {
       this.perfiles.cargarMiPerfil();
+      void this.carrito.cargar();
     } else {
       this.perfiles.limpiarMiPerfil();
     }

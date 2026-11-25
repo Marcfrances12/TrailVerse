@@ -13,6 +13,7 @@ const {
 
 const router = express.Router();
 
+router.get("/me", authenticate, validate({ query: paginaQuerySchema }), controller.misComentarios);
 router.get(
   "/rutas/:slug",
   optionalAuthenticate,

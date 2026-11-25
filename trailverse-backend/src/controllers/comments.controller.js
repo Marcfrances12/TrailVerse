@@ -7,6 +7,13 @@ const listarDeRuta = async (req, res, next) => {
   } catch (error) { next(error); }
 };
 
+const misComentarios = async (req, res, next) => {
+  try {
+    const resultado = await commentsService.misComentarios(req.user, req.query);
+    res.status(200).json({ ok: true, ...resultado });
+  } catch (error) { next(error); }
+};
+
 const crear = async (req, res, next) => {
   try {
     const comentario = await commentsService.crear(req.params.slug, req.body, req.user);
@@ -60,6 +67,7 @@ const sentimiento = async (req, res, next) => {
 
 module.exports = {
   listarDeRuta,
+  misComentarios,
   crear,
   editar,
   eliminar,

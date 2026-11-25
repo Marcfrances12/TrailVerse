@@ -90,6 +90,11 @@ test.before(async () => {
     listarDeRuta: async () => ({ items: comentarios.filter((c) => !c.deleted_at), total: comentarios.length }),
     estadisticasDeRuta: async () => ({ total: 1, media: 5, reparto: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 1 } }),
     listarAdmin: async () => ({ items: comentarios, total: comentarios.length }),
+    listarDeUsuario: async (userId) => {
+      const propios = comentarios.filter((c) => String(c.userId._id) === String(userId) && !c.deleted_at)
+        .map((c) => ({ ...c, rutaId: { _id: RUTA._id, nombre: "Ruta", slug: "ruta-activa", status: "published", isActive: true, deleted_at: null } }));
+      return { items: propios, total: propios.length };
+    },
     sentimientoPorRuta: async () => []
   });
 
@@ -200,4 +205,18 @@ test("solo el admin accede a la moderación y puede borrar comentarios ajenos", 
 
 test("el admin no puede reescribir la opinión de un cliente (403)", async () => {
   assert.equal((await peticion("PATCH", `/comments/${COMENTARIO_ID}`, { usuario: ADMIN, body: { texto: "Cambiado" } })).status, 403);
+});
+
+test("mis opiniones: requiere sesión y devuelve solo las del usuario", async () => {
+  assert.equal((await peticion("GET", "/comments/me")).status, 401);
+
+  const propias = await peticion("GET", "/comments/me", { usuario: AUTOR });
+  assert.equal(propias.status, 200);
+  assert.equal(propias.cuerpo.total, 1);
+  assert.equal(propias.cuerpo.data[0].ruta.slug, "ruta-activa");
+  assert.equal(propias.cuerpo.data[0].ruta.visible, true);
+  assert.equal(propias.cuerpo.data[0].esMio, true);
+
+  const ajenas = await peticion("GET", "/comments/me", { usuario: OTRO });
+  assert.equal(ajenas.cuerpo.total, 0);
 });

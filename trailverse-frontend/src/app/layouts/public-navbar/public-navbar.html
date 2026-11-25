@@ -29,6 +29,20 @@
             Panel
           </a>
         }
+        <button type="button" (click)="carrito.abrir()"
+                [attr.aria-label]="carrito.totalItems() ? 'Abrir carrito, ' + carrito.totalItems() + ' plazas' : 'Abrir carrito'"
+                class="relative grid h-10 w-10 place-items-center rounded-full text-tinta-suave transition-colors hover:bg-crema-200 hover:text-bosque-800">
+          <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M3 4h2l2.4 11.2a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.5L21 8H6.2" />
+            <circle cx="10" cy="20" r="1.2" /><circle cx="17" cy="20" r="1.2" />
+          </svg>
+          @if (carrito.totalItems() > 0) {
+            <span class="absolute -right-0.5 -top-0.5 grid h-5 min-w-5 place-items-center rounded-full bg-bosque-700 px-1 text-[0.7rem] font-bold leading-none text-white ring-2 ring-crema-50"
+                  aria-hidden="true">
+              {{ carrito.totalItems() > 99 ? '99+' : carrito.totalItems() }}
+            </span>
+          }
+        </button>
         <a routerLink="/perfil" routerLinkActive="bg-bosque-100 text-bosque-800"
            class="flex max-w-[12rem] items-center gap-2 rounded-full py-1 pl-1 pr-3 text-sm font-semibold text-tinta-suave transition-colors hover:bg-crema-200 hover:text-bosque-800">
           <app-user-avatar [nombre]="perfiles.miPerfil()?.name ?? usuario.name" [url]="perfiles.miPerfil()?.avatarUrl ?? ''" />
@@ -47,3 +61,7 @@
     </div>
   </nav>
 </header>
+
+@if (store.isAuthenticated()) {
+  <app-cart-drawer />
+}

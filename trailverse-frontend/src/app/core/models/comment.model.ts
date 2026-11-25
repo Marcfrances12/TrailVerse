@@ -35,6 +35,20 @@ export interface ComentariosPagina {
   yaComentado: boolean;
 }
 
+/** Opinión del usuario actual, con la ruta en la que la escribió ("Mis opiniones"). */
+export interface ComentarioPropio extends Comentario {
+  ruta: { _id: string | null; nombre: string; slug: string | null; visible: boolean };
+}
+
+export interface ComentariosPropiosPagina {
+  ok: boolean;
+  data: ComentarioPropio[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
 export interface ComentarioDatos {
   texto: string;
   valoracion: number;

@@ -1,0 +1,126 @@
+<section class="space-y-6">
+  <header class="flex flex-wrap items-end justify-between gap-3">
+    <div>
+      <a routerLink="/shop" class="text-sm font-semibold text-bosque-700 hover:text-bosque-500">← Seguir explorando rutas</a>
+      <h1 class="mt-2 font-display text-3xl font-bold text-bosque-950">Tu cesta</h1>
+      @if (!store.vacio()) {
+        <p class="mt-1 text-sm text-tinta-suave">
+          {{ store.items().length }} {{ store.items().length === 1 ? 'salida' : 'salidas' }} · {{ plazas(store.totalItems()) }}
+        </p>
+      }
+    </div>
+    @if (!store.vacio()) {
+      <button type="button" (click)="store.vaciar()" [disabled]="store.ocupado() !== null"
+              class="rounded-full border border-crema-300 px-4 py-2 text-sm font-semibold text-tinta-suave transition-colors hover:border-red-200 hover:bg-red-50 hover:text-red-700 disabled:opacity-50">
+        Vaciar cesta
+      </button>
+    }
+  </header>
+
+  @if (store.cargando() && store.vacio()) {
+    <p role="status" class="text-sm text-tinta-suave">Cargando tu cesta…</p>
+  } @else if (store.vacio()) {
+    <div class="flex flex-col items-center gap-3 rounded-3xl border border-crema-200 bg-white px-6 py-20 text-center shadow-sm">
+      <svg viewBox="0 0 24 24" class="h-14 w-14 text-bosque-300" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M3 4h2l2.4 11.2a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.5L21 8H6.2" />
+        <circle cx="10" cy="20" r="1.2" /><circle cx="17" cy="20" r="1.2" />
+      </svg>
+      <p class="text-lg font-semibold text-tinta">Tu cesta está vacía</p>
+      <p class="text-sm text-tinta-suave">Elige una fecha en cualquier ruta y añádela aquí.</p>
+      <a routerLink="/shop" class="mt-2 rounded-full bg-bosque-700 px-6 py-2.5 text-sm font-semibold text-white hover:bg-bosque-600">Ver rutas</a>
+    </div>
+  } @else {
+    <div class="grid gap-6 lg:grid-cols-[1fr_22rem] lg:items-start">
+      <ul class="space-y-4" role="list">
+        @for (item of store.items(); track item._id) {
+          @let ocupado = store.ocupado() !== null;
+          <li class="flex flex-col gap-4 rounded-3xl border bg-white p-4 shadow-sm sm:flex-row"
+              [class.border-crema-200]="item.disponible" [class.border-amber-300]="!item.disponible">
+            @if (item.ruta?.coverImage?.url) {
+              <img [src]="item.ruta!.coverImage.url" [alt]="item.ruta!.coverImage.alt || item.ruta!.nombre"
+                   class="h-40 w-full shrink-0 rounded-2xl object-cover sm:h-28 sm:w-40" [class.grayscale]="!item.disponible" />
+            } @else {
+              <div class="h-40 w-full shrink-0 rounded-2xl bg-bosque-100 sm:h-28 sm:w-40"></div>
+            }
+
+            <div class="flex min-w-0 flex-1 flex-col gap-3">
+              <div class="flex items-start justify-between gap-3">
+                <div class="min-w-0">
+                  @if (item.ruta) {
+                    <a [routerLink]="['/shop', item.ruta.slug]" class="text-lg font-bold text-bosque-950 hover:text-bosque-700">
+                      {{ item.ruta.nombre }}
+                    </a>
+                  } @else {
+                    <p class="text-lg font-bold text-tinta-suave">Ruta no disponible</p>
+                  }
+                  <dl class="mt-1 space-y-0.5 text-sm text-tinta-suave">
+                    <div class="flex gap-1"><dt class="font-semibold text-tinta">Fecha:</dt><dd>{{ formatFechaHora(item.salida.startDate) }}</dd></div>
+                    <div class="flex gap-1"><dt class="font-semibold text-tinta">Punto de encuentro:</dt><dd class="truncate">{{ item.salida.meetingPoint }}</dd></div>
+                    @if (item.disponible) {
+                      <div class="flex gap-1"><dt class="font-semibold text-tinta">Plazas libres:</dt><dd>{{ item.salida.stock }}</dd></div>
+                    }
+                  </dl>
+                </div>
+
+                <button type="button" (click)="store.quitar(item.departureId)" [disabled]="ocupado"
+                        [attr.aria-label]="'Quitar ' + (item.ruta?.nombre ?? 'salida') + ' de la cesta'"
+                        class="shrink-0 rounded-full p-2 text-tinta-suave transition-colors hover:bg-red-50 hover:text-red-700 disabled:opacity-50">
+                  <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3" />
+                  </svg>
+                </button>
+              </div>
+
+              @if (!item.disponible) {
+                <p class="rounded-lg bg-amber-50 px-3 py-1.5 text-sm font-semibold text-amber-800">{{ item.motivo }}</p>
+              }
+
+              <div class="mt-auto flex flex-wrap items-center justify-between gap-3">
+                <div class="inline-flex items-center rounded-full border border-crema-300" role="group" [attr.aria-label]="'Plazas de ' + (item.ruta?.nombre ?? 'la salida')">
+                  <button type="button" (click)="store.cambiarCantidad(item.departureId, item.quantity - 1)" [disabled]="ocupado"
+                          aria-label="Quitar una plaza"
+                          class="grid h-9 w-9 place-items-center rounded-full text-tinta hover:bg-crema-200 disabled:opacity-40">−</button>
+                  <span class="w-10 text-center text-sm font-semibold tabular-nums" aria-live="polite">{{ item.quantity }}</span>
+                  <button type="button" (click)="store.cambiarCantidad(item.departureId, item.quantity + 1)" [disabled]="ocupado || !puedeSumar(item)"
+                          aria-label="Añadir una plaza"
+                          class="grid h-9 w-9 place-items-center rounded-full text-tinta hover:bg-crema-200 disabled:opacity-40">+</button>
+                </div>
+                <div class="text-right">
+                  <p class="text-lg font-bold text-bosque-900" [class.line-through]="!item.disponible" [class.text-tinta-suave]="!item.disponible">
+                    {{ formatPrecio(item.subtotal, item.currency) }}
+                  </p>
+                  <p class="text-xs text-tinta-suave">{{ formatPrecio(item.price, item.currency) }} / persona</p>
+                </div>
+              </div>
+            </div>
+          </li>
+        }
+      </ul>
+
+      <aside class="space-y-4 rounded-3xl border border-crema-200 bg-white p-6 shadow-md lg:sticky lg:top-24" aria-labelledby="titulo-resumen">
+        <h2 id="titulo-resumen" class="text-base font-bold text-bosque-950">Resumen</h2>
+        <ul class="space-y-2 text-sm" role="list">
+          @for (item of store.items(); track item._id) {
+            @if (item.disponible) {
+              <li class="flex justify-between gap-3">
+                <span class="truncate text-tinta-suave">{{ item.ruta?.nombre ?? 'Salida' }} × {{ item.quantity }}</span>
+                <span class="shrink-0 font-semibold text-tinta">{{ formatPrecio(item.subtotal, item.currency) }}</span>
+              </li>
+            }
+          }
+        </ul>
+        @if (store.hayNoDisponibles()) {
+          <p class="text-xs text-tierra-700">Las salidas no disponibles no cuentan en el total.</p>
+        }
+        <div class="flex items-baseline justify-between border-t border-crema-200 pt-4">
+          <span class="text-sm text-tinta-suave">Total ({{ plazas(store.totalItems()) }})</span>
+          <strong class="text-2xl font-bold text-bosque-950">{{ formatPrecio(store.total(), store.currency()) }}</strong>
+        </div>
+        <button type="button" disabled
+                class="w-full rounded-full bg-bosque-700 px-5 py-3 text-sm font-semibold text-white opacity-60">
+          Finalizar reserva (próximamente)
+        </button>
+      </aside>
+    </div>
+  }
+</section>

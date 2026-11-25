@@ -1,61 +1,213 @@
-<div class="mx-auto max-w-5xl space-y-8">
+<div class="mx-auto max-w-6xl space-y-8 py-6">
   @if (cargando()) {
-    <p class="text-sm text-tinta-suave">Cargando perfil…</p>
+    <div class="h-72 animate-pulse rounded-[2rem] bg-crema-100" role="status" aria-label="Cargando perfil"></div>
   } @else if (error(); as mensaje) {
     <div class="rounded-2xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900" role="alert">{{ mensaje }}</div>
-  } @else if (perfil(); as perfilActual) {
-    <app-profile-header
-      [nombre]="perfilActual.name"
-      [email]="auth.user()?.email ?? null"
-      [rol]="auth.user()?.role ?? null"
-      [avatarUrl]="perfilActual.avatarUrl" />
+  } @else if (perfil(); as p) {
+    <!-- Portada -->
+    <header class="overflow-hidden rounded-[2rem] border border-crema-200 bg-white shadow-sm">
+      <div class="relative h-40 bg-gradient-to-br from-bosque-700 via-bosque-800 to-bosque-950 sm:h-52">
+        @if (portada(); as imagen) {
+          <img [src]="imagen.url" alt="" class="h-full w-full object-cover" />
+          <div class="absolute inset-0 bg-gradient-to-t from-bosque-950/60 to-transparent"></div>
+        } @else {
+          <svg class="absolute inset-0 h-full w-full opacity-25" viewBox="0 0 800 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+            <g fill="none" stroke="#95d5b2" stroke-width="1.2">
+              <path d="M-20 150 C 140 70, 260 190, 400 110 S 660 30, 820 110" />
+              <path d="M-20 100 C 160 20, 280 140, 420 60 S 680 -20, 820 60" />
+            </g>
+          </svg>
+        }
+      </div>
 
-    <div class="grid gap-8 lg:grid-cols-[1fr_280px]">
-      <app-profile-form
-        [perfil]="perfilActual"
-        [enviando]="enviando()"
-        [errorServidor]="errorServidor()"
-        (guardar)="guardar($event)" />
+      <div class="px-6 pb-6 sm:px-10">
+        <div class="-mt-14 flex flex-col gap-5 sm:-mt-16 sm:flex-row sm:items-end sm:justify-between">
+          <div class="flex flex-col gap-4 sm:flex-row sm:items-end">
+            @if (mostrarAvatar()) {
+              <img [src]="p.avatarUrl" alt="" (error)="avatarRoto.set(true)"
+                   class="relative h-28 w-28 shrink-0 rounded-full border-4 border-white object-cover shadow-lg sm:h-32 sm:w-32" />
+            } @else {
+              <span class="relative grid h-28 w-28 shrink-0 place-items-center rounded-full border-4 border-white bg-bosque-700 font-display text-4xl font-bold text-white shadow-lg sm:h-32 sm:w-32" aria-hidden="true">
+                {{ iniciales() }}
+              </span>
+            }
+            <div class="min-w-0 pb-1">
+              <h1 class="truncate font-display text-3xl font-bold text-bosque-950">{{ p.name || 'Sin nombre' }}</h1>
+              <p class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-tinta-suave">
+                <span class="truncate">{{ auth.user()?.email }}</span>
+                @if (miembroDesde(); as desde) {
+                  <span aria-hidden="true">·</span>
+                  <span>Senderista desde {{ desde }}</span>
+                }
+                @if (auth.isAdmin()) {
+                  <span class="rounded-full bg-bosque-100 px-2.5 py-0.5 text-xs font-semibold text-bosque-800">Administrador</span>
+                }
+              </p>
+            </div>
+          </div>
 
-      <aside class="h-fit space-y-5 rounded-3xl border border-crema-200 bg-white p-6 shadow-sm">
-        <div>
-          <h2 class="text-sm font-bold uppercase tracking-wide text-tinta-suave">Cuenta</h2>
-          <p class="mt-1 text-xs text-tinta-suave">Estos datos los gestiona el administrador.</p>
+          <div class="flex shrink-0 gap-2">
+            @if (auth.isAdmin()) {
+              <a routerLink="/admin" class="rounded-full border border-crema-300 bg-white px-4 py-2 text-sm font-semibold text-tinta hover:bg-crema-100">Panel de control</a>
+            }
+            <button type="button" (click)="cambiarPestana('editar')"
+                    class="inline-flex items-center gap-2 rounded-full bg-bosque-700 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-bosque-600">
+              <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
+              </svg>
+              Editar perfil
+            </button>
+          </div>
         </div>
-        <dl class="space-y-4 text-sm">
-          <div>
-            <dt class="text-xs uppercase tracking-wide text-tinta-suave">Email</dt>
-            <dd class="mt-0.5 break-all font-semibold text-tinta">{{ auth.user()?.email }}</dd>
-          </div>
-          <div>
-            <dt class="text-xs uppercase tracking-wide text-tinta-suave">Rol</dt>
-            <dd class="mt-0.5 font-semibold text-tinta">{{ auth.user()?.role }}</dd>
-          </div>
-          <div>
-            <dt class="text-xs uppercase tracking-wide text-tinta-suave">Estado</dt>
-            <dd class="mt-1">
-              <span class="rounded-full bg-bosque-100 px-2.5 py-1 text-xs font-semibold text-bosque-800">Activa</span>
-            </dd>
-          </div>
+
+        @if (p.bio) {
+          <p class="mt-5 max-w-3xl whitespace-pre-line leading-relaxed text-tinta">{{ p.bio }}</p>
+        } @else {
+          <button type="button" (click)="cambiarPestana('editar')" class="mt-5 text-sm font-semibold text-bosque-700 hover:text-bosque-500">
+            + Añade una biografía para que te conozcan
+          </button>
+        }
+
+        <dl class="mt-6 grid grid-cols-2 gap-3 border-t border-crema-200 pt-6 sm:grid-cols-4">
+          @for (dato of estadisticas(); track dato.etiqueta) {
+            <div class="rounded-2xl bg-crema-50 px-4 py-3">
+              <dt class="sr-only">{{ dato.etiqueta }}</dt>
+              <dd>
+                <span class="block text-2xl font-bold text-bosque-950">{{ dato.valor }}</span>
+                <span class="text-xs text-tinta-suave">{{ dato.etiqueta }}</span>
+              </dd>
+            </div>
+          }
         </dl>
-      </aside>
+      </div>
+    </header>
+
+    <!-- Pestañas -->
+    <div role="tablist" aria-label="Secciones del perfil" (keydown)="tecladoPestanas($event)"
+         class="flex gap-1 overflow-x-auto overflow-y-hidden border-b border-crema-200 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      @for (t of [
+        { id: 'favoritas', texto: 'Rutas que me gustan', total: rutasQueMeGustan().length },
+        { id: 'opiniones', texto: 'Mis opiniones', total: opiniones().length },
+        { id: 'editar', texto: 'Editar perfil', total: null }
+      ]; track t.id) {
+        @let activa = pestana() === t.id;
+        <button type="button" role="tab" [id]="'pestana-' + t.id"
+                [attr.aria-selected]="activa" [attr.aria-controls]="'panel-' + t.id" [attr.tabindex]="activa ? 0 : -1"
+                (click)="cambiarPestana($any(t.id))"
+                class="-mb-px inline-flex shrink-0 items-center gap-2 border-b-2 px-4 py-3 text-sm font-semibold transition-colors"
+                [class.border-bosque-700]="activa" [class.text-bosque-900]="activa"
+                [class.border-transparent]="!activa" [class.text-tinta-suave]="!activa" [class.hover:text-tinta]="!activa">
+          {{ t.texto }}
+          @if (t.total !== null) {
+            <span class="rounded-full px-2 py-0.5 text-xs"
+                  [class.bg-bosque-100]="activa" [class.text-bosque-800]="activa"
+                  [class.bg-crema-200]="!activa">{{ t.total }}</span>
+          }
+        </button>
+      }
     </div>
 
-    <section class="space-y-4">
-      <h2 class="font-display text-2xl font-bold text-bosque-950">Rutas que me gustan</h2>
-      @if (cargandoLikes()) {
-        <p class="text-sm text-tinta-suave">Cargando rutas…</p>
-      } @else if (errorLikes()) {
-        <p class="text-sm text-amber-900">No se han podido cargar tus rutas favoritas.</p>
-      } @else if (rutasQueMeGustan().length === 0) {
-        <p class="text-sm text-tinta-suave">Todavía no has dado like a ninguna ruta.</p>
-      } @else {
-        <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          @for (ruta of rutasQueMeGustan(); track ruta._id) {
-            <app-shop-ruta-card [ruta]="ruta" />
-          }
-        </div>
-      }
-    </section>
+    <!-- Favoritas -->
+    @if (pestana() === 'favoritas') {
+      <section id="panel-favoritas" role="tabpanel" aria-labelledby="pestana-favoritas">
+        @if (cargandoLikes()) {
+          <p role="status" class="text-sm text-tinta-suave">Cargando rutas…</p>
+        } @else if (errorLikes()) {
+          <p class="text-sm text-amber-900">No se han podido cargar tus rutas favoritas.</p>
+        } @else if (rutasQueMeGustan().length === 0) {
+          <div class="rounded-3xl border border-dashed border-crema-300 bg-white px-6 py-14 text-center">
+            <p class="text-4xl" aria-hidden="true">♡</p>
+            <h2 class="mt-3 font-display text-xl font-bold text-bosque-950">Aún no tienes rutas favoritas</h2>
+            <p class="mt-1 text-sm text-tinta-suave">Dale a me gusta a las rutas que quieras hacer y las tendrás siempre a mano aquí.</p>
+            <a routerLink="/shop" class="mt-5 inline-block rounded-full bg-bosque-700 px-5 py-2.5 text-sm font-semibold text-white hover:bg-bosque-600">Explorar rutas</a>
+          </div>
+        } @else {
+          <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            @for (ruta of rutasQueMeGustan(); track ruta._id) {
+              <app-shop-ruta-card [ruta]="ruta" />
+            }
+          </div>
+        }
+      </section>
+    }
+
+    <!-- Mis opiniones -->
+    @if (pestana() === 'opiniones') {
+      <section id="panel-opiniones" role="tabpanel" aria-labelledby="pestana-opiniones">
+        @if (cargandoOpiniones()) {
+          <p role="status" class="text-sm text-tinta-suave">Cargando opiniones…</p>
+        } @else if (errorOpiniones()) {
+          <p class="text-sm text-amber-900">No se han podido cargar tus opiniones.</p>
+        } @else if (opiniones().length === 0) {
+          <div class="rounded-3xl border border-dashed border-crema-300 bg-white px-6 py-14 text-center">
+            <p class="text-4xl" aria-hidden="true">✎</p>
+            <h2 class="mt-3 font-display text-xl font-bold text-bosque-950">Todavía no has opinado</h2>
+            <p class="mt-1 text-sm text-tinta-suave">Cuando hagas una ruta, cuéntale a otros senderistas qué tal fue desde su página.</p>
+            <a routerLink="/shop" class="mt-5 inline-block rounded-full bg-bosque-700 px-5 py-2.5 text-sm font-semibold text-white hover:bg-bosque-600">Buscar una ruta</a>
+          </div>
+        } @else {
+          <ul class="grid gap-4 md:grid-cols-2" role="list">
+            @for (c of opiniones(); track c._id) {
+              <li class="flex flex-col gap-3 rounded-3xl border border-crema-200 bg-white p-5 shadow-sm">
+                <div class="flex items-start justify-between gap-3">
+                  <div class="min-w-0">
+                    @if (c.ruta.visible && c.ruta.slug) {
+                      <a [routerLink]="['/shop', c.ruta.slug]" class="block truncate font-bold text-bosque-900 hover:text-bosque-600">{{ c.ruta.nombre }}</a>
+                    } @else {
+                      <span class="block truncate font-bold text-tinta-suave">{{ c.ruta.nombre }}</span>
+                      <span class="text-xs text-amber-800">Esta ruta ya no está disponible</span>
+                    }
+                    <p class="text-xs text-tinta-suave">{{ formatFecha(c.created_at) }}@if (c.editado) { · editada }</p>
+                  </div>
+                  <app-estrellas [valor]="c.valoracion" />
+                </div>
+                <p class="flex-1 whitespace-pre-line text-sm leading-relaxed text-tinta">{{ c.texto }}</p>
+                <div class="flex gap-4 border-t border-crema-100 pt-3 text-xs font-semibold">
+                  @if (c.ruta.visible && c.ruta.slug) {
+                    <a [routerLink]="['/shop', c.ruta.slug]" fragment="opiniones" class="text-bosque-700 hover:text-bosque-500">Editar en la ruta</a>
+                  }
+                  <button type="button" (click)="borrarOpinion(c)" [disabled]="borrandoId() === c._id"
+                          class="text-red-700 hover:text-red-500 disabled:opacity-50">
+                    {{ borrandoId() === c._id ? 'Borrando…' : 'Borrar' }}
+                  </button>
+                </div>
+              </li>
+            }
+          </ul>
+        }
+      </section>
+    }
+
+    <!-- Editar perfil -->
+    @if (pestana() === 'editar') {
+      <section id="panel-editar" role="tabpanel" aria-labelledby="pestana-editar" class="grid gap-8 lg:grid-cols-[1fr_300px] lg:items-start">
+        <app-profile-form
+          [perfil]="p"
+          [enviando]="enviando()"
+          [errorServidor]="errorServidor()"
+          (guardar)="guardar($event)" />
+
+        <aside class="space-y-5 rounded-3xl border border-crema-200 bg-white p-6 shadow-sm">
+          <div>
+            <h2 class="text-sm font-bold uppercase tracking-wide text-tinta-suave">Tu cuenta</h2>
+            <p class="mt-1 text-xs text-tinta-suave">El email y el tipo de cuenta los gestiona el administrador.</p>
+          </div>
+          <dl class="space-y-4 text-sm">
+            <div>
+              <dt class="text-xs uppercase tracking-wide text-tinta-suave">Email</dt>
+              <dd class="mt-0.5 break-all font-semibold text-tinta">{{ auth.user()?.email }}</dd>
+            </div>
+            <div>
+              <dt class="text-xs uppercase tracking-wide text-tinta-suave">Tipo de cuenta</dt>
+              <dd class="mt-0.5 font-semibold text-tinta">{{ auth.isAdmin() ? 'Administrador' : 'Senderista' }}</dd>
+            </div>
+            <div>
+              <dt class="text-xs uppercase tracking-wide text-tinta-suave">Estado</dt>
+              <dd class="mt-1"><span class="rounded-full bg-bosque-100 px-2.5 py-1 text-xs font-semibold text-bosque-800">Activa</span></dd>
+            </div>
+          </dl>
+        </aside>
+      </section>
+    }
   }
 </div>
